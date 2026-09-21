@@ -178,3 +178,61 @@ it('filters parking by radius', function () {
             'id' => "facility:{$near->id}",
         ]);
 });
+
+it('paginates parking results', function () {
+    ParkingFacility::factory()
+        ->count(5)
+        ->create([
+            'status' => 'ACTIVE',
+        ]);
+
+    $this
+        ->getJson('/api/v1/parking?per_page=2&page=1')
+        ->assertOk()
+        ->assertJsonCount(2, 'data')
+        ->assertJsonPath('meta.current_page', 1)
+        ->assertJsonPath('meta.per_page', 2)
+        ->assertJsonPath('meta.total', 5)
+        ->assertJsonPath('meta.last_page', 3);
+});
+
+it('returns the requested parking page', function () {
+    ParkingFacility::factory()
+        ->count(5)
+        ->create([
+            'status' => 'ACTIVE',
+        ]);
+
+    $this
+        ->getJson('/api/v1/parking?per_page=2&page=2')
+        ->assertOk()
+        ->assertJsonCount(2, 'data')
+        ->assertJsonPath('meta.current_page', 2);
+});
+
+it('returns the remaining records on the last page', function () {
+    ParkingFacility::factory()
+        ->count(5)
+        ->create([
+            'status' => 'ACTIVE',
+        ]);
+
+    $this
+        ->getJson('/api/v1/parking?per_page=2&page=3')
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('meta.current_page', 3);
+});
+
+it('returns an empty page beyond the available results', function () {
+    ParkingFacility::factory()
+        ->count(2)
+        ->create([
+            'status' => 'ACTIVE',
+        ]);
+
+    $this
+        ->getJson('/api/v1/parking?per_page=2&page=2')
+        ->assertOk()
+        ->assertJsonCount(0, 'data');
+});

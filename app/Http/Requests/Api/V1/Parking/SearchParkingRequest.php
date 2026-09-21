@@ -89,6 +89,12 @@ final class SearchParkingRequest extends FormRequest
                 ]),
             ],
 
+            'page' => [
+                'sometimes',
+                'integer',
+                'min:1',
+            ],
+
             'per_page' => [
                 'sometimes',
                 'integer',
@@ -148,6 +154,8 @@ final class SearchParkingRequest extends FormRequest
             sort: $this->input('sort'),
 
             perPage: (int) $this->input('per_page', 20),
+
+            page: (int) $this->input('page', 1),
         );
     }
 }

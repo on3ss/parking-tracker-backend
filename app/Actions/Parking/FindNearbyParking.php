@@ -4,7 +4,7 @@ namespace App\Actions\Parking;
 
 use App\Data\Parking\FindNearbyParkingData;
 use App\Data\Parking\SearchParkingData;
-use Illuminate\Support\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 final class FindNearbyParking
 {
@@ -15,7 +15,7 @@ final class FindNearbyParking
 
     public function execute(
         FindNearbyParkingData $data,
-    ): Collection {
+    ): LengthAwarePaginator {
         return $this->searchParking->execute(
             new SearchParkingData(
                 latitude: $data->latitude,
@@ -23,6 +23,7 @@ final class FindNearbyParking
                 radiusMeters: $data->radiusMeters,
                 sort: 'distance',
                 perPage: $data->limit,
+                page: 1,
             ),
         );
     }
