@@ -17,13 +17,14 @@ class StreetParkingFactory extends Factory
 
     public function definition(): array
     {
-        $name = fake()->streetName() . ' Parking';
+        $name = fake()->streetName().' Parking';
+
         return [
             'parking_provider_id' => ParkingProvider::factory(),
             'location_id' => Location::factory(),
 
             'name' => $name,
-            'slug' => Str::slug($name) . '-' . fake()->unique()->numberBetween(1, 999999),
+            'slug' => Str::slug($name).'-'.fake()->unique()->numberBetween(1, 999999),
             'road_name' => fake()->streetName(),
 
             'side' => fake()->randomElement([
@@ -46,14 +47,14 @@ class StreetParkingFactory extends Factory
 
     public function unmanaged(): static
     {
-        return $this->state(fn() => [
+        return $this->state(fn () => [
             'parking_provider_id' => null,
         ]);
     }
 
     public function available(int $spaces = 5): static
     {
-        return $this->state(fn() => [
+        return $this->state(fn () => [
             'available_spaces' => $spaces,
             'availability_status' => AvailabilityStatus::AVAILABLE,
             'availability_updated_at' => now(),
@@ -62,7 +63,7 @@ class StreetParkingFactory extends Factory
 
     public function limited(int $spaces = 2): static
     {
-        return $this->state(fn() => [
+        return $this->state(fn () => [
             'available_spaces' => $spaces,
             'availability_status' => AvailabilityStatus::LIMITED,
             'availability_updated_at' => now(),
@@ -71,7 +72,7 @@ class StreetParkingFactory extends Factory
 
     public function full(): static
     {
-        return $this->state(fn() => [
+        return $this->state(fn () => [
             'available_spaces' => 0,
             'availability_status' => AvailabilityStatus::FULL,
             'availability_updated_at' => now(),

@@ -3,9 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ParkingSource;
-use App\Models\ParkingFacility;
-use App\Models\StreetParking;
-use App\Models\User;
+use Database\Factories\OccupancyReportFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -23,7 +21,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 ])]
 class OccupancyReport extends Model
 {
-    /** @use HasFactory<\Database\Factories\OccupancyReportFactory> */
+    /** @use HasFactory<OccupancyReportFactory> */
     use HasFactory;
 
     protected function casts(): array
@@ -55,7 +53,7 @@ class OccupancyReport extends Model
 
     public function forFacility(): static
     {
-        return $this->state(fn() => [
+        return $this->state(fn () => [
             'parking_facility_id' => ParkingFacility::factory(),
             'street_parking_id' => null,
         ]);
@@ -63,7 +61,7 @@ class OccupancyReport extends Model
 
     public function forStreetParking(): static
     {
-        return $this->state(fn() => [
+        return $this->state(fn () => [
             'parking_facility_id' => null,
             'street_parking_id' => StreetParking::factory(),
         ]);

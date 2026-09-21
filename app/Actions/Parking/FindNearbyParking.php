@@ -75,7 +75,7 @@ final class FindNearbyParking
             ->limit($limit)
             ->get()
             ->map(
-                fn(ParkingFacility $parking) => new ParkingSearchResult(
+                fn (ParkingFacility $parking) => new ParkingSearchResult(
                     parking: $parking,
                     type: 'facility',
                     distanceMeters: (float) $parking->distance_meters,
@@ -112,7 +112,7 @@ final class FindNearbyParking
             ->limit($limit)
             ->get()
             ->map(
-                fn(StreetParking $parking) => new ParkingSearchResult(
+                fn (StreetParking $parking) => new ParkingSearchResult(
                     parking: $parking,
                     type: 'street',
                     distanceMeters: (float) $parking->distance_meters,

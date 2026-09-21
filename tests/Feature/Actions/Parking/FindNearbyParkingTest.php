@@ -53,13 +53,13 @@ it('finds facilities and street parking nearby', function () {
 
     expect(
         $results->contains(
-            fn($result) => $result->type === 'facility',
+            fn ($result) => $result->type === 'facility',
         ),
     )->toBeTrue();
 
     expect(
         $results->contains(
-            fn($result) => $result->type === 'street',
+            fn ($result) => $result->type === 'street',
         ),
     )->toBeTrue();
 });

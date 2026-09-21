@@ -5,10 +5,7 @@ namespace App\Models;
 use App\Enums\AvailabilityStatus;
 use App\Enums\ParkingFacilityType;
 use App\Enums\ParkingStatus;
-use App\Models\Location;
-use App\Models\OccupancyReport;
-use App\Models\ParkingArea;
-use App\Models\ParkingProvider;
+use Database\Factories\ParkingFacilitiesFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -33,7 +30,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 ])]
 class ParkingFacility extends Model
 {
-    /** @use HasFactory<\Database\Factories\ParkingFacilitiesFactory> */
+    /** @use HasFactory<ParkingFacilitiesFactory> */
     use HasFactory, SoftDeletes;
 
     protected function casts(): array
@@ -71,7 +68,7 @@ class ParkingFacility extends Model
 
     public function unavailable(): static
     {
-        return $this->state(fn() => [
+        return $this->state(fn () => [
             'availability_status' => 'FULL',
             'available_spaces' => 0,
             'availability_updated_at' => now(),
@@ -80,7 +77,7 @@ class ParkingFacility extends Model
 
     public function available(int $spaces = 20): static
     {
-        return $this->state(fn() => [
+        return $this->state(fn () => [
             'availability_status' => 'AVAILABLE',
             'available_spaces' => $spaces,
             'availability_updated_at' => now(),

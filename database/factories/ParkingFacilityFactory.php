@@ -17,16 +17,16 @@ class ParkingFacilityFactory extends Factory
 
     public function definition(): array
     {
-        $name = fake()->company() . ' Parking';
+        $name = fake()->company().' Parking';
 
         return [
             'parking_provider_id' => ParkingProvider::factory(),
             'location_id' => Location::factory(),
 
             'name' => $name,
-            'slug' => Str::slug($name) . '-' . fake()->unique()->numberBetween(1, 999999),
+            'slug' => Str::slug($name).'-'.fake()->unique()->numberBetween(1, 999999),
 
-            'type' => ParkingFacilityType::PUBLIC ,
+            'type' => ParkingFacilityType::PUBLIC,
             'status' => ParkingStatus::ACTIVE,
 
             'capacity' => fake()->numberBetween(20, 500),
@@ -44,7 +44,7 @@ class ParkingFacilityFactory extends Factory
 
     public function available(int $spaces = 20): static
     {
-        return $this->state(fn() => [
+        return $this->state(fn () => [
             'available_spaces' => $spaces,
             'availability_status' => AvailabilityStatus::AVAILABLE,
             'availability_updated_at' => now(),
@@ -53,7 +53,7 @@ class ParkingFacilityFactory extends Factory
 
     public function limited(int $spaces = 5): static
     {
-        return $this->state(fn() => [
+        return $this->state(fn () => [
             'available_spaces' => $spaces,
             'availability_status' => AvailabilityStatus::LIMITED,
             'availability_updated_at' => now(),
@@ -62,7 +62,7 @@ class ParkingFacilityFactory extends Factory
 
     public function full(): static
     {
-        return $this->state(fn() => [
+        return $this->state(fn () => [
             'available_spaces' => 0,
             'availability_status' => AvailabilityStatus::FULL,
             'availability_updated_at' => now(),
@@ -71,7 +71,7 @@ class ParkingFacilityFactory extends Factory
 
     public function unavailable(): static
     {
-        return $this->state(fn() => [
+        return $this->state(fn () => [
             'status' => ParkingStatus::TEMPORARILY_CLOSED,
             'available_spaces' => null,
             'availability_status' => AvailabilityStatus::UNKNOWN,

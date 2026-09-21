@@ -9,6 +9,5 @@ final readonly class FindNearbyParkingData
         public float $longitude,
         public int $radiusMeters = 2000,
         public int $limit = 50,
-    ) {
-    }
+    ) {}
 }

@@ -33,7 +33,7 @@ class OccupancyReportFactory extends Factory
 
     public function forFacility(): static
     {
-        return $this->state(fn() => [
+        return $this->state(fn () => [
             'parking_facility_id' => ParkingFacility::factory(),
             'street_parking_id' => null,
         ]);
@@ -41,7 +41,7 @@ class OccupancyReportFactory extends Factory
 
     public function forStreetParking(): static
     {
-        return $this->state(fn() => [
+        return $this->state(fn () => [
             'parking_facility_id' => null,
             'street_parking_id' => StreetParking::factory(),
         ]);

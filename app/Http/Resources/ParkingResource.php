@@ -42,8 +42,7 @@ final class ParkingResource extends JsonResource
                 ? [
                     'address_line1' => $parking->location->address_line1,
                     'locality' => $parking->location->locality,
-                    'administrative_area' =>
-                        $parking->location->administrative_area,
+                    'administrative_area' => $parking->location->administrative_area,
                     'postal_code' => $parking->location->postal_code,
                     'country_code' => $parking->location->country_code,
                     'coordinates' => $parking->location->coordinates,

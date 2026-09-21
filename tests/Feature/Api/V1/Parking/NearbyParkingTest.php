@@ -42,9 +42,9 @@ it('returns nearby parking', function () {
     $response = $this
         ->getJson(
             '/api/v1/parking/nearby'
-            . '?latitude=25.5779199'
-            . '&longitude=91.8837004'
-            . '&radius=2000',
+            .'?latitude=25.5779199'
+            .'&longitude=91.8837004'
+            .'&radius=2000',
         )
         ->assertOk()
         ->assertJsonStructure([
@@ -72,9 +72,9 @@ it('returns nearby parking', function () {
     expect(
         $parking->pluck('id'),
     )->toContain(
-            "facility:{$facility->id}",
-            "street:{$streetParking->id}",
-        );
+        "facility:{$facility->id}",
+        "street:{$streetParking->id}",
+    );
 
     $parking->each(function (array $item) {
         expect($item['id'])
