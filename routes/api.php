@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\Parking\NearbyParkingController;
 use App\Http\Controllers\Api\V1\Parking\ParkingDetailController;
+use App\Http\Controllers\Api\V1\Parking\ParkingIndexController;
 use App\Http\Controllers\Api\V1\Parking\ReportParkingAvailabilityController;
 use Illuminate\Support\Facades\Route;
 
@@ -35,6 +36,11 @@ Route::prefix('v1')->group(function () {
             ReportParkingAvailabilityController::class,
         );
     });
+
+    Route::get(
+        '/parking',
+        ParkingIndexController::class,
+    );
 
     Route::get(
         '/parking/nearby',
