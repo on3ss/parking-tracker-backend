@@ -8,6 +8,8 @@ use App\Enums\StreetParkingType;
 use App\Models\Location;
 use App\Models\ParkingProvider;
 use App\Models\StreetParking;
+use Clickbar\Magellan\Data\Geometries\LineString;
+use Clickbar\Magellan\Data\Geometries\Point;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -17,65 +19,42 @@ class StreetParkingFactory extends Factory
 
     public function definition(): array
     {
-        $name = fake()->streetName().' Parking';
+        $name = fake()->streetName() . ' Parking';
+
+        $latitude = fake()->latitude(8, 35);
+        $longitude = fake()->longitude(68, 97);
+
+        $delta = 0.00025;
 
         return [
             'parking_provider_id' => ParkingProvider::factory(),
             'location_id' => Location::factory(),
 
             'name' => $name,
-            'slug' => Str::slug($name).'-'.fake()->unique()->numberBetween(1, 999999),
+            'slug' => Str::slug($name) . '-' . fake()->unique()->numberBetween(1, 999999),
+
             'road_name' => fake()->streetName(),
-
-            'side' => fake()->randomElement([
-                'LEFT',
-                'RIGHT',
-            ]),
-
+            'side' => 'RIGHT',
             'parking_type' => StreetParkingType::CURBSIDE,
             'status' => ParkingStatus::ACTIVE,
 
-            'capacity' => fake()->numberBetween(5, 50),
-
+            'capacity' => fake()->numberBetween(10, 50),
             'available_spaces' => null,
             'availability_status' => AvailabilityStatus::UNKNOWN,
             'availability_updated_at' => null,
 
-            'description' => null,
+            'description' => fake()->optional()->sentence(),
+
+            'geometry' => LineString::make([
+                Point::makeGeodetic(
+                    latitude: $latitude - ($delta / 2),
+                    longitude: $longitude - $delta,
+                ),
+                Point::makeGeodetic(
+                    latitude: $latitude + ($delta / 2),
+                    longitude: $longitude + $delta,
+                ),
+            ]),
         ];
-    }
-
-    public function unmanaged(): static
-    {
-        return $this->state(fn () => [
-            'parking_provider_id' => null,
-        ]);
-    }
-
-    public function available(int $spaces = 5): static
-    {
-        return $this->state(fn () => [
-            'available_spaces' => $spaces,
-            'availability_status' => AvailabilityStatus::AVAILABLE,
-            'availability_updated_at' => now(),
-        ]);
-    }
-
-    public function limited(int $spaces = 2): static
-    {
-        return $this->state(fn () => [
-            'available_spaces' => $spaces,
-            'availability_status' => AvailabilityStatus::LIMITED,
-            'availability_updated_at' => now(),
-        ]);
-    }
-
-    public function full(): static
-    {
-        return $this->state(fn () => [
-            'available_spaces' => 0,
-            'availability_status' => AvailabilityStatus::FULL,
-            'availability_updated_at' => now(),
-        ]);
     }
 }
