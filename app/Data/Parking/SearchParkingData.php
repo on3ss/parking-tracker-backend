@@ -13,6 +13,7 @@ final readonly class SearchParkingData
         public ?float $latitude = null,
         public ?float $longitude = null,
         public ?int $radiusMeters = null,
+        public ?string $sort = null,
         public int $perPage = 20,
     ) {
     }

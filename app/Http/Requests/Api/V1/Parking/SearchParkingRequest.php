@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Api\V1\Parking;
 
+use App\Data\Parking\SearchParkingData;
 use App\Enums\AvailabilityStatus;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -16,7 +17,10 @@ final class SearchParkingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'filter.type' => [
+            /*
+             * Application-level query routing.
+             */
+            'type' => [
                 'sometimes',
                 'nullable',
                 Rule::in([
@@ -25,6 +29,9 @@ final class SearchParkingRequest extends FormRequest
                 ]),
             ],
 
+            /*
+             * Spatie Query Builder filters.
+             */
             'filter.availability' => [
                 'sometimes',
                 'nullable',
@@ -38,6 +45,9 @@ final class SearchParkingRequest extends FormRequest
                 'exists:parking_providers,id',
             ],
 
+            /*
+             * Spatial search.
+             */
             'latitude' => [
                 'sometimes',
                 'nullable',
@@ -60,6 +70,25 @@ final class SearchParkingRequest extends FormRequest
                 'max:50000',
             ],
 
+            /*
+             * Application-level sorting.
+             */
+            'sort' => [
+                'sometimes',
+                'nullable',
+                'string',
+                Rule::in([
+                    'distance',
+                    '-distance',
+                    'name',
+                    '-name',
+                    'capacity',
+                    '-capacity',
+                    'available_spaces',
+                    '-available_spaces',
+                ]),
+            ],
+
             'per_page' => [
                 'sometimes',
                 'integer',
@@ -73,7 +102,10 @@ final class SearchParkingRequest extends FormRequest
     {
         $filter = $this->input('filter', []);
 
-        if (is_array($filter) && isset($filter['availability'])) {
+        if (
+            is_array($filter) &&
+            isset($filter['availability'])
+        ) {
             $filter['availability'] = strtoupper(
                 (string) $filter['availability'],
             );
@@ -84,31 +116,38 @@ final class SearchParkingRequest extends FormRequest
         }
     }
 
-    public function data($key = null, $default = null): \App\Data\Parking\SearchParkingData
+    public function data($key = null, $default = null): SearchParkingData
     {
         $filter = $this->input('filter', []);
 
-        $latitude = $this->input('latitude');
-        $longitude = $this->input('longitude');
+        return new SearchParkingData(
+            type: $this->input('type'),
 
-        return new \App\Data\Parking\SearchParkingData(
-            type: $filter['type'] ?? null,
             availability: isset($filter['availability'])
-            ? AvailabilityStatus::from($filter['availability'])
+            ? AvailabilityStatus::from(
+                $filter['availability'],
+            )
             : null,
+
             providerId: isset($filter['provider_id'])
             ? (int) $filter['provider_id']
             : null,
-            latitude: $latitude !== null
-            ? (float) $latitude
+
+            latitude: $this->input('latitude') !== null
+            ? (float) $this->input('latitude')
             : null,
-            longitude: $longitude !== null
-            ? (float) $longitude
+
+            longitude: $this->input('longitude') !== null
+            ? (float) $this->input('longitude')
             : null,
-            radiusMeters: isset($this->radius)
-            ? (int) $this->radius
+
+            radiusMeters: $this->input('radius') !== null
+            ? (int) $this->input('radius')
             : null,
-            perPage: (int) ($this->input('per_page', 20)),
+
+            sort: $this->input('sort'),
+
+            perPage: (int) $this->input('per_page', 20),
         );
     }
 }
