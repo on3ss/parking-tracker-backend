@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Enums\AvailabilityStatus;
+use App\Enums\ParkingFacilityType;
+use App\Enums\ParkingStatus;
 use App\Models\Location;
 use App\Models\OccupancyReport;
 use App\Models\ParkingArea;
@@ -36,6 +39,10 @@ class ParkingFacility extends Model
     protected function casts(): array
     {
         return [
+            'type' => ParkingFacilityType::class,
+            'status' => ParkingStatus::class,
+            'availability_status' => AvailabilityStatus::class,
+
             'capacity' => 'integer',
             'available_spaces' => 'integer',
             'availability_updated_at' => 'datetime',
@@ -60,5 +67,23 @@ class ParkingFacility extends Model
     public function occupancyReports(): HasMany
     {
         return $this->hasMany(OccupancyReport::class);
+    }
+
+    public function unavailable(): static
+    {
+        return $this->state(fn() => [
+            'availability_status' => 'FULL',
+            'available_spaces' => 0,
+            'availability_updated_at' => now(),
+        ]);
+    }
+
+    public function available(int $spaces = 20): static
+    {
+        return $this->state(fn() => [
+            'availability_status' => 'AVAILABLE',
+            'available_spaces' => $spaces,
+            'availability_updated_at' => now(),
+        ]);
     }
 }

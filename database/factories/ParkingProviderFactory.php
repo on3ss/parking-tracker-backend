@@ -2,23 +2,29 @@
 
 namespace Database\Factories;
 
+use App\Enums\ParkingProviderType;
 use App\Models\ParkingProvider;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends Factory<ParkingProvider>
- */
 class ParkingProviderFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
+    protected $model = ParkingProvider::class;
+
     public function definition(): array
     {
+        $name = fake()->company();
+
         return [
-            //
+            'name' => $name,
+            'slug' => fake()->unique()->slug(),
+
+            'type' => fake()->randomElement(
+                ParkingProviderType::cases()
+            ),
+
+            'description' => fake()->optional()->sentence(),
+
+            'is_active' => true,
         ];
     }
 }

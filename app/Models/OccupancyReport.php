@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ParkingSource;
 use App\Models\ParkingFacility;
 use App\Models\StreetParking;
 use App\Models\User;
@@ -28,6 +29,8 @@ class OccupancyReport extends Model
     protected function casts(): array
     {
         return [
+            'source' => ParkingSource::class,
+
             'occupied_spaces' => 'integer',
             'available_spaces' => 'integer',
             'confidence' => 'decimal:4',
@@ -48,5 +51,21 @@ class OccupancyReport extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function forFacility(): static
+    {
+        return $this->state(fn() => [
+            'parking_facility_id' => ParkingFacility::factory(),
+            'street_parking_id' => null,
+        ]);
+    }
+
+    public function forStreetParking(): static
+    {
+        return $this->state(fn() => [
+            'parking_facility_id' => null,
+            'street_parking_id' => StreetParking::factory(),
+        ]);
     }
 }

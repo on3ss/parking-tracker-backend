@@ -2,9 +2,9 @@
 
 namespace App\Enums;
 
-enum ParkingProviderType: string
+enum ParkingFacilityType: string
 {
-    case MUNICIPAL = 'MUNICIPAL';
+    case PUBLIC = 'PUBLIC';
     case PRIVATE = 'PRIVATE';
     case COMMERCIAL = 'COMMERCIAL';
     case HOTEL = 'HOTEL';

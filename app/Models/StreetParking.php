@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use App\Enums\AvailabilityStatus;
+use App\Enums\ParkingStatus;
+use App\Enums\StreetParkingType;
 use App\Models\Location;
 use App\Models\OccupancyReport;
 use App\Models\ParkingProvider;
@@ -16,6 +19,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'parking_provider_id',
     'location_id',
     'name',
+    'slug',
     'road_name',
     'side',
     'parking_type',
@@ -34,6 +38,10 @@ class StreetParking extends Model
     protected function casts(): array
     {
         return [
+            'parking_type' => StreetParkingType::class,
+            'status' => ParkingStatus::class,
+            'availability_status' => AvailabilityStatus::class,
+
             'capacity' => 'integer',
             'available_spaces' => 'integer',
             'availability_updated_at' => 'datetime',
@@ -53,5 +61,23 @@ class StreetParking extends Model
     public function occupancyReports(): HasMany
     {
         return $this->hasMany(OccupancyReport::class);
+    }
+
+    public function available(int $spaces = 5): static
+    {
+        return $this->state(fn() => [
+            'availability_status' => 'AVAILABLE',
+            'available_spaces' => $spaces,
+            'availability_updated_at' => now(),
+        ]);
+    }
+
+    public function full(): static
+    {
+        return $this->state(fn() => [
+            'availability_status' => 'FULL',
+            'available_spaces' => 0,
+            'availability_updated_at' => now(),
+        ]);
     }
 }

@@ -26,6 +26,8 @@ return new class extends Migration {
 
             $table->string('name')->nullable();
 
+            $table->string('slug')->unique();
+
             $table->string('road_name')->nullable();
 
             $table->string('side', 20)
