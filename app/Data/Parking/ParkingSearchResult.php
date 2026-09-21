@@ -11,10 +11,11 @@ final readonly class ParkingSearchResult
         public ParkingFacility|StreetParking $parking,
         public string $type,
         public float $distanceMeters,
-    ) {}
+    ) {
+    }
 
     public function publicId(): string
     {
-        return "{$this->type}:{$this->parking->id}";
+        return ParkingIdentifier::for($this->parking);
     }
 }
