@@ -9,6 +9,7 @@ use App\Models\Location;
 use App\Models\ParkingProvider;
 use App\Models\StreetParking;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 class StreetParkingFactory extends Factory
 {
@@ -16,11 +17,13 @@ class StreetParkingFactory extends Factory
 
     public function definition(): array
     {
+        $name = fake()->streetName() . ' Parking';
         return [
             'parking_provider_id' => ParkingProvider::factory(),
             'location_id' => Location::factory(),
 
-            'name' => null,
+            'name' => $name,
+            'slug' => Str::slug($name) . '-' . fake()->unique()->numberBetween(1, 999999),
             'road_name' => fake()->streetName(),
 
             'side' => fake()->randomElement([
