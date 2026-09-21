@@ -24,6 +24,7 @@ final class ReportParkingAvailabilityController extends Controller
                 confidence: $request->confidence(),
             ),
             source: ParkingSource::USER,
+            userId: auth()->user()->id
         );
 
         // Resolve the current entity again through the public identifier.

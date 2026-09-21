@@ -24,7 +24,7 @@ final class ReportParkingAvailability
         ParkingSource $source = ParkingSource::USER,
         ?int $userId = null,
     ): ParkingFacility|StreetParking {
-        return DB::transaction(function () use ($data, $source, $userId, ) {
+        return DB::transaction(function () use ($data, $source, $userId) {
             /** @var ParkingFacility|StreetParking $parking */
             $parking = $this->resolveParkingIdentifier->execute(
                 $data->parkingIdentifier,
