@@ -38,8 +38,8 @@ final class AuthController extends Controller
         return response()->json([
             'data' => [
                 'user' => new UserResource($user),
-                'token' => $token
-            ]
+                'token' => $token,
+            ],
         ], 201);
     }
 

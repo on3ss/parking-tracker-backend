@@ -16,8 +16,8 @@ final class AuthenticateUser
             ->first();
 
         if (
-            !$user ||
-            !Hash::check($data->password, $user->password)
+            ! $user ||
+            ! Hash::check($data->password, $user->password)
         ) {
             throw ValidationException::withMessages([
                 'email' => 'The provided credentials are incorrect.',
