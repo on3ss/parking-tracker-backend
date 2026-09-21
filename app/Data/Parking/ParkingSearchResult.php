@@ -13,4 +13,9 @@ final readonly class ParkingSearchResult
         public float $distanceMeters,
     ) {
     }
+
+    public function publicId(): string
+    {
+        return "{$this->type}:{$this->parking->id}";
+    }
 }
