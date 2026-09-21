@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Location;
 use App\Models\OccupancyReport;
+use App\Models\ParkingArea;
 use App\Models\ParkingProvider;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,19 +17,20 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'parking_provider_id',
     'location_id',
     'name',
-    'road_name',
-    'side',
-    'parking_type',
+    'slug',
+    'type',
     'status',
     'capacity',
+    'opening_time',
+    'closing_time',
     'available_spaces',
     'availability_status',
     'availability_updated_at',
     'description',
 ])]
-class StreetParking extends Model
+class ParkingFacility extends Model
 {
-    /** @use HasFactory<\Database\Factories\StreetParkingFactory> */
+    /** @use HasFactory<\Database\Factories\ParkingFacilitiesFactory> */
     use HasFactory, SoftDeletes;
 
     protected function casts(): array
@@ -48,6 +50,11 @@ class StreetParking extends Model
     public function location(): BelongsTo
     {
         return $this->belongsTo(Location::class);
+    }
+
+    public function areas(): HasMany
+    {
+        return $this->hasMany(ParkingArea::class);
     }
 
     public function occupancyReports(): HasMany
