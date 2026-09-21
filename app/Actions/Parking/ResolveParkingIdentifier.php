@@ -24,7 +24,7 @@ final class ResolveParkingIdentifier
     private function parse(string $identifier): array
     {
         if (
-            !preg_match(
+            ! preg_match(
                 '/^(facility|street):([1-9][0-9]*)$/',
                 $identifier,
                 $matches,

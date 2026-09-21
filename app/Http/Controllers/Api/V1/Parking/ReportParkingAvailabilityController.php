@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1\Parking;
 
 use App\Actions\Parking\ReportParkingAvailability;
+use App\Actions\Parking\ResolveParkingIdentifier;
 use App\Data\Parking\ReportParkingAvailabilityData;
 use App\Enums\ParkingSource;
 use App\Http\Controllers\Controller;
@@ -29,7 +30,7 @@ final class ReportParkingAvailabilityController extends Controller
 
         // Resolve the current entity again through the public identifier.
         $parkingModel = app(
-            \App\Actions\Parking\ResolveParkingIdentifier::class,
+            ResolveParkingIdentifier::class,
         )->execute($parking);
 
         $parkingModel->load([

@@ -49,6 +49,4 @@ final class ParkingDetailResource extends JsonResource
             ],
         ];
     }
-
-
 }

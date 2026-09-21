@@ -2,7 +2,6 @@
 
 namespace App\Actions\Parking;
 
-use App\Actions\Parking\ResolveParkingIdentifier;
 use App\Data\Parking\ReportParkingAvailabilityData;
 use App\Enums\AvailabilityStatus;
 use App\Enums\ParkingSource;
@@ -16,8 +15,7 @@ final class ReportParkingAvailability
 {
     public function __construct(
         private ResolveParkingIdentifier $resolveParkingIdentifier,
-    ) {
-    }
+    ) {}
 
     public function execute(
         ReportParkingAvailabilityData $data,
