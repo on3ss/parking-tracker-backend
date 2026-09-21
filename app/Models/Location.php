@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\ParkingFacility;
 use App\Models\StreetParking;
+use Clickbar\Magellan\Data\Geometries\Point;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,6 +16,13 @@ class Location extends Model
 {
     /** @use HasFactory<\Database\Factories\LocationFactory> */
     use HasFactory, SoftDeletes;
+
+    protected function casts(): array
+    {
+        return [
+            'coordinates' => Point::class,
+        ];
+    }
 
     public function parkingFacility(): HasOne
     {

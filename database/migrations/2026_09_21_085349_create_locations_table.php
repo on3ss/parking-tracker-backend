@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('locations', function (Blueprint $table) {
@@ -23,24 +20,24 @@ return new class extends Migration {
 
             $table->char('country_code', 2)->default('IN');
 
+            $table->geography(
+                'coordinates',
+                subtype: 'POINT',
+                srid: 4326,
+            );
+
             $table->softDeletes();
             $table->timestamps();
+
+            $table->index('locality');
         });
 
         DB::statement(
-            'ALTER TABLE locations
-             ADD COLUMN coordinates geography(Point, 4326)'
-        );
-
-        DB::statement(
             'CREATE INDEX locations_coordinates_gist_index
-             ON locations USING GIST (coordinates)'
+            ON locations USING GIST (coordinates)'
         );
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('locations');

@@ -25,13 +25,10 @@ return new class extends Migration {
                 ->nullOnDelete();
 
             $table->string('name')->nullable();
-
             $table->string('slug')->unique();
 
             $table->string('road_name')->nullable();
-
-            $table->string('side', 20)
-                ->nullable();
+            $table->string('side', 20)->nullable();
 
             $table->string('parking_type', 30)
                 ->default('CURBSIDE');
@@ -50,6 +47,12 @@ return new class extends Migration {
 
             $table->text('description')->nullable();
 
+            $table->geometry(
+                'geometry',
+                subtype: 'LINESTRING',
+                srid: 4326,
+            );
+
             $table->softDeletes();
             $table->timestamps();
 
@@ -58,18 +61,9 @@ return new class extends Migration {
             $table->index('availability_updated_at');
         });
 
-        /*
-         * A street parking location is potentially a road segment,
-         * not just a point.
-         */
-        DB::statement(
-            'ALTER TABLE street_parkings
-             ADD COLUMN geometry geometry(LineString, 4326)'
-        );
-
         DB::statement(
             'CREATE INDEX street_parkings_geometry_gist_index
-             ON street_parkings USING GIST (geometry)'
+            ON street_parkings USING GIST (geometry)'
         );
     }
 

@@ -8,6 +8,7 @@ use App\Enums\StreetParkingType;
 use App\Models\Location;
 use App\Models\OccupancyReport;
 use App\Models\ParkingProvider;
+use Clickbar\Magellan\Data\Geometries\LineString;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -45,6 +46,8 @@ class StreetParking extends Model
             'capacity' => 'integer',
             'available_spaces' => 'integer',
             'availability_updated_at' => 'datetime',
+
+            'geometry' => LineString::class,
         ];
     }
 

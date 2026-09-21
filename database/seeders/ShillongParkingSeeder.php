@@ -14,8 +14,9 @@ use App\Models\ParkingArea;
 use App\Models\ParkingFacility;
 use App\Models\ParkingProvider;
 use App\Models\StreetParking;
+use Clickbar\Magellan\Data\Geometries\LineString;
+use Clickbar\Magellan\Data\Geometries\Point;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class ShillongParkingSeeder extends Seeder
 {
@@ -220,7 +221,7 @@ class ShillongParkingSeeder extends Seeder
         float $latitude,
         float $longitude,
     ): Location {
-        $location = Location::updateOrCreate(
+        return Location::updateOrCreate(
             [
                 'address_line1' => $addressLine1,
                 'locality' => $locality,
@@ -230,24 +231,13 @@ class ShillongParkingSeeder extends Seeder
                 'administrative_area' => 'Meghalaya',
                 'postal_code' => $postalCode,
                 'country_code' => 'IN',
+
+                'coordinates' => Point::makeGeodetic(
+                    latitude: $latitude,
+                    longitude: $longitude,
+                ),
             ],
         );
-
-        DB::statement(
-            'UPDATE locations
-             SET coordinates = ST_SetSRID(
-                 ST_MakePoint(?, ?),
-                 4326
-             )::geography
-             WHERE id = ?',
-            [
-                $longitude,
-                $latitude,
-                $location->id,
-            ],
-        );
-
-        return $location;
     }
 
     private function area(
@@ -338,70 +328,56 @@ class ShillongParkingSeeder extends Seeder
                 'availability_updated_at' => now(),
 
                 'description' => 'Demo street parking for local development.',
+
+                'geometry' => $this->streetGeometry(
+                    latitude: $latitude,
+                    longitude: $longitude,
+                ),
             ],
         );
 
-        /*
-         * Small deterministic demo segment.
-         * This is deliberately approximate development geometry,
-         * not a surveyed/legal parking boundary.
-         */
-        $this->setStreetGeometry(
-            parking: $parking,
-            latitude: $latitude,
-            longitude: $longitude,
+        OccupancyReport::updateOrCreate(
+            [
+                'street_parking_id' => $parking->id,
+                'source' => ParkingSource::SYSTEM,
+            ],
+            [
+                'parking_facility_id' => null,
+                'user_id' => null,
+
+                'occupied_spaces' => $capacity - $available,
+                'available_spaces' => $available,
+
+                'confidence' => 0.9000,
+
+                'reported_at' => now(),
+            ],
         );
-
-        OccupancyReport::create([
-            'parking_facility_id' => null,
-            'street_parking_id' => $parking->id,
-
-            'user_id' => null,
-
-            'source' => ParkingSource::SYSTEM,
-
-            'occupied_spaces' => $capacity - $available,
-            'available_spaces' => $available,
-
-            'confidence' => 0.9000,
-
-            'reported_at' => now(),
-        ]);
 
         return $parking;
     }
 
-    private function setStreetGeometry(
-        StreetParking $parking,
+    private function streetGeometry(
         float $latitude,
         float $longitude,
-    ): void {
+    ): LineString {
         /*
-         * Rough 40–60m demo segment.
+         * Rough 40–60m development/demo segment.
          *
-         * Geometry is LineString in EPSG:4326.
+         * This is deliberately approximate and is not a
+         * surveyed or legal parking boundary.
          */
         $delta = 0.00025;
 
-        DB::statement(
-            'UPDATE street_parkings
-             SET geometry = ST_SetSRID(
-                 ST_MakeLine(
-                     ST_MakePoint(?, ?),
-                     ST_MakePoint(?, ?)
-                 ),
-                 4326
-             )
-             WHERE id = ?',
-            [
-                $longitude - $delta,
-                $latitude - ($delta / 2),
-
-                $longitude + $delta,
-                $latitude + ($delta / 2),
-
-                $parking->id,
-            ],
-        );
+        return LineString::make([
+            Point::makeGeodetic(
+                latitude: $latitude - ($delta / 2),
+                longitude: $longitude - $delta,
+            ),
+            Point::makeGeodetic(
+                latitude: $latitude + ($delta / 2),
+                longitude: $longitude + $delta,
+            ),
+        ]);
     }
 }
