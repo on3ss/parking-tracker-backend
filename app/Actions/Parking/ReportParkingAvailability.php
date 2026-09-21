@@ -127,12 +127,12 @@ final class ReportParkingAvailability
         int $capacity,
         int $availableSpaces,
     ): AvailabilityStatus {
-        if ($availableSpaces === 0) {
-            return AvailabilityStatus::FULL;
-        }
-
         if ($capacity === 0) {
             return AvailabilityStatus::UNKNOWN;
+        }
+
+        if ($availableSpaces === 0) {
+            return AvailabilityStatus::FULL;
         }
 
         return $availableSpaces / $capacity <= 0.20
