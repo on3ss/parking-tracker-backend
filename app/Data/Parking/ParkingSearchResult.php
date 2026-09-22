@@ -11,8 +11,7 @@ final readonly class ParkingSearchResult
     public function __construct(
         public ParkingFacility|StreetParking $parking,
         public ?float $distanceMeters,
-    ) {
-    }
+    ) {}
 
     public function publicId(): string
     {

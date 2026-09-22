@@ -2,8 +2,8 @@
 
 namespace App\Http\Resources;
 
-use App\Support\Parking\ParkingIdentifier;
 use App\Models\Favorite;
+use App\Support\Parking\ParkingIdentifier;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 

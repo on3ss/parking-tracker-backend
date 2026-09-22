@@ -2,9 +2,9 @@
 
 namespace App\Http\Resources;
 
-use App\Support\Parking\ParkingIdentifier;
 use App\Models\ParkingFacility;
 use App\Models\StreetParking;
+use App\Support\Parking\ParkingIdentifier;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 

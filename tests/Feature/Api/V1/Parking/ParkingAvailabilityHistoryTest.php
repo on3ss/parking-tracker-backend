@@ -160,12 +160,12 @@ it('returns 404 for an invalid parking identifier', function (string $identifier
         )
         ->assertNotFound();
 })->with([
-            'invalid:1',
-            'facility:0',
-            'facility:abc',
-            'street:abc',
-            '123',
-        ]);
+    'invalid:1',
+    'facility:0',
+    'facility:abc',
+    'street:abc',
+    '123',
+]);
 
 it('returns 404 when the parking entity does not exist', function () {
     $this

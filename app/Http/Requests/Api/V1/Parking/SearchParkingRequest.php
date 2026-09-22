@@ -163,8 +163,8 @@ final class SearchParkingRequest extends FormRequest
             if (
                 $this->filled('radius') &&
                 (
-                    !$this->filled('latitude') ||
-                    !$this->filled('longitude')
+                    ! $this->filled('latitude') ||
+                    ! $this->filled('longitude')
                 )
             ) {
                 $validator->errors()->add(

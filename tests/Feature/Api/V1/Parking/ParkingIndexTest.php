@@ -96,8 +96,8 @@ it('filters by availability and provider', function () {
 
     $this
         ->getJson(
-            "/api/v1/parking?" .
-            "filter[availability]=AVAILABLE&" .
+            '/api/v1/parking?'.
+            'filter[availability]=AVAILABLE&'.
             "filter[provider_id]={$provider->id}",
         )
         ->assertOk()
@@ -275,8 +275,8 @@ it('sorts parking by distance when coordinates are provided', function () {
 
     $this
         ->getJson(
-            '/api/v1/parking?' .
-            'latitude=25.5779&' .
+            '/api/v1/parking?'.
+            'latitude=25.5779&'.
             'longitude=91.8837',
         )
         ->assertOk()
@@ -317,9 +317,9 @@ it('sorts facilities and street parking by distance', function () {
 
     $this
         ->getJson(
-            '/api/v1/parking?' .
-            'latitude=25.5779&' .
-            'longitude=91.8837&' .
+            '/api/v1/parking?'.
+            'latitude=25.5779&'.
+            'longitude=91.8837&'.
             'sort=distance',
         )
         ->assertOk()
@@ -361,9 +361,9 @@ it('sorts facilities and street parking by distance descending', function () {
 
     $this
         ->getJson(
-            '/api/v1/parking?' .
-            'latitude=25.5779&' .
-            'longitude=91.8837&' .
+            '/api/v1/parking?'.
+            'latitude=25.5779&'.
+            'longitude=91.8837&'.
             'sort=-distance',
         )
         ->assertOk()
@@ -427,9 +427,9 @@ it('filters facilities and street parking by radius', function () {
 
     $this
         ->getJson(
-            '/api/v1/parking?' .
-            'latitude=25.5779&' .
-            'longitude=91.8837&' .
+            '/api/v1/parking?'.
+            'latitude=25.5779&'.
+            'longitude=91.8837&'.
             'radius=2000',
         )
         ->assertOk()
@@ -536,16 +536,16 @@ it('rejects longitude above the valid range', function () {
 it('accepts latitude and longitude boundary values', function () {
     $this
         ->getJson(
-            '/api/v1/parking?' .
-            'latitude=90&' .
+            '/api/v1/parking?'.
+            'latitude=90&'.
             'longitude=180',
         )
         ->assertOk();
 
     $this
         ->getJson(
-            '/api/v1/parking?' .
-            'latitude=-90&' .
+            '/api/v1/parking?'.
+            'latitude=-90&'.
             'longitude=-180',
         )
         ->assertOk();
@@ -596,9 +596,9 @@ it('accepts the maximum per page', function () {
 it('rejects a zero radius', function () {
     $this
         ->getJson(
-            '/api/v1/parking?' .
-            'latitude=25.5779&' .
-            'longitude=91.8837&' .
+            '/api/v1/parking?'.
+            'latitude=25.5779&'.
+            'longitude=91.8837&'.
             'radius=0',
         )
         ->assertUnprocessable()
@@ -610,9 +610,9 @@ it('rejects a zero radius', function () {
 it('rejects a radius above the maximum', function () {
     $this
         ->getJson(
-            '/api/v1/parking?' .
-            'latitude=25.5779&' .
-            'longitude=91.8837&' .
+            '/api/v1/parking?'.
+            'latitude=25.5779&'.
+            'longitude=91.8837&'.
             'radius=50001',
         )
         ->assertUnprocessable()
@@ -624,9 +624,9 @@ it('rejects a radius above the maximum', function () {
 it('accepts the maximum radius', function () {
     $this
         ->getJson(
-            '/api/v1/parking?' .
-            'latitude=25.5779&' .
-            'longitude=91.8837&' .
+            '/api/v1/parking?'.
+            'latitude=25.5779&'.
+            'longitude=91.8837&'.
             'radius=50000',
         )
         ->assertOk();
@@ -818,9 +818,9 @@ it('filters parking by radius', function () {
 
     $this
         ->getJson(
-            '/api/v1/parking?' .
-            'latitude=25.5779&' .
-            'longitude=91.8837&' .
+            '/api/v1/parking?'.
+            'latitude=25.5779&'.
+            'longitude=91.8837&'.
             'radius=2000',
         )
         ->assertOk()

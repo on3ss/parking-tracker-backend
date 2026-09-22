@@ -11,7 +11,6 @@ use Clickbar\Magellan\Database\Expressions\AsGeometry;
 use Clickbar\Magellan\Database\PostgisFunctions\ST;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
-use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
 final class SearchParking
@@ -56,25 +55,12 @@ final class SearchParking
         SearchParkingData $data,
         ?Point $point,
     ): Collection {
-        $query = QueryBuilder::for(
-            ParkingFacility::query(),
-        )
+        $query = QueryBuilder::for(ParkingFacility::class)
             ->where('status', 'ACTIVE')
             ->with([
                 'provider',
                 'location',
-            ])
-            ->allowedFilters(
-                AllowedFilter::exact(
-                    'availability',
-                    'availability_status',
-                ),
-
-                AllowedFilter::exact(
-                    'provider_id',
-                    'parking_provider_id',
-                ),
-            );
+            ]);
 
         $this->applyFilters(
             $query,
@@ -113,11 +99,11 @@ final class SearchParking
         return $query
             ->get()
             ->map(
-                fn(ParkingFacility $parking) => new ParkingSearchResult(
+                fn (ParkingFacility $parking) => new ParkingSearchResult(
                     parking: $parking,
                     distanceMeters: isset(
-                    $parking->distance_meters,
-                )
+                        $parking->distance_meters,
+                    )
                     ? (float) $parking->distance_meters
                     : null,
                 ),
@@ -128,25 +114,12 @@ final class SearchParking
         SearchParkingData $data,
         ?Point $point,
     ): Collection {
-        $query = QueryBuilder::for(
-            StreetParking::query(),
-        )
+        $query = QueryBuilder::for(StreetParking::class)
             ->where('status', 'ACTIVE')
             ->with([
                 'provider',
                 'location',
-            ])
-            ->allowedFilters(
-                AllowedFilter::exact(
-                    'availability',
-                    'availability_status',
-                ),
-
-                AllowedFilter::exact(
-                    'provider_id',
-                    'parking_provider_id',
-                ),
-            );
+            ]);
 
         $this->applyFilters(
             $query,
@@ -179,11 +152,11 @@ final class SearchParking
         return $query
             ->get()
             ->map(
-                fn(StreetParking $parking) => new ParkingSearchResult(
+                fn (StreetParking $parking) => new ParkingSearchResult(
                     parking: $parking,
                     distanceMeters: isset(
-                    $parking->distance_meters,
-                )
+                        $parking->distance_meters,
+                    )
                     ? (float) $parking->distance_meters
                     : null,
                 ),
@@ -238,7 +211,7 @@ final class SearchParking
         ) {
             return $results
                 ->sortBy(
-                    fn(ParkingSearchResult $result) => $result->distanceMeters,
+                    fn (ParkingSearchResult $result) => $result->distanceMeters,
                     SORT_NUMERIC,
                 )
                 ->values();
@@ -247,7 +220,7 @@ final class SearchParking
         if ($sort === null) {
             return $results
                 ->sortBy(
-                    fn(ParkingSearchResult $result) => $result->parking->name,
+                    fn (ParkingSearchResult $result) => $result->parking->name,
                     SORT_NATURAL,
                 )
                 ->values();
@@ -265,25 +238,25 @@ final class SearchParking
 
         $sorted = match ($field) {
             'distance' => $results->sortBy(
-                fn(ParkingSearchResult $result) => $result->distanceMeters,
+                fn (ParkingSearchResult $result) => $result->distanceMeters,
                 SORT_NUMERIC,
                 $descending,
             ),
 
             'name' => $results->sortBy(
-                fn(ParkingSearchResult $result) => $result->parking->name,
+                fn (ParkingSearchResult $result) => $result->parking->name,
                 SORT_NATURAL,
                 $descending,
             ),
 
             'capacity' => $results->sortBy(
-                fn(ParkingSearchResult $result) => $result->parking->capacity,
+                fn (ParkingSearchResult $result) => $result->parking->capacity,
                 SORT_NUMERIC,
                 $descending,
             ),
 
             'available_spaces' => $results->sortBy(
-                fn(ParkingSearchResult $result) => $result->parking->available_spaces,
+                fn (ParkingSearchResult $result) => $result->parking->available_spaces,
                 SORT_NUMERIC,
                 $descending,
             ),

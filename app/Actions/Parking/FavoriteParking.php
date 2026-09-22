@@ -2,16 +2,14 @@
 
 namespace App\Actions\Parking;
 
-use App\Actions\Parking\ResolveParkingIdentifier;
-use App\Support\Parking\ParkingIdentifier;
 use App\Models\Favorite;
+use App\Support\Parking\ParkingIdentifier;
 
 final class FavoriteParking
 {
     public function __construct(
         private ResolveParkingIdentifier $resolveParkingIdentifier,
-    ) {
-    }
+    ) {}
 
     public function execute(
         int $userId,
