@@ -132,6 +132,42 @@ it('paginates across facilities and street parking globally', function () {
         ->assertJsonPath('meta.current_page', 2);
 });
 
+it('sorts merged parking results by name', function () {
+    $facility = ParkingFacility::factory()->create([
+        'status' => 'ACTIVE',
+        'name' => 'Charlie Parking',
+    ]);
+
+    $street = StreetParking::factory()->create([
+        'status' => 'ACTIVE',
+        'name' => 'Alpha Street Parking',
+    ]);
+
+    $this
+        ->getJson('/api/v1/parking?sort=name')
+        ->assertOk()
+        ->assertJsonPath('data.0.id', "street:{$street->id}")
+        ->assertJsonPath('data.1.id', "facility:{$facility->id}");
+});
+
+it('sorts merged parking results by name descending', function () {
+    $facility = ParkingFacility::factory()->create([
+        'status' => 'ACTIVE',
+        'name' => 'Charlie Parking',
+    ]);
+
+    $street = StreetParking::factory()->create([
+        'status' => 'ACTIVE',
+        'name' => 'Alpha Street Parking',
+    ]);
+
+    $this
+        ->getJson('/api/v1/parking?sort=-name')
+        ->assertOk()
+        ->assertJsonPath('data.0.id', "facility:{$facility->id}")
+        ->assertJsonPath('data.1.id', "street:{$street->id}");
+});
+
 it('filters by parking type', function () {
     $facility = ParkingFacility::factory()->create([
         'status' => 'ACTIVE',
