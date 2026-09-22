@@ -34,6 +34,43 @@ it('returns facilities and street parking', function () {
         ]);
 });
 
+it('excludes inactive parking', function () {
+    $activeFacility = ParkingFacility::factory()->create([
+        'status' => 'ACTIVE',
+    ]);
+
+    ParkingFacility::factory()->create([
+        'status' => 'INACTIVE',
+    ]);
+
+    $activeStreet = StreetParking::factory()->create([
+        'status' => 'ACTIVE',
+    ]);
+
+    StreetParking::factory()->create([
+        'status' => 'INACTIVE',
+    ]);
+
+    $this
+        ->getJson('/api/v1/parking')
+        ->assertOk()
+        ->assertJsonCount(2, 'data')
+        ->assertJsonFragment([
+            'id' => "facility:{$activeFacility->id}",
+        ])
+        ->assertJsonFragment([
+            'id' => "street:{$activeStreet->id}",
+        ]);
+});
+
+it('returns an empty result when no parking matches', function () {
+    $this
+        ->getJson('/api/v1/parking')
+        ->assertOk()
+        ->assertJsonCount(0, 'data')
+        ->assertJsonPath('meta.total', 0);
+});
+
 it('filters by parking type', function () {
     $facility = ParkingFacility::factory()->create([
         'status' => 'ACTIVE',
@@ -169,9 +206,9 @@ it('filters parking by radius', function () {
 
     $this
         ->getJson(
-            '/api/v1/parking?'.
-            'latitude=25.5779&'.
-            'longitude=91.8837&'.
+            '/api/v1/parking?' .
+            'latitude=25.5779&' .
+            'longitude=91.8837&' .
             'radius=2000',
         )
         ->assertOk()
