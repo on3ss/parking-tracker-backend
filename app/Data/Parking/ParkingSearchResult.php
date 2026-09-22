@@ -10,7 +10,6 @@ final readonly class ParkingSearchResult
 {
     public function __construct(
         public ParkingFacility|StreetParking $parking,
-        public string $type,
         public ?float $distanceMeters,
     ) {
     }
@@ -18,5 +17,10 @@ final readonly class ParkingSearchResult
     public function publicId(): string
     {
         return ParkingIdentifier::for($this->parking);
+    }
+
+    public function type(): string
+    {
+        return ParkingIdentifier::type($this->parking);
     }
 }

@@ -18,7 +18,7 @@ final class ParkingResource extends JsonResource
         return [
             'id' => $result->publicId(),
 
-            'type' => $result->type,
+            'type' => $result->type(),
 
             'name' => $parking->name,
 
