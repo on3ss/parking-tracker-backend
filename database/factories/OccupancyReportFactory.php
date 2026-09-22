@@ -17,34 +17,51 @@ class OccupancyReportFactory extends Factory
         return [
             'parking_facility_id' => null,
             'street_parking_id' => null,
-
             'user_id' => null,
 
             'source' => ParkingSource::USER,
 
-            'occupied_spaces' => 0,
-            'available_spaces' => 0,
+            'occupied_spaces' => null,
 
-            'confidence' => 1.0000,
+            'available_spaces' => fake()->numberBetween(
+                0,
+                20,
+            ),
+
+            'confidence' => fake()->randomFloat(
+                4,
+                0.5,
+                1,
+            ),
 
             'reported_at' => now(),
         ];
     }
 
-    public function forFacility(): static
-    {
-        return $this->state(fn () => [
-            'parking_facility_id' => ParkingFacility::factory(),
-            'street_parking_id' => null,
-        ]);
+    public function forFacility(
+        ?ParkingFacility $facility = null,
+    ): static {
+        return $this->state(function () use ($facility) {
+            $facility ??= ParkingFacility::factory()->create();
+
+            return [
+                'parking_facility_id' => $facility->id,
+                'street_parking_id' => null,
+            ];
+        });
     }
 
-    public function forStreetParking(): static
-    {
-        return $this->state(fn () => [
-            'parking_facility_id' => null,
-            'street_parking_id' => StreetParking::factory(),
-        ]);
+    public function forStreetParking(
+        ?StreetParking $streetParking = null,
+    ): static {
+        return $this->state(function () use ($streetParking) {
+            $streetParking ??= StreetParking::factory()->create();
+
+            return [
+                'parking_facility_id' => null,
+                'street_parking_id' => $streetParking->id,
+            ];
+        });
     }
 
     public function fromOperator(): static

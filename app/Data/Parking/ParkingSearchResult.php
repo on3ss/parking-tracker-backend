@@ -11,8 +11,7 @@ final readonly class ParkingSearchResult
         public ParkingFacility|StreetParking $parking,
         public string $type,
         public ?float $distanceMeters,
-    ) {
-    }
+    ) {}
 
     public function publicId(): string
     {

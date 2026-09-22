@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\Parking\NearbyParkingController;
+use App\Http\Controllers\Api\V1\Parking\ParkingAvailabilityHistoryController;
 use App\Http\Controllers\Api\V1\Parking\ParkingDetailController;
 use App\Http\Controllers\Api\V1\Parking\ParkingIndexController;
 use App\Http\Controllers\Api\V1\Parking\ReportParkingAvailabilityController;
@@ -35,7 +36,13 @@ Route::prefix('v1')->group(function () {
             '/parking/{parking}/availability',
             ReportParkingAvailabilityController::class,
         );
+
     });
+
+    Route::get(
+        '/parking/{parking}/availability/history',
+        ParkingAvailabilityHistoryController::class,
+    );
 
     Route::get(
         '/parking',

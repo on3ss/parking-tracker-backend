@@ -16,6 +16,5 @@ final readonly class SearchParkingData
         public ?string $sort = null,
         public int $perPage = 20,
         public int $page = 1,
-    ) {
-    }
+    ) {}
 }

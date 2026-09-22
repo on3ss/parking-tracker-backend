@@ -3,6 +3,7 @@
 use App\Enums\AvailabilityStatus;
 use App\Models\Location;
 use App\Models\ParkingFacility;
+use App\Models\ParkingProvider;
 use App\Models\StreetParking;
 use Clickbar\Magellan\Data\Geometries\Point;
 
@@ -95,7 +96,7 @@ it('filters by availability', function () {
 });
 
 it('filters by provider', function () {
-    $provider = \App\Models\ParkingProvider::factory()->create();
+    $provider = ParkingProvider::factory()->create();
 
     $parking = ParkingFacility::factory()->create([
         'status' => 'ACTIVE',
@@ -168,9 +169,9 @@ it('filters parking by radius', function () {
 
     $this
         ->getJson(
-            '/api/v1/parking?' .
-            'latitude=25.5779&' .
-            'longitude=91.8837&' .
+            '/api/v1/parking?'.
+            'latitude=25.5779&'.
+            'longitude=91.8837&'.
             'radius=2000',
         )
         ->assertOk()

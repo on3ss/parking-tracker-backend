@@ -10,8 +10,7 @@ final class FindNearbyParking
 {
     public function __construct(
         private SearchParking $searchParking,
-    ) {
-    }
+    ) {}
 
     public function execute(
         FindNearbyParkingData $data,

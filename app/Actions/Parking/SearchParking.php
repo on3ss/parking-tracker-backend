@@ -113,16 +113,15 @@ final class SearchParking
         return $query
             ->get()
             ->map(
-                fn(ParkingFacility $parking) =>
-                    new ParkingSearchResult(
-                        parking: $parking,
-                        type: 'facility',
-                        distanceMeters: isset(
+                fn (ParkingFacility $parking) => new ParkingSearchResult(
+                    parking: $parking,
+                    type: 'facility',
+                    distanceMeters: isset(
                         $parking->distance_meters,
                     )
-                        ? (float) $parking->distance_meters
-                        : null,
-                    ),
+                    ? (float) $parking->distance_meters
+                    : null,
+                ),
             );
     }
 
@@ -181,16 +180,15 @@ final class SearchParking
         return $query
             ->get()
             ->map(
-                fn(StreetParking $parking) =>
-                    new ParkingSearchResult(
-                        parking: $parking,
-                        type: 'street',
-                        distanceMeters: isset(
+                fn (StreetParking $parking) => new ParkingSearchResult(
+                    parking: $parking,
+                    type: 'street',
+                    distanceMeters: isset(
                         $parking->distance_meters,
                     )
-                        ? (float) $parking->distance_meters
-                        : null,
-                    ),
+                    ? (float) $parking->distance_meters
+                    : null,
+                ),
             );
     }
 
@@ -242,8 +240,7 @@ final class SearchParking
         ) {
             return $results
                 ->sortBy(
-                    fn(ParkingSearchResult $result) =>
-                        $result->distanceMeters,
+                    fn (ParkingSearchResult $result) => $result->distanceMeters,
                     SORT_NUMERIC,
                 )
                 ->values();
@@ -252,8 +249,7 @@ final class SearchParking
         if ($sort === null) {
             return $results
                 ->sortBy(
-                    fn(ParkingSearchResult $result) =>
-                        $result->parking->name,
+                    fn (ParkingSearchResult $result) => $result->parking->name,
                     SORT_NATURAL,
                 )
                 ->values();
@@ -271,29 +267,25 @@ final class SearchParking
 
         $sorted = match ($field) {
             'distance' => $results->sortBy(
-                fn(ParkingSearchResult $result) =>
-                    $result->distanceMeters,
+                fn (ParkingSearchResult $result) => $result->distanceMeters,
                 SORT_NUMERIC,
                 $descending,
             ),
 
             'name' => $results->sortBy(
-                fn(ParkingSearchResult $result) =>
-                    $result->parking->name,
+                fn (ParkingSearchResult $result) => $result->parking->name,
                 SORT_NATURAL,
                 $descending,
             ),
 
             'capacity' => $results->sortBy(
-                fn(ParkingSearchResult $result) =>
-                    $result->parking->capacity,
+                fn (ParkingSearchResult $result) => $result->parking->capacity,
                 SORT_NUMERIC,
                 $descending,
             ),
 
             'available_spaces' => $results->sortBy(
-                fn(ParkingSearchResult $result) =>
-                    $result->parking->available_spaces,
+                fn (ParkingSearchResult $result) => $result->parking->available_spaces,
                 SORT_NUMERIC,
                 $descending,
             ),
