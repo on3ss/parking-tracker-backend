@@ -4,6 +4,7 @@ namespace App\Data\Parking;
 
 use App\Models\ParkingFacility;
 use App\Models\StreetParking;
+use InvalidArgumentException;
 
 final class ParkingIdentifier
 {
@@ -15,5 +16,18 @@ final class ParkingIdentifier
             : 'street';
 
         return "{$type}:{$parking->id}";
+    }
+
+    public static function type(
+        ParkingFacility|StreetParking $parking,
+    ): string {
+        return match (true) {
+            $parking instanceof ParkingFacility => 'facility',
+            $parking instanceof StreetParking => 'street',
+
+            default => throw new InvalidArgumentException(
+                'Unsupported parking model.',
+            ),
+        };
     }
 }
