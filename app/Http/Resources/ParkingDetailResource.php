@@ -2,7 +2,7 @@
 
 namespace App\Http\Resources;
 
-use App\Data\Parking\ParkingIdentifier;
+use App\Support\Parking\ParkingIdentifier;
 use App\Models\ParkingFacility;
 use App\Models\StreetParking;
 use Illuminate\Http\Request;
@@ -15,10 +15,7 @@ final class ParkingDetailResource extends JsonResource
         /** @var ParkingFacility|StreetParking $parking */
         $parking = $this->resource;
 
-        $type = match (true) {
-            $parking instanceof ParkingFacility => 'facility',
-            $parking instanceof StreetParking => 'street',
-        };
+        $type = ParkingIdentifier::type($parking);
 
         return [
             'id' => ParkingIdentifier::for($parking),

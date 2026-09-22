@@ -3,7 +3,7 @@
 namespace App\Actions\Parking;
 
 use App\Actions\Parking\ResolveParkingIdentifier;
-use App\Data\Parking\ParkingIdentifier;
+use App\Support\Parking\ParkingIdentifier;
 use App\Models\Favorite;
 
 final class UnfavoriteParking

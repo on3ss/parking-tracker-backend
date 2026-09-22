@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Data\Parking;
+namespace App\Support\Parking;
 
 use App\Models\ParkingFacility;
 use App\Models\StreetParking;

@@ -4,6 +4,7 @@ namespace App\Data\Parking;
 
 use App\Models\ParkingFacility;
 use App\Models\StreetParking;
+use App\Support\Parking\ParkingIdentifier;
 
 final readonly class ParkingSearchResult
 {
@@ -11,7 +12,8 @@ final readonly class ParkingSearchResult
         public ParkingFacility|StreetParking $parking,
         public string $type,
         public ?float $distanceMeters,
-    ) {}
+    ) {
+    }
 
     public function publicId(): string
     {
