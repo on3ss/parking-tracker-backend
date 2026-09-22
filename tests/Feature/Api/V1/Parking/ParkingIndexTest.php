@@ -168,6 +168,44 @@ it('sorts merged parking results by name descending', function () {
         ->assertJsonPath('data.1.id', "street:{$street->id}");
 });
 
+it('sorts merged parking results by capacity', function () {
+    $small = ParkingFacility::factory()->create([
+        'status' => 'ACTIVE',
+        'name' => 'Small Parking',
+        'capacity' => 20,
+    ]);
+
+    $large = StreetParking::factory()->create([
+        'status' => 'ACTIVE',
+        'name' => 'Large Parking',
+        'capacity' => 100,
+    ]);
+
+    $this
+        ->getJson('/api/v1/parking?sort=capacity')
+        ->assertOk()
+        ->assertJsonPath('data.0.id', "facility:{$small->id}")
+        ->assertJsonPath('data.1.id', "street:{$large->id}");
+});
+
+it('sorts merged parking results by capacity descending', function () {
+    $small = ParkingFacility::factory()->create([
+        'status' => 'ACTIVE',
+        'capacity' => 20,
+    ]);
+
+    $large = StreetParking::factory()->create([
+        'status' => 'ACTIVE',
+        'capacity' => 100,
+    ]);
+
+    $this
+        ->getJson('/api/v1/parking?sort=-capacity')
+        ->assertOk()
+        ->assertJsonPath('data.0.id', "street:{$large->id}")
+        ->assertJsonPath('data.1.id', "facility:{$small->id}");
+});
+
 it('filters by parking type', function () {
     $facility = ParkingFacility::factory()->create([
         'status' => 'ACTIVE',
