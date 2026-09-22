@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api\V1\Parking;
 
 use App\Actions\Parking\ReportParkingAvailability;
-use App\Actions\Parking\ResolveParkingIdentifier;
 use App\Data\Parking\ReportParkingAvailabilityData;
 use App\Enums\ParkingSource;
 use App\Http\Controllers\Controller;
@@ -17,7 +16,7 @@ final class ReportParkingAvailabilityController extends Controller
         string $parking,
         ReportParkingAvailability $reportParkingAvailability,
     ): ParkingDetailResource {
-        $reportParkingAvailability->execute(
+        $parkingModel = $reportParkingAvailability->execute(
             new ReportParkingAvailabilityData(
                 parkingIdentifier: $parking,
                 availableSpaces: $request->availableSpaces(),
@@ -25,13 +24,8 @@ final class ReportParkingAvailabilityController extends Controller
                 confidence: $request->confidence(),
             ),
             source: ParkingSource::USER,
-            userId: auth()->user()->id
+            userId: $request->user()->id,
         );
-
-        // Resolve the current entity again through the public identifier.
-        $parkingModel = app(
-            ResolveParkingIdentifier::class,
-        )->execute($parking);
 
         $parkingModel->load([
             'location',
