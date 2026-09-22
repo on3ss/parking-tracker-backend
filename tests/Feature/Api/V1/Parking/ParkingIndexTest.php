@@ -107,6 +107,31 @@ it('filters by availability and provider', function () {
         );
 });
 
+it('paginates across facilities and street parking globally', function () {
+    ParkingFacility::factory()->count(3)->create([
+        'status' => 'ACTIVE',
+    ]);
+
+    StreetParking::factory()->count(3)->create([
+        'status' => 'ACTIVE',
+    ]);
+
+    $this
+        ->getJson('/api/v1/parking?per_page=4&page=1')
+        ->assertOk()
+        ->assertJsonCount(4, 'data')
+        ->assertJsonPath('meta.current_page', 1)
+        ->assertJsonPath('meta.per_page', 4)
+        ->assertJsonPath('meta.total', 6)
+        ->assertJsonPath('meta.last_page', 2);
+
+    $this
+        ->getJson('/api/v1/parking?per_page=4&page=2')
+        ->assertOk()
+        ->assertJsonCount(2, 'data')
+        ->assertJsonPath('meta.current_page', 2);
+});
+
 it('filters by parking type', function () {
     $facility = ParkingFacility::factory()->create([
         'status' => 'ACTIVE',
