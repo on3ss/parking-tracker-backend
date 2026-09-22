@@ -122,7 +122,7 @@ final class SearchParkingRequest extends FormRequest
         }
     }
 
-    public function data($key = null, $default = null): SearchParkingData
+    public function toData(): SearchParkingData
     {
         $filter = $this->input('filter', []);
 
@@ -130,9 +130,7 @@ final class SearchParkingRequest extends FormRequest
             type: $this->input('type'),
 
             availability: isset($filter['availability'])
-            ? AvailabilityStatus::from(
-                $filter['availability'],
-            )
+            ? AvailabilityStatus::from($filter['availability'])
             : null,
 
             providerId: isset($filter['provider_id'])
@@ -157,5 +155,23 @@ final class SearchParkingRequest extends FormRequest
 
             page: (int) $this->input('page', 1),
         );
+    }
+
+    protected function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            if (
+                $this->filled('radius') &&
+                (
+                    !$this->filled('latitude') ||
+                    !$this->filled('longitude')
+                )
+            ) {
+                $validator->errors()->add(
+                    'radius',
+                    'The radius requires both latitude and longitude.',
+                );
+            }
+        });
     }
 }

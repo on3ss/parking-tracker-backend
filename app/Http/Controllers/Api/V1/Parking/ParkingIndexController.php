@@ -16,7 +16,7 @@ final class ParkingIndexController extends Controller
     ): AnonymousResourceCollection {
         return ParkingResource::collection(
             $searchParking->execute(
-                $request->data(),
+                $request->toData(),
             ),
         );
     }
