@@ -15,11 +15,9 @@ final class ParkingDetailResource extends JsonResource
         /** @var ParkingFacility|StreetParking $parking */
         $parking = $this->resource;
 
-        $type = ParkingIdentifier::type($parking);
-
         return [
             'id' => ParkingIdentifier::for($parking),
-            'type' => $type,
+            'type' => ParkingIdentifier::type($parking),
             'name' => $parking->name,
 
             'provider' => $parking->provider ? [
