@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Api\V1\Parking;
 
-use App\Data\Parking\FindNearbyParkingData;
+use App\Data\Parking\SearchParkingData;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class NearbyParkingRequest extends FormRequest
@@ -43,13 +43,15 @@ final class NearbyParkingRequest extends FormRequest
         ];
     }
 
-    public function data($key = null, $default = null): FindNearbyParkingData
+    public function data($key = null, $default = null): SearchParkingData
     {
-        return new FindNearbyParkingData(
+        return new SearchParkingData(
             latitude: (float) $this->input('latitude'),
             longitude: (float) $this->input('longitude'),
             radiusMeters: (int) $this->input('radius', 2000),
-            limit: (int) $this->input('limit', 50),
+            sort: 'distance',
+            perPage: (int) $this->input('limit', 50),
+            page: 1,
         );
     }
 }
