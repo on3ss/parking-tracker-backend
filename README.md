@@ -1,483 +1,490 @@
-# Parking Tracker
+# 🅿️ Parking Tracker
 
-Backend for a city parking discovery and availability tracking platform.
+A Laravel backend for a city parking discovery and availability tracking platform — find parking, check what's open, report availability, and save your favorites.
 
-The system provides APIs for discovering parking facilities and street parking, viewing parking details, reporting availability, viewing availability history, and managing user favorites.
+## What it does
 
-The backend is built as a Laravel application with PostgreSQL/PostGIS and Sanctum authentication.
+Parking Tracker helps people find and track parking in a city. It covers two kinds of parking:
+
+* **Parking facilities** — lots, garages, and other managed/commercial parking
+* **Street parking** — individual or grouped on-street spots
+
+The API lets clients search for parking nearby, view details, report live availability, look at availability history, and manage a personal list of favorites.
+
+**Stack:** Laravel + PostgreSQL/PostGIS + Sanctum auth + Pest tests, running locally via Laravel Sail.
+
+> No Kubernetes here (yet). Local dev is just Docker Compose/Sail — K8s can come later once there's an actual deployment need for it.
 
 ---
 
-## Development Status
+## Status
 
-The core backend is implemented and the full test suite is passing.
+✅ **The core backend is built and the full test suite is green.**
 
-### Implemented
+<details>
+<summary><strong>Already working</strong></summary>
 
-* User registration and authentication
-* Sanctum API authentication
-* Parking facility discovery
-* Street parking discovery
-* Combined parking search
-* Availability filtering
-* Provider filtering
-* Location/radius search
-* PostGIS distance calculation
-* Parking sorting and pagination
-* Parking detail endpoints
-* Public parking identifiers
-* Availability reporting
-* Occupancy history
-* User favorites
-* API resources and validation
-* Feature and API tests
+* User registration & login, with Sanctum API auth
+* Facility + street parking discovery, and combined search
+* Filtering by parking type, availability, and provider
+* Location/radius filtering
+* PostGIS-powered distance calculation
+* Sorting & pagination
+* Parking detail lookups via public IDs
+* Availability reporting + occupancy history
+* Favorites
+* API resources, validation, and a full feature/API test suite
 
-### Planned
+</details>
 
-* Parking/provider administration
-* Automated availability sources
-* Sensor/camera integrations
-* External parking-provider feeds
-* Parking data/report moderation
+<details>
+<summary><strong>On the roadmap</strong></summary>
+
+* Admin tools for parking & providers
+* Automated availability sources (sensors, cameras, external feeds)
+* Report moderation
 * Notifications
-* Advanced geospatial search
-* API hardening and production observability
-* Production infrastructure
+* Advanced geospatial search (bounding box, viewport, clustering)
+* Production hardening: rate limiting, auth policies, observability, caching, queues, backups
+
+</details>
 
 ---
 
-# 1. Technology Stack
+## Quick start
 
-| Component                      | Technology                    |
-| ------------------------------ | ----------------------------- |
-| Backend                        | Laravel                       |
-| Language                       | PHP                           |
-| Database                       | PostgreSQL                    |
-| Geospatial                     | PostGIS                       |
-| Geospatial Laravel integration | `clickbar/laravel-magellan`   |
-| Authentication                 | Laravel Sanctum               |
-| Testing                        | Pest                          |
-| Local development              | Laravel Sail / Docker Compose |
-| API                            | REST / JSON                   |
+```bash
+# spin up the environment
+./vendor/bin/sail up -d
+# (or just `sail up -d` if you've got the alias)
 
-Kubernetes is **not currently required for local development**. The initial development environment uses Docker Compose/Sail. Kubernetes can be introduced later as a deployment concern.
+# set up the database
+sail artisan migrate
 
----
+# want a fresh DB with sample data?
+sail artisan migrate:fresh --seed
 
-# 2. Core Domain
-
-The parking domain currently contains two parking types.
-
-### Parking facilities
-
-Managed or structured parking locations such as:
-
-* parking lots
-* parking buildings
-* commercial parking facilities
-* other managed parking locations
-
-Represented by:
-
-```text
-ParkingFacility
+# run the tests
+sail test
 ```
 
-### Street parking
+Useful day-to-day commands:
 
-Individual or grouped street-side parking locations.
+```bash
+sail down
+sail logs -f
+sail artisan <command>
+sail composer <command>
 
-Represented by:
+# run one test class
+sail test --filter=ParkingIndexTest
 
-```text
-StreetParking
+# run everything parking-related
+sail test --filter=Parking
 ```
 
-These remain separate models because their underlying data and behavior are different.
+⚠️ Don't run destructive DB commands (`migrate:fresh`, etc.) against a database with data you care about.
 
 ---
 
-# 3. Public Parking Identifiers
+## How parking is identified
 
-Database IDs are only unique within their respective parking tables.
+Facility IDs and street-parking IDs both start counting from 1 in their own tables, so a raw database ID alone is ambiguous.
 
-For the API, parking resources therefore use a globally distinguishable identifier:
+The API solves this with a **public identifier** that's globally unique:
 
 ```text
 facility:1
 street:1
 ```
-
-Examples:
 
 ```http
 GET /api/v1/parking/facility:1
 GET /api/v1/parking/street:1
 ```
 
-`ParkingIdentifier` is the central mechanism for generating public identifiers and determining parking type.
+Two small classes handle this so the logic never gets duplicated around the codebase:
 
-The inverse operation is handled by:
+* `ParkingIdentifier` — builds the public ID and tells you the parking type
+* `ResolveParkingIdentifier` — the reverse: turns `facility:1` back into a real record
 
-```text
-ResolveParkingIdentifier
+If you ever find yourself writing:
+
+```php
+$parking instanceof ParkingFacility ? 'facility' : 'street'
 ```
 
-This keeps public identity consistent across the API.
+somewhere — stop, and use `ParkingIdentifier` instead.
 
 ---
 
-# 4. Architecture
-
-The backend follows a lightweight action-oriented architecture.
+## Architecture, in one picture
 
 ```text
 HTTP Request
      │
      ▼
-Form Request
-(validation + normalization)
+Form Request        ← validation & normalization
      │
      ▼
 DTO / primitive input
      │
      ▼
-Action
-(application/domain use case)
+Action               ← the actual use case
      │
      ▼
-Eloquent Models / PostgreSQL / PostGIS
+Eloquent / PostgreSQL / PostGIS
      │
      ▼
-API Resource
-(JSON representation)
+API Resource         ← JSON shape returned to the client
 ```
 
-## Controllers
+**The short version:** controllers stay thin, validation lives in Form Requests, and all real business logic lives in Actions. Nothing fancy layered on top unless there's a genuine reason for it.
 
-Controllers are intentionally thin.
+| Layer            | Responsible for                                                | Not responsible for                            |
+| ---------------- | -------------------------------------------------------------- | ---------------------------------------------- |
+| **Controller**   | Receiving the request, calling an Action, returning a Resource | Business logic                                 |
+| **Form Request** | HTTP validation & normalization                                | Domain logic                                   |
+| **Action**       | The actual use case (e.g. `SearchParking`, `FavoriteParking`)  | Being a thin passthrough with no real behavior |
+| **DTO**          | Structured input/output for operations that need it            | Wrapping one or two trivial params             |
+| **API Resource** | Shaping the JSON response                                      | Domain behavior                                |
 
-They are responsible for:
-
-* receiving the HTTP request
-* obtaining validated input
-* invoking the appropriate action
-* returning an API resource
-
-Business logic should not be placed in controllers.
-
-## Form Requests
-
-Form Requests handle:
-
-* HTTP validation
-* request normalization
-* converting HTTP input into application input where appropriate
-
-They should not contain domain/business logic.
-
-## Actions
-
-Actions represent meaningful application use cases.
-
-Examples:
+Some of the current Actions and DTOs, as examples:
 
 ```text
-SearchParking
-ResolveParkingIdentifier
-ReportParkingAvailability
-GetParkingAvailabilityHistory
-FavoriteParking
-UnfavoriteParking
-ListFavorites
+Actions:
+  SearchParking
+  ResolveParkingIdentifier
+  ReportParkingAvailability
+  GetParkingAvailabilityHistory
+  FavoriteParking
+  UnfavoriteParking
+  ListFavorites
+
+DTOs:
+  LoginData
+  RegisterUserData
+  SearchParkingData
+  ReportParkingAvailabilityData
+  GetParkingAvailabilityHistoryData
+  ParkingSearchResult
+
+Resources:
+  ParkingResource
+  ParkingDetailResource
+  FavoriteResource
+  OccupancyReportResource
 ```
-
-Actions should contain the behavior necessary to perform their specific use case.
-
-Generic service, manager, repository, or transformer layers should not be introduced unless a real independent responsibility emerges.
-
-## DTOs
-
-DTOs are used where an operation has a meaningful structured input or result.
-
-Current examples include:
-
-```text
-LoginData
-RegisterUserData
-
-SearchParkingData
-ReportParkingAvailabilityData
-GetParkingAvailabilityHistoryData
-ParkingSearchResult
-```
-
-DTOs should not be created merely to wrap one or two trivial parameters.
-
-## API Resources
-
-Resources define the external API representation.
-
-Examples:
-
-```text
-ParkingResource
-ParkingDetailResource
-FavoriteResource
-OccupancyReportResource
-```
-
-Resources should remain presentation-oriented and should not contain domain behavior.
 
 ---
 
-# 5. Search
-
-Parking search is implemented by:
-
-```text
-SearchParking
-```
-
-It supports:
-
-* parking type
-* availability
-* provider
-* latitude
-* longitude
-* radius
-* sorting
-* pagination
-
-Example:
+## Searching for parking
 
 ```http
 GET /api/v1/parking
 ```
 
-Example:
+Parking search supports:
+
+* parking type filtering
+* availability filtering
+* provider filtering
+* latitude/longitude search
+* radius filtering
+* distance calculation
+* sorting
+* pagination
+
+### Parking type
+
+Use `type` to restrict results to one parking type:
 
 ```http
 GET /api/v1/parking?type=facility
+GET /api/v1/parking?type=street
 ```
 
-Location-based search:
+| Parameter | Values     | Description             |
+| --------- | ---------- | ----------------------- |
+| `type`    | `facility` | Parking facilities only |
+| `type`    | `street`   | Street parking only     |
+
+If `type` is omitted, both parking types are searched.
+
+---
+
+### Availability
+
+Filter by the current availability status:
+
+```http
+GET /api/v1/parking?filter[availability]=AVAILABLE
+GET /api/v1/parking?filter[availability]=LIMITED
+GET /api/v1/parking?filter[availability]=FULL
+GET /api/v1/parking?filter[availability]=UNKNOWN
+```
+
+Supported values:
+
+| Parameter              | Values      |
+| ---------------------- | ----------- |
+| `filter[availability]` | `UNKNOWN`   |
+| `filter[availability]` | `AVAILABLE` |
+| `filter[availability]` | `LIMITED`   |
+| `filter[availability]` | `FULL`      |
+
+---
+
+### Parking provider
+
+Filter results to a specific parking provider:
+
+```http
+GET /api/v1/parking?filter[provider_id]=1
+```
+
+| Parameter             | Type    | Description         |
+| --------------------- | ------- | ------------------- |
+| `filter[provider_id]` | integer | Parking provider ID |
+
+The provider must exist in the `parking_providers` table.
+
+---
+
+### Location and radius
+
+Provide latitude and longitude to perform a location-aware search:
+
+```http
+GET /api/v1/parking?latitude=25.5779199&longitude=91.8837004
+```
+
+To restrict results to a radius:
 
 ```http
 GET /api/v1/parking?latitude=25.5779199&longitude=91.8837004&radius=2000
 ```
 
-Supported sort fields include:
+| Parameter   | Type    | Range           | Description             |
+| ----------- | ------- | --------------- | ----------------------- |
+| `latitude`  | numeric | `-90` to `90`   | Search latitude         |
+| `longitude` | numeric | `-180` to `180` | Search longitude        |
+| `radius`    | integer | `1`–`50000`     | Search radius in metres |
 
-```text
-distance
--distance
+`radius` requires both `latitude` and `longitude`.
 
-name
--name
-
-capacity
--capacity
-
-available_spaces
--available_spaces
-```
-
-When coordinates are supplied without an explicit sort, distance is used as the default ordering.
-
-Without coordinates, name is used as the default ordering.
-
----
-
-# 6. Geospatial Search
-
-PostGIS is used for spatial calculations.
-
-The backend stores geographic coordinates and uses PostGIS functions for distance calculations.
-
-The search flow is conceptually:
+PostGIS calculates the distance between the supplied location and each parking location.
 
 ```text
 latitude + longitude
         │
         ▼
-PostGIS Point
+    PostGIS Point
         │
         ▼
-distance calculation
+ distance calculation
         │
         ▼
-radius filtering
+   radius filtering
         │
         ▼
-parking results
+     results
 ```
-
-The Laravel application uses:
-
-```text
-clickbar/laravel-magellan
-```
-
-for improved PostGIS developer experience.
 
 ---
 
-# 7. Availability
+### Sorting
 
-Availability has two related concepts.
+Use the `sort` parameter.
 
-### Current availability
+Available sort fields:
 
-The parking entity stores the application's current best-known availability:
+| Value               | Sort order                    |
+| ------------------- | ----------------------------- |
+| `distance`          | Nearest first                 |
+| `-distance`         | Farthest first                |
+| `name`              | A–Z                           |
+| `-name`             | Z–A                           |
+| `capacity`          | Lowest capacity first         |
+| `-capacity`         | Highest capacity first        |
+| `available_spaces`  | Fewest available spaces first |
+| `-available_spaces` | Most available spaces first   |
+
+Examples:
+
+```http
+GET /api/v1/parking?sort=distance
+GET /api/v1/parking?sort=-distance
+GET /api/v1/parking?sort=name
+GET /api/v1/parking?sort=-name
+GET /api/v1/parking?sort=capacity
+GET /api/v1/parking?sort=-capacity
+GET /api/v1/parking?sort=available_spaces
+GET /api/v1/parking?sort=-available_spaces
+```
+
+When coordinates are supplied but `sort` is omitted, the backend defaults to:
+
+```text
+distance
+```
+
+When coordinates are not supplied and `sort` is omitted, the backend defaults to:
+
+```text
+name
+```
+
+---
+
+### Pagination
+
+Results are paginated using:
+
+```http
+GET /api/v1/parking?page=2&per_page=20
+```
+
+| Parameter  | Type    | Default |    Limits |
+| ---------- | ------- | ------: | --------: |
+| `page`     | integer |     `1` |    `>= 1` |
+| `per_page` | integer |    `20` | `1`–`100` |
+
+Examples:
+
+```http
+GET /api/v1/parking?page=1&per_page=20
+GET /api/v1/parking?page=2&per_page=50
+```
+
+---
+
+### Combining filters
+
+Filters can be combined in a single request.
+
+Find available street parking from provider `1` within 2 km:
+
+```http
+GET /api/v1/parking?type=street&filter[availability]=AVAILABLE&filter[provider_id]=1&latitude=25.5779199&longitude=91.8837004&radius=2000
+```
+
+Find nearby facility parking with the most available spaces first:
+
+```http
+GET /api/v1/parking?type=facility&latitude=25.5779199&longitude=91.8837004&radius=2000&sort=-available_spaces
+```
+
+Find all parking sorted alphabetically:
+
+```http
+GET /api/v1/parking?sort=name
+```
+
+Find the 50 nearest parking locations on the second page:
+
+```http
+GET /api/v1/parking?latitude=25.5779199&longitude=91.8837004&sort=distance&page=2&per_page=50
+```
+
+### Search parameter summary
+
+| Parameter              | Type    | Supported values / range                                                                                   |
+| ---------------------- | ------- | ---------------------------------------------------------------------------------------------------------- |
+| `type`                 | string  | `facility`, `street`                                                                                       |
+| `filter[availability]` | string  | `UNKNOWN`, `AVAILABLE`, `LIMITED`, `FULL`                                                                  |
+| `filter[provider_id]`  | integer | Existing provider ID                                                                                       |
+| `latitude`             | numeric | `-90` to `90`                                                                                              |
+| `longitude`            | numeric | `-180` to `180`                                                                                            |
+| `radius`               | integer | `1`–`50000` metres; requires coordinates                                                                   |
+| `sort`                 | string  | `distance`, `-distance`, `name`, `-name`, `capacity`, `-capacity`, `available_spaces`, `-available_spaces` |
+| `page`                 | integer | `>= 1`                                                                                                     |
+| `per_page`             | integer | `1`–`100`, default `20`                                                                                    |
+
+---
+
+## Availability
+
+Every parking spot tracks its **current** best-known state:
 
 ```text
 available_spaces
-availability_status
+availability_status   # UNKNOWN | AVAILABLE | LIMITED | FULL
 availability_updated_at
 ```
 
-### Occupancy reports
+Every report that comes in also gets saved as an **immutable historical record**.
 
-Every availability report creates an immutable historical record.
-
-Conceptually:
+So the parking entity always shows "what's true right now", while the history is never lost.
 
 ```text
 Availability report
        │
-       ├── occupancy_reports record
-       │
-       └── current parking availability update
+       ├── occupancy_reports record   (permanent history)
+       └── current parking state      (updated in place)
 ```
 
-This means historical reports are preserved while the parking entity exposes the latest known state.
+Availability status is derived from capacity vs. current available spaces and gets validated before anything is saved.
 
----
-
-# 8. Availability Status
-
-Availability currently uses:
-
-```text
-UNKNOWN
-AVAILABLE
-LIMITED
-FULL
-```
-
-The status is calculated from the parking capacity and current available spaces.
-
-Availability validation is performed before updating the parking state.
-
----
-
-# 9. Availability Sources
-
-The backend models availability sources using:
-
-```text
-ParkingSource
-```
-
-Current source types include:
-
-```text
-USER
-OPERATOR
-SENSOR
-CAMERA
-SYSTEM
-```
-
-The current API supports user-reported availability.
-
-The additional sources provide a foundation for future automated integrations.
-
----
-
-# 10. Reporting Availability
-
-Availability can be reported against a public parking identifier.
-
-Conceptually:
+### Reporting availability
 
 ```http
-POST /api/v1/parking/{parking}/availability
+POST /api/v1/parking/facility:1/availability
 ```
 
-Example identifier:
+Send:
+
+* `available_spaces`
+* `occupied_spaces`
+* `confidence`
+
+Behind the scenes:
+
+1. Resolves the public identifier to a real record
+2. Validates the report
+3. Writes an immutable occupancy report
+4. Updates the parking entity's current availability + timestamp
+5. Returns the updated resource
+
+The operation runs inside one transaction.
+
+### Availability history
+
+```http
+GET /api/v1/parking/facility:1/availability/history
+```
+
+Paginated, most recent first.
+
+### Where availability comes from
+
+Reports can come from different sources:
 
 ```text
-facility:1
+USER · OPERATOR · SENSOR · CAMERA · SYSTEM
 ```
 
-A report contains information such as:
-
-```text
-available_spaces
-occupied_spaces
-confidence
-```
-
-The backend:
-
-1. Resolves the parking identifier.
-2. Validates the supplied availability.
-3. Creates an immutable occupancy report.
-4. Updates current availability.
-5. Updates the availability timestamp.
-6. Returns the updated parking resource.
-
-The operation is performed transactionally.
+Currently the API supports user-submitted reports. The additional source types provide a foundation for future automated integrations.
 
 ---
 
-# 11. Availability History
-
-Historical reports can be retrieved for a parking resource.
-
-Conceptually:
+## Favorites
 
 ```http
-GET /api/v1/parking/{parking}/availability/history
-```
-
-Results are paginated and ordered by the most recent report first.
-
----
-
-# 12. Favorites
-
-Authenticated users can favorite parking resources.
-
-Conceptually:
-
-```http
-POST   /api/v1/parking/{parking}/favorite
-DELETE /api/v1/parking/{parking}/favorite
+POST   /api/v1/parking/facility:1/favorite
+DELETE /api/v1/parking/facility:1/favorite
 GET    /api/v1/favorites
 ```
 
-Favorites use the same public parking identifiers:
+Works with either parking type using the same public identifiers.
 
-```text
-facility:1
-street:1
-```
-
-The favorite relationship supports both parking types.
-
-Duplicate favorites are prevented through the `firstOrCreate` behavior and database/domain constraints.
+Favoriting the same parking resource twice is a no-op rather than creating a duplicate.
 
 ---
 
-# 13. Authentication
+## Auth
 
-The mobile/API authentication mechanism is Laravel Sanctum.
-
-The authentication flow is:
+Standard Sanctum token flow:
 
 ```text
 Register / Login
@@ -486,22 +493,18 @@ Register / Login
 Sanctum token
        │
        ▼
-Authenticated API requests
+authenticated requests
 ```
 
-Protected endpoints use the authenticated user supplied by Laravel's request authentication layer.
+Protected routes use Laravel's normal authenticated-user resolution.
 
 ---
 
-# 14. API Conventions
+## API conventions
 
-API endpoints are versioned:
-
-```text
-/api/v1/...
-```
-
-Parking resources use public identifiers rather than exposing ambiguous numeric IDs across different parking types.
+* Everything is versioned under `/api/v1/...`
+* Parking resources expose their **public** identifier, never a bare numeric ID.
+* Facility and street parking use the same public identifier format throughout the API.
 
 Example:
 
@@ -512,40 +515,24 @@ Example:
 }
 ```
 
-or:
-
-```json
-{
-    "id": "street:1",
-    "type": "street"
-}
-```
-
 ---
 
-# 15. Testing
+## Testing
 
-The project uses Pest.
-
-Run the complete test suite:
+Built on Pest.
 
 ```bash
+# full suite
 sail test
-```
 
-Run a specific test class:
-
-```bash
+# one test class
 sail test --filter=ParkingIndexTest
-```
 
-Run parking-related tests:
-
-```bash
+# parking-related tests
 sail test --filter=Parking
 ```
 
-Tests cover the API and application behavior, including:
+Coverage includes:
 
 * authentication
 * parking search
@@ -555,297 +542,64 @@ Tests cover the API and application behavior, including:
 * favorites
 * public parking identifiers
 
-The full test suite should pass before merging changes.
+**The full suite needs to pass before merging anything.**
 
 ---
 
-# 16. Local Development
-
-The project uses Laravel Sail and Docker Compose for local development.
-
-Start the environment:
-
-```bash
-./vendor/bin/sail up -d
-```
-
-or, if the project provides the Sail alias:
-
-```bash
-sail up -d
-```
-
-Stop the environment:
-
-```bash
-sail down
-```
-
-View application logs:
-
-```bash
-sail logs -f
-```
-
-Run Artisan:
-
-```bash
-sail artisan <command>
-```
-
-Run Composer:
-
-```bash
-sail composer <command>
-```
-
-Run tests:
-
-```bash
-sail test
-```
-
----
-
-# 17. Database
-
-The application uses PostgreSQL.
-
-PostGIS is required for the geospatial functionality.
-
-After starting the development environment, run:
-
-```bash
-sail artisan migrate
-```
-
-For a fresh development database:
-
-```bash
-sail artisan migrate:fresh --seed
-```
-
-Do not use destructive database commands against a database containing data that needs to be preserved.
-
----
-
-# 18. Seed Data
-
-Development seed data should remain deterministic where possible.
-
-This is particularly useful for geospatial testing because parking locations can be placed at known coordinates and used consistently by feature tests.
-
----
-
-# 19. Project Structure
-
-Relevant application structure:
+## Project layout
 
 ```text
 app/
-├── Actions/
+├── Actions/          # application use cases
 │   ├── Auth/
 │   └── Parking/
-│
-├── Data/
+├── Data/             # DTOs
 │   ├── Auth/
 │   └── Parking/
-│
 ├── Enums/
-│
 ├── Exceptions/
-│
 ├── Http/
-│   ├── Controllers/
-│   │   └── Api/
-│   │       └── V1/
-│   │
-│   ├── Requests/
-│   │   └── Api/
-│   │       └── V1/
-│   │
+│   ├── Controllers/Api/V1/
+│   ├── Requests/Api/V1/
 │   └── Resources/
-│
 ├── Models/
-│
 └── Support/
-    └── Parking/
+    └── Parking/      # public-identity logic
 ```
 
-Parking-specific public identity support lives under:
-
-```text
-app/Support/Parking/
-```
-
-rather than the DTO directory.
+`Support/Parking/` — not `Data/` — is where public-identity helpers such as `ParkingIdentifier` live, since they are utility/domain-support logic rather than DTOs.
 
 ---
 
-# 20. Development Principles
+## Guiding principles
 
-### Prefer simple solutions
+A few things worth keeping in mind before adding new code:
 
-Do not introduce an abstraction simply because it is theoretically reusable.
-
-Before adding a:
-
-* repository
-* service
-* manager
-* factory
-* transformer
-* generic interface
-
-ask whether there is a real independent responsibility requiring it.
-
-### Keep actions meaningful
-
-An Action should represent a useful application operation.
-
-Good:
-
-```text
-SearchParking
-ReportParkingAvailability
-FavoriteParking
-GetParkingAvailabilityHistory
-```
-
-Avoid actions that merely delegate one method call without adding meaningful behavior.
-
-### Keep HTTP concerns at the HTTP boundary
-
-Validation and normalization belong in Form Requests.
-
-Domain/application behavior belongs in Actions and domain models.
-
-### Keep identity centralized
-
-Do not duplicate:
-
-```php
-instanceof ParkingFacility
-    ? 'facility'
-    : 'street'
-```
-
-throughout the application.
-
-Use:
-
-```php
-ParkingIdentifier::for($parking)
-ParkingIdentifier::type($parking)
-```
-
-### Avoid premature optimization
-
-The current implementation favors straightforward Eloquent/PostGIS queries and clear application behavior.
-
-Performance optimizations should be introduced when measurements or realistic workload requirements justify them.
+* **Don't add layers you don't need yet.** No repositories, services, managers, or transformers unless there's a real, independent responsibility that justifies one.
+* **Actions should do something meaningful.** If an Action is just a one-line delegation with no real behavior, it probably shouldn't be an Action.
+* **HTTP stuff stays at the HTTP boundary.** Validation and normalization belong in Form Requests. Domain behavior belongs in Actions and models.
+* **Identity logic goes through `ParkingIdentifier`.** Never hand-roll `instanceof` checks to determine facility vs. street.
+* **Don't optimize early.** Plain Eloquent/PostGIS queries are fine until real usage data says otherwise.
+* **Keep the domain concepts separate.** Parking facilities and street parking are different concepts; don't force them into a generic `Parking` model merely for abstraction.
 
 ---
 
-# 21. Current Backend Roadmap
-
-## Next development areas
-
-### Parking management
-
-* Create parking facilities
-* Update parking facilities
-* Deactivate parking facilities
-* Create street parking
-* Update street parking
-* Provider management
-* Location management
-
-### Availability infrastructure
-
-* Availability expiration
-* Stale availability detection
-* Source-priority rules
-* Conflict resolution
-* Automated ingestion
-* Sensor integration
-* Camera integration
-* External provider feeds
-
-### Data quality
-
-* Incorrect parking reports
-* Availability correction reports
-* Moderation
-* Duplicate detection
-* Anomaly detection
-* Source reliability
-
-### Geospatial capabilities
-
-* Bounding-box search
-* Map viewport search
-* Spatial clustering
-* Route-aware parking search
-
-### Notifications
-
-* Availability alerts
-* Favorite parking alerts
-* Push notification infrastructure
-* Notification preferences
-
-### Production readiness
-
-* API rate limiting
-* Authorization policies
-* Standardized error responses
-* API documentation
-* Logging
-* Monitoring
-* Metrics
-* Caching
-* Queues
-* Scheduled jobs
-* Backup/restore strategy
-
-### Infrastructure
-
-Local development currently uses Docker Compose/Sail.
-
-Kubernetes is intentionally deferred until the application and deployment requirements justify it.
-
----
-
-# 22. Development Workflow
-
-For a typical feature:
+## Typical feature workflow
 
 ```text
 1. Define the domain behavior
-        ↓
-2. Define/modify the database model
-        ↓
-3. Add migration
-        ↓
-4. Add/update model
-        ↓
-5. Add Action
-        ↓
-6. Add Form Request if HTTP validation is required
-        ↓
-7. Add/update API Resource
-        ↓
-8. Add Controller/Route
-        ↓
-9. Add Pest tests
-        ↓
-10. Run focused tests
-        ↓
-11. Run full test suite
+2. Add/update the model
+3. Add a migration
+4. Add an Action
+5. Add a Form Request (if HTTP validation is required)
+6. Add/update an API Resource
+7. Wire up Controller + Route
+8. Write Pest tests
+9. Run focused tests
+10. Run the full suite
 ```
 
-Before considering a change complete:
+Before calling anything done:
 
 ```bash
 sail test
@@ -855,28 +609,22 @@ must pass.
 
 ---
 
-# 23. Guiding Architecture
+## What's next
 
-The project intentionally favors:
+| Area                            | Coming up                                                                                                                           |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| **Parking management**          | Create/update/deactivate facilities & street parking, provider & location management                                                |
+| **Availability infrastructure** | Expiration, staleness detection, source-priority rules, conflict resolution, automated ingestion                                    |
+| **Data quality**                | Incorrect-report flagging, corrections, moderation, duplicate/anomaly detection, source reliability                                 |
+| **Geospatial**                  | Bounding-box & viewport search, spatial clustering, route-aware search                                                              |
+| **Notifications**               | Availability alerts, favorite alerts, push infrastructure, preferences                                                              |
+| **Production readiness**        | Rate limiting, authorization policies, standardized errors, API docs, logging, monitoring, caching, queues, scheduled jobs, backups |
+| **Infrastructure**              | Kubernetes, once there is an actual deployment need                                                                                 |
 
-```text
-Laravel
-    +
-PostgreSQL/PostGIS
-    +
-Sanctum
-    +
-Actions
-    +
-Focused DTOs
-    +
-Form Requests
-    +
-API Resources
-    +
-Pest
-```
+---
 
-over a heavily layered architecture.
+## Why this architecture
 
-The goal is to keep the backend understandable, testable, and inexpensive to operate while leaving room for future geospatial, real-time availability, and automated data-source integrations.
+Laravel + PostgreSQL/PostGIS + Sanctum + Actions + focused DTOs + Form Requests + API Resources + Pest — deliberately **not** a heavily layered architecture.
+
+The goal is a backend that's easy to understand, easy to test, and cheap to run, while still leaving room to grow into real-time availability, automated data sources, and richer geospatial features when the time comes.
