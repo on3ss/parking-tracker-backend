@@ -886,3 +886,66 @@ it('returns an empty page beyond the available results', function () {
         ->assertOk()
         ->assertJsonCount(0, 'data');
 });
+
+it('returns the parking resource structure', function () {
+    $provider = ParkingProvider::factory()->create();
+
+    $facility = ParkingFacility::factory()->create([
+        'status' => 'ACTIVE',
+        'parking_provider_id' => $provider->id,
+        'capacity' => 100,
+        'available_spaces' => 25,
+        'availability_status' => AvailabilityStatus::LIMITED,
+    ]);
+
+    $this
+        ->getJson('/api/v1/parking')
+        ->assertOk()
+        ->assertJsonStructure([
+            'data' => [
+                '*' => [
+                    'id',
+                    'type',
+                    'name',
+                    'distance',
+                    'provider' => [
+                        'id',
+                        'name',
+                        'type',
+                    ],
+                    'location' => [
+                        'address_line1',
+                        'locality',
+                        'administrative_area',
+                        'postal_code',
+                        'country_code',
+                        'coordinates',
+                    ],
+                    'capacity',
+                    'availability' => [
+                        'status',
+                        'available_spaces',
+                        'updated_at',
+                    ],
+                ],
+            ],
+            'meta',
+        ])
+        ->assertJsonPath(
+            'data.0.id',
+            "facility:{$facility->id}",
+        );
+});
+
+it('returns null provider when parking has no provider', function () {
+    $street = StreetParking::factory()->create([
+        'status' => 'ACTIVE',
+        'parking_provider_id' => null,
+    ]);
+
+    $this
+        ->getJson('/api/v1/parking?type=street')
+        ->assertOk()
+        ->assertJsonPath('data.0.id', "street:{$street->id}")
+        ->assertJsonPath('data.0.provider', null);
+});

@@ -22,13 +22,15 @@ final class ParkingResource extends JsonResource
 
             'name' => $parking->name,
 
-            'distance' => [
-                'meters' => round($result->distanceMeters, 1),
-                'kilometers' => round(
-                    $result->distanceMeters / 1000,
-                    2,
-                ),
-            ],
+            'distance' => $result->distanceMeters === null
+                ? null
+                : [
+                    'meters' => round($result->distanceMeters, 1),
+                    'kilometers' => round(
+                        $result->distanceMeters / 1000,
+                        2,
+                    ),
+                ],
 
             'provider' => $parking->provider
                 ? [
