@@ -71,6 +71,42 @@ it('returns an empty result when no parking matches', function () {
         ->assertJsonPath('meta.total', 0);
 });
 
+it('filters by availability and provider', function () {
+    $provider = ParkingProvider::factory()->create();
+
+    $matching = ParkingFacility::factory()->create([
+        'status' => 'ACTIVE',
+        'parking_provider_id' => $provider->id,
+        'availability_status' => AvailabilityStatus::AVAILABLE,
+    ]);
+
+    // Same provider, wrong availability.
+    ParkingFacility::factory()->create([
+        'status' => 'ACTIVE',
+        'parking_provider_id' => $provider->id,
+        'availability_status' => AvailabilityStatus::FULL,
+    ]);
+
+    // Same availability, wrong provider.
+    ParkingFacility::factory()->create([
+        'status' => 'ACTIVE',
+        'availability_status' => AvailabilityStatus::AVAILABLE,
+    ]);
+
+    $this
+        ->getJson(
+            "/api/v1/parking?" .
+            "filter[availability]=AVAILABLE&" .
+            "filter[provider_id]={$provider->id}",
+        )
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath(
+            'data.0.id',
+            "facility:{$matching->id}",
+        );
+});
+
 it('filters by parking type', function () {
     $facility = ParkingFacility::factory()->create([
         'status' => 'ACTIVE',
