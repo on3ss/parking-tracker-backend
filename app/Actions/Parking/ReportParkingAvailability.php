@@ -5,17 +5,18 @@ namespace App\Actions\Parking;
 use App\Data\Parking\ReportParkingAvailabilityData;
 use App\Enums\AvailabilityStatus;
 use App\Enums\ParkingSource;
+use App\Exceptions\Parking\InvalidParkingAvailability;
 use App\Models\OccupancyReport;
 use App\Models\ParkingFacility;
 use App\Models\StreetParking;
 use Illuminate\Support\Facades\DB;
-use InvalidArgumentException;
 
 final class ReportParkingAvailability
 {
     public function __construct(
         private ResolveParkingIdentifier $resolveParkingIdentifier,
-    ) {}
+    ) {
+    }
 
     public function execute(
         ReportParkingAvailabilityData $data,
@@ -68,8 +69,9 @@ final class ReportParkingAvailability
         ?int $occupiedSpaces,
     ): void {
         if ($availableSpaces > $parking->capacity) {
-            throw new InvalidArgumentException(
-                'Available spaces cannot exceed parking capacity.',
+            throw new InvalidParkingAvailability(
+                field: 'available_spaces',
+                message: 'Available spaces cannot exceed parking capacity.',
             );
         }
 
@@ -77,8 +79,9 @@ final class ReportParkingAvailability
             $occupiedSpaces !== null
             && $occupiedSpaces > $parking->capacity
         ) {
-            throw new InvalidArgumentException(
-                'Occupied spaces cannot exceed parking capacity.',
+            throw new InvalidParkingAvailability(
+                field: 'occupied_spaces',
+                message: 'Occupied spaces cannot exceed parking capacity.',
             );
         }
 
@@ -86,8 +89,9 @@ final class ReportParkingAvailability
             $occupiedSpaces !== null
             && $occupiedSpaces + $availableSpaces > $parking->capacity
         ) {
-            throw new InvalidArgumentException(
-                'Occupied and available spaces cannot exceed parking capacity.',
+            throw new InvalidParkingAvailability(
+                field: 'available_spaces',
+                message: 'Occupied and available spaces cannot exceed parking capacity.',
             );
         }
     }

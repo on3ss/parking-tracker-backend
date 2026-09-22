@@ -4,6 +4,7 @@ use App\Actions\Parking\ReportParkingAvailability;
 use App\Data\Parking\ReportParkingAvailabilityData;
 use App\Enums\AvailabilityStatus;
 use App\Enums\ParkingSource;
+use App\Exceptions\Parking\InvalidParkingAvailability;
 use App\Models\OccupancyReport;
 use App\Models\ParkingFacility;
 use App\Models\StreetParking;
@@ -83,15 +84,15 @@ it('rejects availability greater than capacity', function () {
         'availability_status' => AvailabilityStatus::AVAILABLE,
     ]);
 
-    expect(fn () => app(ReportParkingAvailability::class)->execute(
+    expect(fn() => app(ReportParkingAvailability::class)->execute(
         new ReportParkingAvailabilityData(
             parkingIdentifier: "facility:{$facility->id}",
             availableSpaces: 11,
         ),
     ))->toThrow(
-        InvalidArgumentException::class,
-        'Available spaces cannot exceed parking capacity.',
-    );
+            InvalidParkingAvailability::class,
+            'Available spaces cannot exceed parking capacity.',
+        );
 
     expect(
         OccupancyReport::query()
@@ -111,16 +112,16 @@ it('rejects inconsistent occupied and available spaces', function () {
         'availability_status' => AvailabilityStatus::AVAILABLE,
     ]);
 
-    expect(fn () => app(ReportParkingAvailability::class)->execute(
+    expect(fn() => app(ReportParkingAvailability::class)->execute(
         new ReportParkingAvailabilityData(
             parkingIdentifier: "facility:{$facility->id}",
             availableSpaces: 15,
             occupiedSpaces: 10,
         ),
     ))->toThrow(
-        InvalidArgumentException::class,
-        'Occupied and available spaces cannot exceed parking capacity.',
-    );
+            InvalidParkingAvailability::class,
+            'Occupied and available spaces cannot exceed parking capacity.',
+        );
 
     expect(
         OccupancyReport::query()
@@ -140,15 +141,15 @@ it('rejects available spaces greater than capacity', function () {
         'availability_status' => AvailabilityStatus::AVAILABLE,
     ]);
 
-    expect(fn () => app(ReportParkingAvailability::class)->execute(
+    expect(fn() => app(ReportParkingAvailability::class)->execute(
         new ReportParkingAvailabilityData(
             parkingIdentifier: "facility:{$facility->id}",
             availableSpaces: 11,
         ),
     ))->toThrow(
-        InvalidArgumentException::class,
-        'Available spaces cannot exceed parking capacity.',
-    );
+            InvalidParkingAvailability::class,
+            'Available spaces cannot exceed parking capacity.',
+        );
 
     expect(
         OccupancyReport::query()
@@ -168,16 +169,16 @@ it('rejects occupied spaces greater than capacity', function () {
         'availability_status' => AvailabilityStatus::AVAILABLE,
     ]);
 
-    expect(fn () => app(ReportParkingAvailability::class)->execute(
+    expect(fn() => app(ReportParkingAvailability::class)->execute(
         new ReportParkingAvailabilityData(
             parkingIdentifier: "facility:{$facility->id}",
             availableSpaces: 2,
             occupiedSpaces: 11,
         ),
     ))->toThrow(
-        InvalidArgumentException::class,
-        'Occupied spaces cannot exceed parking capacity.',
-    );
+            InvalidParkingAvailability::class,
+            'Occupied spaces cannot exceed parking capacity.',
+        );
 
     expect(
         OccupancyReport::query()
@@ -193,16 +194,16 @@ it('rejects occupied and available spaces exceeding capacity', function () {
         'availability_status' => AvailabilityStatus::AVAILABLE,
     ]);
 
-    expect(fn () => app(ReportParkingAvailability::class)->execute(
+    expect(fn() => app(ReportParkingAvailability::class)->execute(
         new ReportParkingAvailabilityData(
             parkingIdentifier: "facility:{$facility->id}",
             availableSpaces: 15,
             occupiedSpaces: 10,
         ),
     ))->toThrow(
-        InvalidArgumentException::class,
-        'Occupied and available spaces cannot exceed parking capacity.',
-    );
+            InvalidParkingAvailability::class,
+            'Occupied and available spaces cannot exceed parking capacity.',
+        );
 
     expect(
         OccupancyReport::query()
