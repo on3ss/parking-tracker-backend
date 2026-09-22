@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\ParkingFacility;
 use App\Models\StreetParking;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider;
 
@@ -23,6 +24,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Relation::enforceMorphMap([
+            'user' => User::class,
             'facility' => ParkingFacility::class,
             'street' => StreetParking::class,
         ]);
