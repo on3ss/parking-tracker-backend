@@ -497,6 +497,192 @@ it('rejects a radius with only longitude', function () {
         ]);
 });
 
+it('rejects latitude below the valid range', function () {
+    $this
+        ->getJson('/api/v1/parking?latitude=-91')
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors([
+            'latitude',
+        ]);
+});
+
+it('rejects latitude above the valid range', function () {
+    $this
+        ->getJson('/api/v1/parking?latitude=91')
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors([
+            'latitude',
+        ]);
+});
+
+it('rejects longitude below the valid range', function () {
+    $this
+        ->getJson('/api/v1/parking?longitude=-181')
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors([
+            'longitude',
+        ]);
+});
+
+it('rejects longitude above the valid range', function () {
+    $this
+        ->getJson('/api/v1/parking?longitude=181')
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors([
+            'longitude',
+        ]);
+});
+
+it('accepts latitude and longitude boundary values', function () {
+    $this
+        ->getJson(
+            '/api/v1/parking?' .
+            'latitude=90&' .
+            'longitude=180',
+        )
+        ->assertOk();
+
+    $this
+        ->getJson(
+            '/api/v1/parking?' .
+            'latitude=-90&' .
+            'longitude=-180',
+        )
+        ->assertOk();
+});
+
+it('rejects page zero', function () {
+    $this
+        ->getJson('/api/v1/parking?page=0')
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors([
+            'page',
+        ]);
+});
+
+it('rejects a negative page', function () {
+    $this
+        ->getJson('/api/v1/parking?page=-1')
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors([
+            'page',
+        ]);
+});
+
+it('rejects per page zero', function () {
+    $this
+        ->getJson('/api/v1/parking?per_page=0')
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors([
+            'per_page',
+        ]);
+});
+
+it('rejects per page above the maximum', function () {
+    $this
+        ->getJson('/api/v1/parking?per_page=101')
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors([
+            'per_page',
+        ]);
+});
+
+it('accepts the maximum per page', function () {
+    $this
+        ->getJson('/api/v1/parking?per_page=100')
+        ->assertOk();
+});
+
+it('rejects a zero radius', function () {
+    $this
+        ->getJson(
+            '/api/v1/parking?' .
+            'latitude=25.5779&' .
+            'longitude=91.8837&' .
+            'radius=0',
+        )
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors([
+            'radius',
+        ]);
+});
+
+it('rejects a radius above the maximum', function () {
+    $this
+        ->getJson(
+            '/api/v1/parking?' .
+            'latitude=25.5779&' .
+            'longitude=91.8837&' .
+            'radius=50001',
+        )
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors([
+            'radius',
+        ]);
+});
+
+it('accepts the maximum radius', function () {
+    $this
+        ->getJson(
+            '/api/v1/parking?' .
+            'latitude=25.5779&' .
+            'longitude=91.8837&' .
+            'radius=50000',
+        )
+        ->assertOk();
+});
+
+it('rejects an invalid availability filter', function () {
+    $this
+        ->getJson(
+            '/api/v1/parking?filter[availability]=INVALID',
+        )
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors([
+            'filter.availability',
+        ]);
+});
+
+it('rejects a nonexistent provider', function () {
+    $this
+        ->getJson(
+            '/api/v1/parking?filter[provider_id]=999999',
+        )
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors([
+            'filter.provider_id',
+        ]);
+});
+
+it('rejects a non-numeric provider id', function () {
+    $this
+        ->getJson(
+            '/api/v1/parking?filter[provider_id]=abc',
+        )
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors([
+            'filter.provider_id',
+        ]);
+});
+
+it('rejects a non-numeric page', function () {
+    $this
+        ->getJson('/api/v1/parking?page=abc')
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors([
+            'page',
+        ]);
+});
+
+it('rejects a non-numeric per page', function () {
+    $this
+        ->getJson('/api/v1/parking?per_page=abc')
+        ->assertUnprocessable()
+        ->assertJsonValidationErrors([
+            'per_page',
+        ]);
+});
+
 it('filters by parking type', function () {
     $facility = ParkingFacility::factory()->create([
         'status' => 'ACTIVE',
