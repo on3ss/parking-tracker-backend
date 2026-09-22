@@ -9,6 +9,7 @@ use App\Exceptions\Parking\InvalidParkingAvailability;
 use App\Models\OccupancyReport;
 use App\Models\ParkingFacility;
 use App\Models\StreetParking;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 final class ReportParkingAvailability
@@ -103,26 +104,22 @@ final class ReportParkingAvailability
         int $occupiedSpaces,
         int $availableSpaces,
         ?float $confidence,
-        $reportedAt,
+        Carbon $reportedAt,
     ): OccupancyReport {
-        $attributes = [
+        return OccupancyReport::query()->create([
             'user_id' => $userId,
             'source' => $source,
             'occupied_spaces' => $occupiedSpaces,
             'available_spaces' => $availableSpaces,
             'confidence' => $confidence,
             'reported_at' => $reportedAt,
-        ];
-
-        if ($parking instanceof ParkingFacility) {
-            $attributes['parking_facility_id'] = $parking->id;
-            $attributes['street_parking_id'] = null;
-        } else {
-            $attributes['parking_facility_id'] = null;
-            $attributes['street_parking_id'] = $parking->id;
-        }
-
-        return OccupancyReport::query()->create($attributes);
+            'parking_facility_id' => $parking instanceof ParkingFacility
+                ? $parking->id
+                : null,
+            'street_parking_id' => $parking instanceof StreetParking
+                ? $parking->id
+                : null,
+        ]);
     }
 
     private function availabilityStatus(
