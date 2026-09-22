@@ -15,7 +15,8 @@ final class FavoriteParkingController extends Controller
     ): FavoriteResource {
         return new FavoriteResource(
             $favoriteParking->execute(
-                $request->data(),
+                userId: $request->user()->id,
+                parkingIdentifier: $request->parkingIdentifier(),
             ),
         );
     }

@@ -2,10 +2,9 @@
 
 namespace App\Actions\Parking;
 
-use App\Data\Parking\FavoriteParkingData;
+use App\Actions\Parking\ResolveParkingIdentifier;
+use App\Data\Parking\ParkingIdentifier;
 use App\Models\Favorite;
-use App\Models\ParkingFacility;
-use App\Models\StreetParking;
 
 final class UnfavoriteParking
 {
@@ -15,20 +14,16 @@ final class UnfavoriteParking
     }
 
     public function execute(
-        FavoriteParkingData $data,
+        int $userId,
+        string $parkingIdentifier,
     ): bool {
         $parking = $this->resolveParkingIdentifier->execute(
-            $data->parkingIdentifier,
+            $parkingIdentifier,
         );
 
-        $morphType = match (true) {
-            $parking instanceof ParkingFacility => 'facility',
-            $parking instanceof StreetParking => 'street',
-        };
-
         return Favorite::query()
-            ->where('user_id', $data->userId)
-            ->where('favorable_type', $morphType)
+            ->where('user_id', $userId)
+            ->where('favorable_type', ParkingIdentifier::type($parking))
             ->where('favorable_id', $parking->id)
             ->delete() > 0;
     }
