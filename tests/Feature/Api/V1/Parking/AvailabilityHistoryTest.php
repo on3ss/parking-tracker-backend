@@ -170,12 +170,12 @@ describe('validation', function () {
             ->getJson("/api/v1/parking/{$identifier}/availability/history")
             ->assertNotFound();
     })->with([
-                'invalid:1',
-                'facility:0',
-                'facility:abc',
-                'street:abc',
-                '123',
-            ]);
+        'invalid:1',
+        'facility:0',
+        'facility:abc',
+        'street:abc',
+        '123',
+    ]);
 
     it('returns 404 when the parking entity does not exist', function () {
         $this
@@ -194,8 +194,8 @@ describe('validation', function () {
             ->getJson("/api/v1/parking/facility:{$facility->id}/availability/history?{$query}")
             ->assertUnprocessable();
     })->with([
-                'per page zero' => ['per_page=0'],
-                'page zero' => ['page=0'],
-                'per page above max' => ['per_page=101'],
-            ]);
+        'per page zero' => ['per_page=0'],
+        'page zero' => ['page=0'],
+        'per page above max' => ['per_page=101'],
+    ]);
 });

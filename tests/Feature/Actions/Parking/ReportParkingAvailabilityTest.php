@@ -86,7 +86,7 @@ it('creates an occupancy report and updates street parking availability', functi
 |--------------------------------------------------------------------------
 */
 
-it('calculates availability status', function (int $capacity, int $available, AvailabilityStatus $expected, ) {
+it('calculates availability status', function (int $capacity, int $available, AvailabilityStatus $expected) {
     $facility = ParkingFacility::factory()->create([
         'capacity' => $capacity,
         'available_spaces' => $capacity,
@@ -102,12 +102,12 @@ it('calculates availability status', function (int $capacity, int $available, Av
 
     expect($facility->refresh()->availability_status)->toBe($expected);
 })->with([
-            'full' => [50, 0, AvailabilityStatus::FULL],
-            'at threshold' => [50, 10, AvailabilityStatus::LIMITED],
-            'below threshold' => [100, 19, AvailabilityStatus::LIMITED],
-            'above threshold' => [100, 21, AvailabilityStatus::AVAILABLE],
-            'zero capacity' => [0, 0, AvailabilityStatus::UNKNOWN],
-        ]);
+    'full' => [50, 0, AvailabilityStatus::FULL],
+    'at threshold' => [50, 10, AvailabilityStatus::LIMITED],
+    'below threshold' => [100, 19, AvailabilityStatus::LIMITED],
+    'above threshold' => [100, 21, AvailabilityStatus::AVAILABLE],
+    'zero capacity' => [0, 0, AvailabilityStatus::UNKNOWN],
+]);
 
 /*
 |--------------------------------------------------------------------------
@@ -115,14 +115,14 @@ it('calculates availability status', function (int $capacity, int $available, Av
 |--------------------------------------------------------------------------
 */
 
-it('rejects invalid availability', function (int $capacity, int $available, ?int $occupied, string $message, ) {
+it('rejects invalid availability', function (int $capacity, int $available, ?int $occupied, string $message) {
     $facility = ParkingFacility::factory()->create([
         'capacity' => $capacity,
         'available_spaces' => $capacity,
         'availability_status' => AvailabilityStatus::AVAILABLE,
     ]);
 
-    expect(fn() => app(ReportParkingAvailability::class)->execute(
+    expect(fn () => app(ReportParkingAvailability::class)->execute(
         new ReportParkingAvailabilityData(
             parkingIdentifier: "facility:{$facility->id}",
             availableSpaces: $available,
@@ -140,22 +140,22 @@ it('rejects invalid availability', function (int $capacity, int $available, ?int
 
     expect($facility->available_spaces)->toBe($capacity);
 })->with([
-            'available exceeds capacity' => [
-                10,
-                11,
-                null,
-                'Available spaces cannot exceed parking capacity.',
-            ],
-            'occupied exceeds capacity' => [
-                10,
-                2,
-                11,
-                'Occupied spaces cannot exceed parking capacity.',
-            ],
-            'occupied plus available exceeds capacity' => [
-                20,
-                15,
-                10,
-                'Occupied and available spaces cannot exceed parking capacity.',
-            ],
-        ]);
+    'available exceeds capacity' => [
+        10,
+        11,
+        null,
+        'Available spaces cannot exceed parking capacity.',
+    ],
+    'occupied exceeds capacity' => [
+        10,
+        2,
+        11,
+        'Occupied spaces cannot exceed parking capacity.',
+    ],
+    'occupied plus available exceeds capacity' => [
+        20,
+        15,
+        10,
+        'Occupied and available spaces cannot exceed parking capacity.',
+    ],
+]);
