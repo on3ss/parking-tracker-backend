@@ -43,7 +43,7 @@ class ParkingProviderForm
                             ->maxLength(255)
                             ->regex('/^[a-z0-9]+(?:-[a-z0-9]+)*$/')
                             ->unique(
-                                table: 'parking_facilities',
+                                table: 'parking_providers',
                                 column: 'slug',
                                 ignorable: fn($record) => $record,
                             )

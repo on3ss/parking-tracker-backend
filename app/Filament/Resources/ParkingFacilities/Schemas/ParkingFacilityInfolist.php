@@ -46,27 +46,27 @@ class ParkingFacilityInfolist
                     ->schema([
                         TextEntry::make('location.address_line1')
                             ->label(__('Address'))
-                            ->placeholder('-'),
+                            ->placeholder(__('-')),
 
                         TextEntry::make('location.locality')
                             ->label(__('Locality'))
-                            ->placeholder('-'),
+                            ->placeholder(__('-')),
 
                         TextEntry::make('location.administrative_area')
                             ->label(__('Administrative area'))
-                            ->placeholder('-'),
+                            ->placeholder(__('-')),
 
                         TextEntry::make('location.postal_code')
                             ->label(__('Postal code'))
-                            ->placeholder('-'),
+                            ->placeholder(__('-')),
 
                         TextEntry::make('location.country_code')
                             ->label(__('Country'))
-                            ->placeholder('-'),
+                            ->placeholder(__('-')),
 
                         TextEntry::make('location.coordinates')
                             ->label(__('Coordinates'))
-                            ->placeholder('-'),
+                            ->placeholder(__('-')),
                     ])
                     ->columns(2),
 
@@ -75,12 +75,12 @@ class ParkingFacilityInfolist
                         TextEntry::make('opening_time')
                             ->label(__('Opening time'))
                             ->time()
-                            ->placeholder('-'),
+                            ->placeholder(__('-')),
 
                         TextEntry::make('closing_time')
                             ->label(__('Closing time'))
                             ->time()
-                            ->placeholder('-'),
+                            ->placeholder(__('-')),
                     ])
                     ->columns(2),
 
@@ -89,7 +89,7 @@ class ParkingFacilityInfolist
                         TextEntry::make('available_spaces')
                             ->label(__('Available spaces'))
                             ->numeric()
-                            ->placeholder('-'),
+                            ->placeholder(__('-')),
 
                         TextEntry::make('availability_status')
                             ->label(__('Status'))
@@ -98,7 +98,7 @@ class ParkingFacilityInfolist
                         TextEntry::make('availability_updated_at')
                             ->label(__('Last updated'))
                             ->dateTime()
-                            ->placeholder('-'),
+                            ->placeholder(__('-')),
                     ])
                     ->columns(3),
 
@@ -107,7 +107,7 @@ class ParkingFacilityInfolist
                         TextEntry::make('description')
                             ->label(__('Description'))
                             ->html()
-                            ->placeholder('-')
+                            ->placeholder(__('-'))
                             ->columnSpanFull(),
                     ]),
 
