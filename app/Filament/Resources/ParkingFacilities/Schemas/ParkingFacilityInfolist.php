@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\ParkingFacilities\Schemas;
 
-use App\Models\ParkingFacility;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -19,11 +18,14 @@ class ParkingFacilityInfolist
                             ->label(__('Name')),
 
                         TextEntry::make('slug')
-                            ->label(__('Slug')),
+                            ->label(__('Slug'))
+                            ->fontFamily('mono')
+                            ->copyable()
+                            ->copyMessage(__('Slug copied')),
 
                         TextEntry::make('provider.name')
                             ->label(__('Provider'))
-                            ->placeholder('-'),
+                            ->placeholder(__('—')),
 
                         TextEntry::make('type')
                             ->label(__('Type'))
@@ -36,7 +38,7 @@ class ParkingFacilityInfolist
                         TextEntry::make('capacity')
                             ->label(__('Capacity'))
                             ->numeric()
-                            ->placeholder('-'),
+                            ->placeholder(__('—')),
                     ])
                     ->columns(2),
 
@@ -114,18 +116,19 @@ class ParkingFacilityInfolist
                         TextEntry::make('created_at')
                             ->label(__('Created'))
                             ->dateTime()
-                            ->placeholder('-'),
+                            ->placeholder(__('—')),
 
                         TextEntry::make('updated_at')
                             ->label(__('Updated'))
                             ->dateTime()
-                            ->placeholder('-'),
+                            ->placeholder(__('—')),
 
                         TextEntry::make('deleted_at')
                             ->label(__('Deleted'))
                             ->dateTime()
+                            ->placeholder(__('—'))
                             ->visible(
-                                fn(ParkingFacility $record): bool => $record->trashed(),
+                                fn($record): bool => $record->trashed(),
                             ),
                     ])
                     ->columns(3)

@@ -9,7 +9,9 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\TimePicker;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Hamcrest\Core\Set;
 use Illuminate\Support\Str;
 
 class ParkingFacilityForm
@@ -26,15 +28,18 @@ class ParkingFacilityForm
                             ->required()
                             ->maxLength(255)
                             ->live(onBlur: true)
-                            ->afterStateUpdated(function ($state, callable $set, callable $get): void {
-                                if (blank($get('slug'))) {
-                                    $set('slug', Str::slug($state));
+                            ->afterStateUpdated(function (Set $set, Get $get, ?string $state, ): void {
+                                if (blank($state) || filled($get('slug'))) {
+                                    return;
                                 }
-                            }),
 
+                                $set('slug', Str::slug($state));
+                            }),
 
                         TextInput::make('slug')
                             ->label(__('Slug'))
+                            ->disabled()
+                            ->dehydrated()
                             ->required()
                             ->maxLength(255)
                             ->regex('/^[a-z0-9]+(?:-[a-z0-9]+)*$/')
@@ -43,7 +48,7 @@ class ParkingFacilityForm
                                 column: 'slug',
                                 ignorable: fn($record) => $record,
                             )
-                            ->disabled(),
+                            ->helperText(__('Generated automatically and cannot be changed.')),
 
                         Select::make('parking_provider_id')
                             ->label(__('Provider'))
