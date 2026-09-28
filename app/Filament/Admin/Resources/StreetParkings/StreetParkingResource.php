@@ -2,13 +2,26 @@
 
 namespace App\Filament\Admin\Resources\StreetParkings;
 
-use App\Filament\Admin\Resources\StreetParkings\Schemas\StreetParkingForm;
-use App\Filament\Admin\Resources\StreetParkings\Schemas\StreetParkingInfolist;
-use App\Filament\Admin\Resources\StreetParkings\Tables\StreetParkingsTable;
+use App\Filament\Admin\Resources\StreetParkings\Pages\CreateStreetParking;
+use App\Filament\Admin\Resources\StreetParkings\Pages\EditStreetParking;
+use App\Filament\Admin\Resources\StreetParkings\Pages\ListStreetParkings;
+use App\Filament\Admin\Resources\StreetParkings\Pages\ViewStreetParking;
+use App\Filament\Components\StreetParkings\Forms\StreetParkingForm;
+use App\Filament\Components\StreetParkings\Infolists\StreetParkingInfolist;
+use App\Filament\Components\StreetParkings\Tables\StreetParkingColumns;
+use App\Filament\Components\StreetParkings\Tables\StreetParkingFilters;
 use App\Models\StreetParking;
 use BackedEnum;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\RestoreBulkAction;
+use Filament\Actions\ViewAction;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -18,7 +31,8 @@ class StreetParkingResource extends Resource
 {
     protected static ?string $model = StreetParking::class;
 
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-map-pin';
+    protected static string|BackedEnum|null $navigationIcon =
+        Heroicon::OutlinedMapPin;
 
     protected static string|UnitEnum|null $navigationGroup = 'Parking';
 
@@ -32,17 +46,60 @@ class StreetParkingResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        return StreetParkingForm::configure($schema);
+        return $schema->components([
+            StreetParkingForm::information(),
+            StreetParkingForm::provider(),
+            StreetParkingForm::location(),
+            StreetParkingForm::description(),
+        ]);
     }
 
     public static function infolist(Schema $schema): Schema
     {
-        return StreetParkingInfolist::configure($schema);
+        return $schema->components([
+            StreetParkingInfolist::information(),
+            StreetParkingInfolist::location(),
+            StreetParkingInfolist::availability(),
+            StreetParkingInfolist::description(),
+            StreetParkingInfolist::recordInformation(),
+        ]);
     }
 
     public static function table(Table $table): Table
     {
-        return StreetParkingsTable::configure($table);
+        return $table
+            ->defaultSort('name')
+            ->columns([
+                StreetParkingColumns::name(),
+                StreetParkingColumns::provider(),
+                StreetParkingColumns::roadName(),
+                StreetParkingColumns::side(),
+                StreetParkingColumns::parkingType(),
+                StreetParkingColumns::status(),
+                StreetParkingColumns::capacity(),
+                ...StreetParkingColumns::availability(),
+                StreetParkingColumns::locality(),
+                StreetParkingColumns::slug(),
+                ...StreetParkingColumns::timestamps(),
+            ])
+            ->filters([
+                StreetParkingFilters::provider(),
+                StreetParkingFilters::parkingType(),
+                StreetParkingFilters::status(),
+                StreetParkingFilters::availability(),
+                TrashedFilter::make(),
+            ])
+            ->recordActions([
+                ViewAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
+            ])
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
+                ]),
+            ]);
     }
 
     public static function getRelations(): array
@@ -53,10 +110,10 @@ class StreetParkingResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListStreetParkings::route('/'),
-            'create' => Pages\CreateStreetParking::route('/create'),
-            'view' => Pages\ViewStreetParking::route('/{record}'),
-            'edit' => Pages\EditStreetParking::route('/{record}/edit'),
+            'index' => ListStreetParkings::route('/'),
+            'create' => CreateStreetParking::route('/create'),
+            'view' => ViewStreetParking::route('/{record}'),
+            'edit' => EditStreetParking::route('/{record}/edit'),
         ];
     }
 
