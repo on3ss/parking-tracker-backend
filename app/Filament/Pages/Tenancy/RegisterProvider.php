@@ -7,7 +7,6 @@ use App\Models\ProviderMembership;
 use Filament\Forms\Components\TextInput;
 use Filament\Pages\Tenancy\RegisterTenant;
 use Filament\Schemas\Schema;
-use Illuminate\Support\Str;
 
 class RegisterProvider extends RegisterTenant
 {
@@ -21,14 +20,7 @@ class RegisterProvider extends RegisterTenant
         return $schema->components([
             TextInput::make('name')
                 ->required()
-                ->live()
-                ->afterStateUpdated(function ($state, $set): void {
-                    $set('slug', Str::slug($state));
-                }),
-
-            TextInput::make('slug')
-                ->readOnly()
-                ->required(),
+                ->maxLength(255),
         ]);
     }
 

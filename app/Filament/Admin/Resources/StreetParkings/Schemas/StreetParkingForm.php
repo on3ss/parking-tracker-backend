@@ -11,10 +11,7 @@ use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
-use Illuminate\Support\Str;
 
 class StreetParkingForm
 {
@@ -28,33 +25,13 @@ class StreetParkingForm
                         TextInput::make('name')
                             ->label(__('Name'))
                             ->required()
-                            ->maxLength(255)
-                            ->live(onBlur: true)
-                            ->afterStateUpdated(
-                                function (Set $set, Get $get, ?string $state): void {
-                                    if (blank($state) || filled($get('slug'))) {
-                                        return;
-                                    }
-
-                                    $set('slug', Str::slug($state));
-                                }
-                            ),
+                            ->maxLength(255),
 
                         TextInput::make('slug')
                             ->label(__('Slug'))
                             ->disabled()
-                            ->dehydrated()
-                            ->required()
-                            ->maxLength(255)
-                            ->regex('/^[a-z0-9]+(?:-[a-z0-9]+)*$/')
-                            ->unique(
-                                table: 'street_parkings',
-                                column: 'slug',
-                                ignorable: fn($record) => $record,
-                            )
-                            ->helperText(
-                                __('Generated automatically and cannot be changed.')
-                            ),
+                            ->dehydrated(false)
+                            ->helperText(__('Generated automatically and cannot be changed.')),
 
                         Select::make('parking_provider_id')
                             ->label(__('Provider'))

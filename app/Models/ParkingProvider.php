@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ParkingProviderType;
+use App\Models\Concerns\HasSlug;
 use App\Models\ParkingFacility;
 use App\Models\ProviderMembership;
 use App\Models\StreetParking;
@@ -19,7 +20,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class ParkingProvider extends Model
 {
     /** @use HasFactory<ParkingProviderFactory> */
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasSlug;
 
     protected function casts(): array
     {

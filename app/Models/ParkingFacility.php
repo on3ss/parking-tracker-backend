@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\AvailabilityStatus;
 use App\Enums\ParkingFacilityType;
 use App\Enums\ParkingStatus;
+use App\Models\Concerns\HasSlug;
 use Database\Factories\ParkingFacilitiesFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -31,7 +32,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class ParkingFacility extends Model
 {
     /** @use HasFactory<ParkingFacilitiesFactory> */
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasSlug;
 
     protected function casts(): array
     {
@@ -46,7 +47,7 @@ class ParkingFacility extends Model
         ];
     }
 
-    public function provider(): BelongsTo
+    public function parkingProvider(): BelongsTo
     {
         return $this->belongsTo(ParkingProvider::class, 'parking_provider_id');
     }

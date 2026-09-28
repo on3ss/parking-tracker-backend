@@ -16,7 +16,6 @@ class ParkingProviderFactory extends Factory
 
         return [
             'name' => $name,
-            'slug' => fake()->unique()->slug(),
 
             'type' => fake()->randomElement(
                 ParkingProviderType::cases()
