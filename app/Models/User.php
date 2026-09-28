@@ -3,10 +3,16 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Favorite;
+use App\Models\ParkingProvider;
+use App\Models\ProviderMembership;
 use Database\Factories\UserFactory;
+use Filament\Models\Contracts\HasTenants;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -14,7 +20,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable
+class User extends Authenticatable implements HasTenants
 {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
@@ -40,5 +46,43 @@ class User extends Authenticatable
     public function favorites(): HasMany
     {
         return $this->hasMany(Favorite::class);
+    }
+
+    public function providerMemberships(): HasMany
+    {
+        return $this->hasMany(ProviderMembership::class);
+    }
+
+    public function providers(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            ParkingProvider::class,
+            'provider_memberships',
+            'user_id',
+            'parking_provider_id',
+        )->withPivot('role')
+            ->withTimestamps();
+    }
+
+    /**
+     * Providers available to the authenticated user
+     * in the Filament Provider Panel.
+     */
+    public function getTenants(Panel $panel): \Illuminate\Support\Collection
+    {
+        return $this->providers()->get();
+    }
+
+    /**
+     * Determine whether the user can access a provider.
+     */
+    public function canAccessTenant(\Illuminate\Database\Eloquent\Model $tenant): bool
+    {
+        return $this->providerMemberships()
+            ->where(
+                'parking_provider_id',
+                $tenant->getKey(),
+            )
+            ->exists();
     }
 }

@@ -3,10 +3,15 @@
 namespace App\Models;
 
 use App\Enums\ParkingProviderType;
+use App\Models\ParkingFacility;
+use App\Models\ProviderMembership;
+use App\Models\StreetParking;
+use App\Models\User;
 use Database\Factories\ParkingProviderFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -32,5 +37,24 @@ class ParkingProvider extends Model
     public function streetParkings(): HasMany
     {
         return $this->hasMany(StreetParking::class);
+    }
+
+    public function memberships(): HasMany
+    {
+        return $this->hasMany(
+            ProviderMembership::class,
+            'parking_provider_id',
+        );
+    }
+
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            User::class,
+            'provider_memberships',
+            'parking_provider_id',
+            'user_id',
+        )->withPivot('role')
+            ->withTimestamps();
     }
 }

@@ -2,6 +2,9 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Tenancy\EditProviderProfile;
+use App\Filament\Pages\Tenancy\RegisterProvider;
+use App\Models\ParkingProvider;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -27,6 +30,9 @@ class ProviderPanelProvider extends PanelProvider
             ->id('provider')
             ->path('provider')
             ->login()
+            ->tenant(ParkingProvider::class)
+            ->tenantRegistration(RegisterProvider::class)
+            ->tenantProfile(EditProviderProfile::class)
             ->colors([
                 'primary' => Color::Amber,
             ])
