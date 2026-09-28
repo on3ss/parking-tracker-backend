@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['address_line1', 'address_line2', 'locality', 'administrative_area', 'postal_code', 'country_code'])]
+#[Fillable(['address_line1', 'address_line2', 'locality', 'administrative_area', 'postal_code', 'country_code', 'coordinates'])]
 class Location extends Model
 {
     /** @use HasFactory<LocationFactory> */
