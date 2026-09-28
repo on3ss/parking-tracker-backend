@@ -8,6 +8,7 @@ use App\Enums\ParkingProviderType;
 use App\Enums\ParkingSource;
 use App\Enums\ParkingStatus;
 use App\Enums\StreetParkingType;
+use App\Enums\VehicleType;
 use App\Models\Location;
 use App\Models\OccupancyReport;
 use App\Models\ParkingArea;
@@ -36,7 +37,7 @@ class ShillongParkingSeeder extends Seeder
             ['slug' => 'shillong-private-parking'],
             [
                 'name' => 'Shillong Private Parking',
-                'type' => ParkingProviderType::PRIVATE,
+                'type' => ParkingProviderType::PRIVATE ,
                 'description' => 'Development/demo private parking provider.',
                 'is_active' => true,
             ],
@@ -63,7 +64,7 @@ class ShillongParkingSeeder extends Seeder
                 'location_id' => $policeBazarLocation->id,
 
                 'name' => 'Police Bazar Parking',
-                'type' => ParkingFacilityType::PUBLIC,
+                'type' => ParkingFacilityType::PUBLIC ,
                 'status' => ParkingStatus::ACTIVE,
 
                 'capacity' => 180,
@@ -83,7 +84,7 @@ class ShillongParkingSeeder extends Seeder
             facility: $policeBazar,
             name: 'Ground Floor',
             code: 'PB-GF',
-            vehicleType: 'CAR',
+            vehicleType: VehicleType::CAR,
             capacity: 100,
         );
 
@@ -91,7 +92,7 @@ class ShillongParkingSeeder extends Seeder
             facility: $policeBazar,
             name: 'Two Wheeler Area',
             code: 'PB-2W',
-            vehicleType: 'MOTORCYCLE',
+            vehicleType: VehicleType::MOTORCYCLE,
             capacity: 80,
         );
 
@@ -143,7 +144,7 @@ class ShillongParkingSeeder extends Seeder
             facility: $laitumkhrah,
             name: 'Main Parking',
             code: 'LM-MAIN',
-            vehicleType: 'CAR',
+            vehicleType: VehicleType::CAR,
             capacity: 60,
         );
 
@@ -151,7 +152,7 @@ class ShillongParkingSeeder extends Seeder
             facility: $laitumkhrah,
             name: 'Two Wheeler Area',
             code: 'LM-2W',
-            vehicleType: 'MOTORCYCLE',
+            vehicleType: VehicleType::MOTORCYCLE,
             capacity: 30,
         );
 
@@ -244,7 +245,7 @@ class ShillongParkingSeeder extends Seeder
         ParkingFacility $facility,
         string $name,
         string $code,
-        string $vehicleType,
+        VehicleType $vehicleType,
         int $capacity,
     ): ParkingArea {
         return ParkingArea::updateOrCreate(

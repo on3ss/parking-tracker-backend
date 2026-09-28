@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ParkingFacilities\RelationManagers;
 
+use App\Enums\VehicleType;
 use App\Models\ParkingArea;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
@@ -48,12 +49,8 @@ class AreasRelationManager extends RelationManager
 
                         Select::make('vehicle_type')
                             ->label(__('Vehicle type'))
-                            ->options([
-                                'ALL' => __('All'),
-                                'CAR' => __('Car'),
-                                'MOTORCYCLE' => __('Motorcycle'),
-                            ])
-                            ->default('ALL')
+                            ->options(VehicleType::class)
+                            ->default(VehicleType::ALL)
                             ->native(false)
                             ->required(),
 
@@ -88,8 +85,7 @@ class AreasRelationManager extends RelationManager
 
                         TextEntry::make('vehicle_type')
                             ->label(__('Vehicle type'))
-                            ->badge()
-                            ->placeholder(__('—')),
+                            ->badge(),
 
                         TextEntry::make('capacity')
                             ->label(__('Capacity'))

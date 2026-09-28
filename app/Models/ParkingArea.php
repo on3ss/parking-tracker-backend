@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\VehicleType;
 use Database\Factories\ParkingAreaFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -27,6 +28,7 @@ class ParkingArea extends Model
         return [
             'capacity' => 'integer',
             'is_active' => 'boolean',
+            'vehicle_type' => VehicleType::class,
         ];
     }
 
