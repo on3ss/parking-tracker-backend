@@ -50,6 +50,7 @@ class StreetParkingResource extends Resource
             StreetParkingForm::information(),
             StreetParkingForm::provider(),
             StreetParkingForm::location(),
+            StreetParkingForm::geometry(),
             StreetParkingForm::description(),
         ]);
     }
