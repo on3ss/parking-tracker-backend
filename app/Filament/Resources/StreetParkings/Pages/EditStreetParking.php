@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\StreetParkings\Pages;
 
 use App\Filament\Resources\StreetParkings\StreetParkingResource;
+use App\Filament\Support\StripGeometry;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
@@ -15,9 +16,7 @@ class EditStreetParking extends EditRecord
 
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        unset($data['geometry']);
-
-        return $data;
+        return StripGeometry::from($data);
     }
 
     protected function getHeaderActions(): array

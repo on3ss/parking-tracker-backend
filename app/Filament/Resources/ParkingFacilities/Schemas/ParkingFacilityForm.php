@@ -4,6 +4,7 @@ namespace App\Filament\Resources\ParkingFacilities\Schemas;
 
 use App\Enums\ParkingFacilityType;
 use App\Enums\ParkingStatus;
+use App\Filament\Support\StripGeometry;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -28,13 +29,15 @@ class ParkingFacilityForm
                             ->required()
                             ->maxLength(255)
                             ->live(onBlur: true)
-                            ->afterStateUpdated(function (Set $set, Get $get, ?string $state, ): void {
-                                if (blank($state) || filled($get('slug'))) {
-                                    return;
-                                }
+                            ->afterStateUpdated(
+                                function (Set $set, Get $get, ?string $state): void {
+                                    if (blank($state) || filled($get('slug'))) {
+                                        return;
+                                    }
 
-                                $set('slug', Str::slug($state));
-                            }),
+                                    $set('slug', Str::slug($state));
+                                }
+                            ),
 
                         TextInput::make('slug')
                             ->label(__('Slug'))
@@ -48,7 +51,9 @@ class ParkingFacilityForm
                                 column: 'slug',
                                 ignorable: fn($record) => $record,
                             )
-                            ->helperText(__('Generated automatically and cannot be changed.')),
+                            ->helperText(
+                                __('Generated automatically and cannot be changed.')
+                            ),
 
                         Select::make('parking_provider_id')
                             ->label(__('Provider'))
@@ -93,11 +98,7 @@ class ParkingFacilityForm
                 Section::make(__('Location'))
                     ->relationship('location')
                     ->mutateRelationshipDataBeforeFillUsing(
-                        function (array $data): array {
-                            unset($data['coordinates']);
-
-                            return $data;
-                        }
+                        fn(array $data): array => StripGeometry::from($data),
                     )
                     ->schema([
                         TextInput::make('address_line1')

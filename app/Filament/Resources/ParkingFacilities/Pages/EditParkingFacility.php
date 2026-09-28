@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\ParkingFacilities\Pages;
 
 use App\Filament\Resources\ParkingFacilities\ParkingFacilityResource;
+use App\Filament\Support\StripGeometry;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
@@ -12,6 +13,11 @@ use Filament\Resources\Pages\EditRecord;
 class EditParkingFacility extends EditRecord
 {
     protected static string $resource = ParkingFacilityResource::class;
+
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        return StripGeometry::from($data);
+    }
 
     protected function getHeaderActions(): array
     {
