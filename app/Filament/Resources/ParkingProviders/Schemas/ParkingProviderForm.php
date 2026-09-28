@@ -27,7 +27,7 @@ class ParkingProviderForm
                             ->required()
                             ->maxLength(255)
                             ->live(onBlur: true)
-                            ->afterStateUpdated(function (Set $set, Get $get, ?string $state, ): void {
+                            ->afterStateUpdated(function (Set $set, Get $get, ?string $state): void {
                                 if (blank($state) || filled($get('slug'))) {
                                     return;
                                 }

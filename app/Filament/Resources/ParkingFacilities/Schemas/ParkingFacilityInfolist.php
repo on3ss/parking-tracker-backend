@@ -63,10 +63,6 @@ class ParkingFacilityInfolist
                         TextEntry::make('location.country_code')
                             ->label(__('Country'))
                             ->placeholder(__('-')),
-
-                        TextEntry::make('location.coordinates')
-                            ->label(__('Coordinates'))
-                            ->placeholder(__('-')),
                     ])
                     ->columns(2),
 

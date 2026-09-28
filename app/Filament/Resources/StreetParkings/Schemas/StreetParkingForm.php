@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\StreetParkings\Schemas;
 
+use App\Enums\AvailabilityStatus;
 use App\Enums\ParkingStatus;
 use App\Enums\StreetParkingType;
 use App\Filament\Support\StripGeometry;
@@ -138,7 +139,7 @@ class StreetParkingForm
 
                         Select::make('availability_status')
                             ->label(__('Availability status'))
-                            ->options(\App\Enums\AvailabilityStatus::class)
+                            ->options(AvailabilityStatus::class)
                             ->disabled()
                             ->dehydrated(false),
 

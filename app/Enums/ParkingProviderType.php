@@ -5,6 +5,7 @@ namespace App\Enums;
 use Filament\Support\Contracts\HasColor;
 use Filament\Support\Contracts\HasIcon;
 use Filament\Support\Contracts\HasLabel;
+use Filament\Support\Colors\Color;
 
 enum ParkingProviderType: string implements HasColor, HasIcon, HasLabel
 {
@@ -29,16 +30,16 @@ enum ParkingProviderType: string implements HasColor, HasIcon, HasLabel
         };
     }
 
-    public function getColor(): string
+    public function getColor(): string|array
     {
         return match ($this) {
-            self::MUNICIPAL => 'info',
-            self::PRIVATE => 'gray',
-            self::COMMERCIAL => 'primary',
-            self::HOTEL => 'warning',
-            self::HOSPITAL => 'danger',
-            self::MALL => 'success',
-            self::OTHER => 'gray',
+            self::MUNICIPAL => Color::Blue,
+            self::PRIVATE => Color::Gray,
+            self::COMMERCIAL => Color::Purple,
+            self::HOTEL => Color::Amber,
+            self::HOSPITAL => Color::Red,
+            self::MALL => Color::Green,
+            self::OTHER => Color::Gray,
         };
     }
 
