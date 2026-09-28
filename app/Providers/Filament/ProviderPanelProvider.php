@@ -30,7 +30,7 @@ class ProviderPanelProvider extends PanelProvider
             ->id('provider')
             ->path('provider')
             ->login()
-            ->tenant(ParkingProvider::class)
+            ->tenant(ParkingProvider::class, ownershipRelationship: 'provider')
             ->tenantRegistration(RegisterProvider::class)
             ->tenantProfile(EditProviderProfile::class)
             ->colors([

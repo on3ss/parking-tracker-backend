@@ -17,7 +17,7 @@ final class ParkingFacilityColumns
 
     public static function provider(): TextColumn
     {
-        return TextColumn::make('parkingProvider.name')
+        return TextColumn::make('provider.name')
             ->label(__('Provider'))
             ->searchable()
             ->sortable();
