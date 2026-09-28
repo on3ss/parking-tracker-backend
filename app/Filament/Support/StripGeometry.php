@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Support;
+namespace App\Filament\Admin\Support;
 
 final class StripGeometry
 {
