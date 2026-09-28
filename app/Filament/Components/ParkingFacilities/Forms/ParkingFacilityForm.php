@@ -63,7 +63,7 @@ final class ParkingFacilityForm
     {
         return Select::make('parking_provider_id')
             ->label(__('Provider'))
-            ->relationship('provider', 'name')
+            ->relationship('parkingProvider', 'name')
             ->searchable()
             ->preload()
             ->required();

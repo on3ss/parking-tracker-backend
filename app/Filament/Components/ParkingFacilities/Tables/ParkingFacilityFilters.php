@@ -13,7 +13,7 @@ final class ParkingFacilityFilters
     {
         return SelectFilter::make('provider')
             ->label(__('Provider'))
-            ->relationship('provider', 'name')
+            ->relationship('parkingProvider', 'name')
             ->searchable()
             ->preload();
     }
