@@ -65,8 +65,7 @@ class FacilityAvailabilityTable extends TableWidget
                     ->since()
                     ->sortable()
                     ->color(
-                        fn($record): string =>
-                            $this->isStale($record)
+                        fn ($record): string => $this->isStale($record)
                             ? 'warning'
                             : 'gray',
                     ),
@@ -88,11 +87,10 @@ class FacilityAvailabilityTable extends TableWidget
                     ->label(__('View'))
                     ->icon('heroicon-m-eye')
                     ->url(
-                        fn(ParkingFacility $record): string =>
-                            route(
-                                'filament.admin.resources.parking-facilities.view',
-                                $record,
-                            ),
+                        fn (ParkingFacility $record): string => route(
+                            'filament.admin.resources.parking-facilities.view',
+                            $record,
+                        ),
                     ),
 
                 Action::make('report')
@@ -100,10 +98,9 @@ class FacilityAvailabilityTable extends TableWidget
                     ->icon('heroicon-m-arrow-path')
                     ->color('primary')
                     ->modalHeading(
-                        fn(ParkingFacility $record): string =>
-                            __('Report availability — :name', [
-                                'name' => $record->name,
-                            ]),
+                        fn (ParkingFacility $record): string => __('Report availability — :name', [
+                            'name' => $record->name,
+                        ]),
                     ),
             ]);
     }

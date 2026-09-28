@@ -115,7 +115,7 @@ class AreasRelationManager extends RelationManager
                             ->dateTime()
                             ->placeholder(__('—'))
                             ->visible(
-                                fn(ParkingArea $record): bool => $record->trashed()
+                                fn (ParkingArea $record): bool => $record->trashed()
                             ),
                     ])
                     ->columns(3)
@@ -189,7 +189,7 @@ class AreasRelationManager extends RelationManager
                 ]),
             ])
             ->modifyQueryUsing(
-                fn(Builder $query) => $query->withoutGlobalScopes([
+                fn (Builder $query) => $query->withoutGlobalScopes([
                     SoftDeletingScope::class,
                 ])
             );

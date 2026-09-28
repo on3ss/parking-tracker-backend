@@ -70,8 +70,7 @@ class StreetParkingAvailabilityTable extends TableWidget
                     ->since()
                     ->sortable()
                     ->color(
-                        fn($record): string =>
-                            $this->isStale($record)
+                        fn ($record): string => $this->isStale($record)
                             ? 'warning'
                             : 'gray',
                     ),
@@ -93,11 +92,10 @@ class StreetParkingAvailabilityTable extends TableWidget
                     ->label(__('View'))
                     ->icon('heroicon-m-eye')
                     ->url(
-                        fn(StreetParking $record): string =>
-                            route(
-                                'filament.admin.resources.street-parkings.view',
-                                $record,
-                            ),
+                        fn (StreetParking $record): string => route(
+                            'filament.admin.resources.street-parkings.view',
+                            $record,
+                        ),
                     ),
 
                 Action::make('report')

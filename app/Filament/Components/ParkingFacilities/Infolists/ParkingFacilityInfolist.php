@@ -138,7 +138,7 @@ final class ParkingFacilityInfolist
                     ->label(__('Deleted'))
                     ->dateTime()
                     ->placeholder(__('—'))
-                    ->visible(fn($record): bool => $record->trashed()),
+                    ->visible(fn ($record): bool => $record->trashed()),
             ])
             ->columns(3)
             ->collapsible();

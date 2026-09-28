@@ -55,7 +55,7 @@ class ParkingProviderInfolist
                             ->dateTime()
                             ->placeholder(__('—'))
                             ->visible(
-                                fn(ParkingProvider $record): bool => $record->trashed()
+                                fn (ParkingProvider $record): bool => $record->trashed()
                             ),
                     ])
                     ->columns(3)

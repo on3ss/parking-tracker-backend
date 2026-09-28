@@ -103,7 +103,7 @@ class StreetParkingsTable
                 ]),
             ])
             ->modifyQueryUsing(
-                fn(Builder $query) => $query->withoutGlobalScopes([
+                fn (Builder $query) => $query->withoutGlobalScopes([
                     SoftDeletingScope::class,
                 ])
             );

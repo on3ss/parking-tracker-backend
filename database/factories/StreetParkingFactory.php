@@ -18,7 +18,7 @@ class StreetParkingFactory extends Factory
 
     public function definition(): array
     {
-        $name = fake()->streetName() . ' Parking';
+        $name = fake()->streetName().' Parking';
 
         $latitude = fake()->latitude(8, 35);
         $longitude = fake()->longitude(68, 97);

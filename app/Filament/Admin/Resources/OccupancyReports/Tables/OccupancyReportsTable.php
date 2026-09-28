@@ -5,8 +5,8 @@ namespace App\Filament\Admin\Resources\OccupancyReports\Tables;
 use App\Enums\ParkingSource;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -21,30 +21,26 @@ class OccupancyReportsTable
                 TextColumn::make('parking_name')
                     ->label(__('Parking'))
                     ->state(
-                        fn($record): string =>
-                            $record->parkingFacility?->name
+                        fn ($record): string => $record->parkingFacility?->name
                             ?? $record->streetParking?->name
                             ?? '—',
                     )
                     ->description(
-                        fn($record): string =>
-                            $record->parkingFacility
+                        fn ($record): string => $record->parkingFacility
                             ? __('Facility')
                             : __('Street Parking'),
                     )
                     ->searchable(
-                        query: function (Builder $query, string $search, ): Builder {
+                        query: function (Builder $query, string $search): Builder {
                             return $query->where(function (Builder $query) use ($search) {
                                 $query
                                     ->whereHas(
                                         'parkingFacility',
-                                        fn(Builder $query) =>
-                                            $query->where('name', 'ilike', "%{$search}%"),
+                                        fn (Builder $query) => $query->where('name', 'ilike', "%{$search}%"),
                                     )
                                     ->orWhereHas(
                                         'streetParking',
-                                        fn(Builder $query) =>
-                                            $query->where('name', 'ilike', "%{$search}%"),
+                                        fn (Builder $query) => $query->where('name', 'ilike', "%{$search}%"),
                                     );
                             });
                         },
@@ -70,9 +66,9 @@ class OccupancyReportsTable
                 TextColumn::make('confidence')
                     ->label(__('Confidence'))
                     ->formatStateUsing(
-                        fn($state): string => $state === null
+                        fn ($state): string => $state === null
                             ? '—'
-                            : number_format((float) $state * 100, 1) . '%',
+                            : number_format((float) $state * 100, 1).'%',
                     )
                     ->sortable(),
 
@@ -87,8 +83,7 @@ class OccupancyReportsTable
                     ->dateTime()
                     ->sortable()
                     ->description(
-                        fn($record): string =>
-                            $record->reported_at?->diffForHumans() ?? '—',
+                        fn ($record): string => $record->reported_at?->diffForHumans() ?? '—',
                     ),
 
                 TextColumn::make('id')
@@ -125,15 +120,13 @@ class OccupancyReportsTable
                 Filter::make('has_user')
                     ->label(__('User Reported'))
                     ->query(
-                        fn(Builder $query): Builder =>
-                            $query->whereNotNull('user_id'),
+                        fn (Builder $query): Builder => $query->whereNotNull('user_id'),
                     ),
 
                 Filter::make('system_report')
                     ->label(__('System Report'))
                     ->query(
-                        fn(Builder $query): Builder =>
-                            $query->whereNull('user_id'),
+                        fn (Builder $query): Builder => $query->whereNull('user_id'),
                     ),
             ])
 

@@ -91,17 +91,13 @@ class AvailabilitySummary extends StatsOverviewWidget
         AvailabilityStatus $status,
     ): string {
         return match ($status) {
-            AvailabilityStatus::AVAILABLE =>
-                __('Spaces currently available'),
+            AvailabilityStatus::AVAILABLE => __('Spaces currently available'),
 
-            AvailabilityStatus::LIMITED =>
-                __('Low availability'),
+            AvailabilityStatus::LIMITED => __('Low availability'),
 
-            AvailabilityStatus::FULL =>
-                __('No spaces available'),
+            AvailabilityStatus::FULL => __('No spaces available'),
 
-            AvailabilityStatus::UNKNOWN =>
-                __('Availability is not known'),
+            AvailabilityStatus::UNKNOWN => __('Availability is not known'),
         };
     }
 

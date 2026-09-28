@@ -33,7 +33,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class StreetParking extends Model
 {
     /** @use HasFactory<StreetParkingFactory> */
-    use HasFactory, SoftDeletes, HasSlug;
+    use HasFactory, HasSlug, SoftDeletes;
 
     protected function casts(): array
     {
@@ -67,7 +67,7 @@ class StreetParking extends Model
 
     public function available(int $spaces = 5): static
     {
-        return $this->state(fn() => [
+        return $this->state(fn () => [
             'availability_status' => 'AVAILABLE',
             'available_spaces' => $spaces,
             'availability_updated_at' => now(),
@@ -76,7 +76,7 @@ class StreetParking extends Model
 
     public function full(): static
     {
-        return $this->state(fn() => [
+        return $this->state(fn () => [
             'availability_status' => 'FULL',
             'available_spaces' => 0,
             'availability_updated_at' => now(),

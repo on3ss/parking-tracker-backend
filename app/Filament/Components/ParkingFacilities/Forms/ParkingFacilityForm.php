@@ -4,7 +4,6 @@ namespace App\Filament\Components\ParkingFacilities\Forms;
 
 use App\Enums\ParkingFacilityType;
 use App\Enums\ParkingStatus;
-use App\Filament\Support\StripGeometry;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;

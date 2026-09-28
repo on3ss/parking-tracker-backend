@@ -129,7 +129,7 @@ class StreetParkingInfolist
                             ->dateTime()
                             ->placeholder(__('—'))
                             ->visible(
-                                fn(StreetParking $record): bool => $record->trashed()
+                                fn (StreetParking $record): bool => $record->trashed()
                             ),
                     ])
                     ->columns(3)

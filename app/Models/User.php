@@ -3,19 +3,18 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use App\Models\Favorite;
-use App\Models\ParkingProvider;
-use App\Models\ProviderMembership;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\HasTenants;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Collection;
 use Laravel\Sanctum\HasApiTokens;
 
 #[Fillable(['name', 'email', 'password'])]
@@ -68,7 +67,7 @@ class User extends Authenticatable implements HasTenants
      * Providers available to the authenticated user
      * in the Filament Provider Panel.
      */
-    public function getTenants(Panel $panel): \Illuminate\Support\Collection
+    public function getTenants(Panel $panel): Collection
     {
         return $this->providers()->get();
     }
@@ -76,7 +75,7 @@ class User extends Authenticatable implements HasTenants
     /**
      * Determine whether the user can access a provider.
      */
-    public function canAccessTenant(\Illuminate\Database\Eloquent\Model $tenant): bool
+    public function canAccessTenant(Model $tenant): bool
     {
         return $this->providerMemberships()
             ->where(

@@ -72,7 +72,7 @@ class StreetParkingForm
                 Section::make(__('Location'))
                     ->relationship('location')
                     ->mutateRelationshipDataBeforeFillUsing(
-                        fn(array $data): array => StripGeometry::from($data),
+                        fn (array $data): array => StripGeometry::from($data),
                     )
                     ->schema([
                         TextInput::make('address_line1')
