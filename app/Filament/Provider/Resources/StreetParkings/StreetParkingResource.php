@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Filament\Admin\Resources\StreetParkings;
+namespace App\Filament\Provider\Resources\StreetParkings;
 
-use App\Filament\Admin\Resources\StreetParkings\Pages\CreateStreetParking;
-use App\Filament\Admin\Resources\StreetParkings\Pages\EditStreetParking;
-use App\Filament\Admin\Resources\StreetParkings\Pages\ListStreetParkings;
-use App\Filament\Admin\Resources\StreetParkings\Pages\ViewStreetParking;
 use App\Filament\Components\StreetParkings\Forms\StreetParkingForm;
 use App\Filament\Components\StreetParkings\Infolists\StreetParkingInfolist;
 use App\Filament\Components\StreetParkings\Tables\StreetParkingColumns;
 use App\Filament\Components\StreetParkings\Tables\StreetParkingFilters;
+use App\Filament\Provider\Resources\StreetParkings\Pages\CreateStreetParking;
+use App\Filament\Provider\Resources\StreetParkings\Pages\EditStreetParking;
+use App\Filament\Provider\Resources\StreetParkings\Pages\ListStreetParkings;
+use App\Filament\Provider\Resources\StreetParkings\Pages\ViewStreetParking;
 use App\Models\StreetParking;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
@@ -25,22 +25,12 @@ use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use UnitEnum;
 
 class StreetParkingResource extends Resource
 {
     protected static ?string $model = StreetParking::class;
 
-    protected static string|BackedEnum|null $navigationIcon =
-        Heroicon::OutlinedMapPin;
-
-    protected static string|UnitEnum|null $navigationGroup = 'Parking';
-
-    protected static ?string $navigationLabel = 'Street Parking';
-
-    protected static ?string $modelLabel = 'Street Parking';
-
-    protected static ?string $pluralModelLabel = 'Street Parking';
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'name';
 
@@ -48,8 +38,8 @@ class StreetParkingResource extends Resource
     {
         return $schema->components([
             StreetParkingForm::information(),
-            StreetParkingForm::provider(),
             StreetParkingForm::location(),
+            StreetParkingForm::geometry(),
             StreetParkingForm::description(),
         ]);
     }
@@ -105,7 +95,9 @@ class StreetParkingResource extends Resource
 
     public static function getRelations(): array
     {
-        return [];
+        return [
+            //
+        ];
     }
 
     public static function getPages(): array

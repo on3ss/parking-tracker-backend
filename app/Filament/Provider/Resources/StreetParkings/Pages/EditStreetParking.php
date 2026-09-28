@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Filament\Admin\Resources\StreetParkings\Pages;
+namespace App\Filament\Provider\Resources\StreetParkings\Pages;
 
-use App\Filament\Admin\Resources\StreetParkings\StreetParkingResource;
+use App\Filament\Provider\Resources\StreetParkings\StreetParkingResource;
 use Clickbar\Magellan\Data\Geometries\Point;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\Eloquent\Model;

@@ -36,7 +36,8 @@ final class StreetParkingForm
 
                 TextInput::make('side')
                     ->label(__('Side'))
-                    ->maxLength(50),
+                    ->maxLength(20)
+                    ->required(),
 
                 Select::make('parking_type')
                     ->label(__('Parking type'))
@@ -104,11 +105,40 @@ final class StreetParkingForm
 
                 TextInput::make('latitude')
                     ->label(__('Latitude'))
-                    ->numeric(),
+                    ->numeric()
+                    ->required(),
 
                 TextInput::make('longitude')
                     ->label(__('Longitude'))
-                    ->numeric(),
+                    ->numeric()
+                    ->required(),
+            ])
+            ->columns(2);
+    }
+
+    public static function geometry(): Section
+    {
+        return Section::make(__('Street Geometry'))
+            ->schema([
+                TextInput::make('geometry_start_latitude')
+                    ->label(__('Start latitude'))
+                    ->numeric()
+                    ->required(),
+
+                TextInput::make('geometry_start_longitude')
+                    ->label(__('Start longitude'))
+                    ->numeric()
+                    ->required(),
+
+                TextInput::make('geometry_end_latitude')
+                    ->label(__('End latitude'))
+                    ->numeric()
+                    ->required(),
+
+                TextInput::make('geometry_end_longitude')
+                    ->label(__('End longitude'))
+                    ->numeric()
+                    ->required(),
             ])
             ->columns(2);
     }

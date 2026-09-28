@@ -59,11 +59,20 @@ final class StreetParkingInfolist
 
                 TextEntry::make('location.country_code')
                     ->label(__('Country')),
-
-                TextEntry::make('location.coordinates')
-                    ->label(__('Coordinates')),
             ])
             ->columns(2);
+    }
+
+    public static function geometry(): Section
+    {
+        return Section::make(__('Street Geometry'))
+            ->schema([
+                TextEntry::make('geometry')
+                    ->label(__('Geometry'))
+                    ->formatStateUsing(fn ($state) => $state?->__toString() ?? '—')
+                    ->columnSpanFull(),
+            ])
+            ->columnSpanFull();
     }
 
     public static function availability(): Section
