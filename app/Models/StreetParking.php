@@ -29,7 +29,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'availability_status',
     'availability_updated_at',
     'description',
-    'geometry'
+    'geometry',
 ])]
 class StreetParking extends Model
 {

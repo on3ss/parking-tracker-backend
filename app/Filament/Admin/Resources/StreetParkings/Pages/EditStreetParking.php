@@ -15,11 +15,11 @@ class EditStreetParking extends EditRecord
     protected static string $resource = StreetParkingResource::class;
 
     protected function getHeaderActions(): array
-{
-    return [
-        DeleteAction::make(),
-    ];
-}
+    {
+        return [
+            DeleteAction::make(),
+        ];
+    }
 
     protected function mutateFormDataBeforeFill(array $data): array
     {
