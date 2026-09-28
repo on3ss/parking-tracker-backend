@@ -4,6 +4,8 @@ namespace App\Filament\Resources\StreetParkings\Schemas;
 
 use App\Enums\ParkingStatus;
 use App\Enums\StreetParkingType;
+use App\Filament\Support\StripGeometry;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -92,11 +94,7 @@ class StreetParkingForm
                 Section::make(__('Location'))
                     ->relationship('location')
                     ->mutateRelationshipDataBeforeFillUsing(
-                        function (array $data): array {
-                            unset($data['coordinates']);
-
-                            return $data;
-                        }
+                        fn(array $data): array => StripGeometry::from($data),
                     )
                     ->schema([
                         TextInput::make('address_line1')
@@ -144,7 +142,7 @@ class StreetParkingForm
                             ->disabled()
                             ->dehydrated(false),
 
-                        TextInput::make('availability_updated_at')
+                        DateTimePicker::make('availability_updated_at')
                             ->label(__('Last updated'))
                             ->disabled()
                             ->dehydrated(false),
