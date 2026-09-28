@@ -6,7 +6,6 @@ use App\Filament\Admin\Resources\StreetParkings\StreetParkingResource;
 use App\Models\Location;
 use Clickbar\Magellan\Data\Geometries\LineString;
 use Clickbar\Magellan\Data\Geometries\Point;
-use Filament\Facades\Filament;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -18,29 +17,24 @@ class CreateStreetParking extends CreateRecord
     protected function handleRecordCreation(array $data): Model
     {
         return DB::transaction(function () use ($data): Model {
-            $location = $data['location'] ?? [];
+            $location = $data['location'];
 
             unset($data['location']);
 
-            if (
-                filled($location['latitude'] ?? null) &&
-                filled($location['longitude'] ?? null)
-            ) {
-                $location = Location::create([
-                    'address_line1' => $location['address_line1'] ?? null,
-                    'address_line2' => $location['address_line2'] ?? null,
-                    'locality' => $location['locality'] ?? null,
-                    'administrative_area' => $location['administrative_area'] ?? null,
-                    'postal_code' => $location['postal_code'] ?? null,
-                    'country_code' => $location['country_code'] ?? 'IN',
-                    'coordinates' => Point::makeGeodetic(
-                        latitude: (float) $location['latitude'],
-                        longitude: (float) $location['longitude'],
-                    ),
-                ]);
+            $location = Location::create([
+                'address_line1' => $location['address_line1'] ?? null,
+                'address_line2' => $location['address_line2'] ?? null,
+                'locality' => $location['locality'] ?? null,
+                'administrative_area' => $location['administrative_area'] ?? null,
+                'postal_code' => $location['postal_code'] ?? null,
+                'country_code' => $location['country_code'] ?? 'IN',
+                'coordinates' => Point::makeGeodetic(
+                    latitude: (float) $location['latitude'],
+                    longitude: (float) $location['longitude'],
+                ),
+            ]);
 
-                $data['location_id'] = $location->id;
-            }
+            $data['location_id'] = $location->id;
 
             $data['geometry'] = LineString::make([
                 Point::makeGeodetic(
@@ -59,8 +53,6 @@ class CreateStreetParking extends CreateRecord
                 $data['geometry_end_latitude'],
                 $data['geometry_end_longitude'],
             );
-
-            $data['parking_provider_id'] = Filament::getTenant()->id;
 
             return static::getModel()::create($data);
         });

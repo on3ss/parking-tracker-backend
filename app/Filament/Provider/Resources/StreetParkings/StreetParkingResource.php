@@ -16,21 +16,18 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class StreetParkingResource extends Resource
 {
     protected static ?string $model = StreetParking::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon =
+        Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'name';
 
@@ -52,7 +49,6 @@ class StreetParkingResource extends Resource
             StreetParkingInfolist::geometry(),
             StreetParkingInfolist::availability(),
             StreetParkingInfolist::description(),
-            StreetParkingInfolist::recordInformation(),
         ]);
     }
 
@@ -62,7 +58,6 @@ class StreetParkingResource extends Resource
             ->defaultSort('name')
             ->columns([
                 StreetParkingColumns::name(),
-                StreetParkingColumns::provider(),
                 StreetParkingColumns::roadName(),
                 StreetParkingColumns::side(),
                 StreetParkingColumns::parkingType(),
@@ -74,11 +69,9 @@ class StreetParkingResource extends Resource
                 ...StreetParkingColumns::timestamps(),
             ])
             ->filters([
-                StreetParkingFilters::provider(),
                 StreetParkingFilters::parkingType(),
                 StreetParkingFilters::status(),
                 StreetParkingFilters::availability(),
-                TrashedFilter::make(),
             ])
             ->recordActions([
                 ViewAction::make(),
@@ -88,16 +81,13 @@ class StreetParkingResource extends Resource
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
-                    RestoreBulkAction::make(),
                 ]),
             ]);
     }
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array
@@ -108,13 +98,5 @@ class StreetParkingResource extends Resource
             'view' => ViewStreetParking::route('/{record}'),
             'edit' => EditStreetParking::route('/{record}/edit'),
         ];
-    }
-
-    public static function getRecordRouteBindingEloquentQuery(): Builder
-    {
-        return parent::getRecordRouteBindingEloquentQuery()
-            ->withoutGlobalScopes([
-                SoftDeletingScope::class,
-            ]);
     }
 }
