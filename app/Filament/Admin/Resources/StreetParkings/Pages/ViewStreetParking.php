@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\StreetParkings\Pages;
 
+use App\Filament\Actions\Parking\ReportAvailabilityAction;
 use App\Filament\Admin\Resources\StreetParkings\StreetParkingResource;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -14,6 +15,7 @@ class ViewStreetParking extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            ReportAvailabilityAction::make(),
             EditAction::make(),
             DeleteAction::make(),
         ];

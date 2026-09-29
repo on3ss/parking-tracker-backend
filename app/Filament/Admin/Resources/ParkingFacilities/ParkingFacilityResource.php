@@ -102,6 +102,7 @@ class ParkingFacilityResource extends Resource
     {
         return [
             RelationManagers\AreasRelationManager::class,
+            \App\Filament\RelationManagers\OccupancyReportsRelationManager::class,
         ];
     }
 

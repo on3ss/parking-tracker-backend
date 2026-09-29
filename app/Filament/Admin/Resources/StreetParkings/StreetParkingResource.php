@@ -106,7 +106,9 @@ class StreetParkingResource extends Resource
 
     public static function getRelations(): array
     {
-        return [];
+        return [
+            \App\Filament\RelationManagers\OccupancyReportsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array
