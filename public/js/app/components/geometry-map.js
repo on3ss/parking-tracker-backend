@@ -1,13 +1,21 @@
-import LeafletMapAdapter from './maps/leaflet-adapter'
+const LEAFLET_CSS =
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css'
 
-const LEAFLET_CSS = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
-const LEAFLET_JS = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
+const LEAFLET_JS =
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js'
 
 const LEAFLET_DRAW_CSS =
-    'https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css'
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css'
 
 const LEAFLET_DRAW_JS =
-    'https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js'
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js'
+
+
+/*
+|--------------------------------------------------------------------------
+| External asset loading
+|--------------------------------------------------------------------------
+*/
 
 function loadCss(href) {
     return new Promise((resolve, reject) => {
@@ -17,6 +25,7 @@ function loadCss(href) {
             )
         ) {
             resolve()
+
             return
         }
 
@@ -33,6 +42,7 @@ function loadCss(href) {
     })
 }
 
+
 function loadScript(src) {
     return new Promise((resolve, reject) => {
         if (
@@ -41,6 +51,7 @@ function loadScript(src) {
             )
         ) {
             resolve()
+
             return
         }
 
@@ -56,8 +67,10 @@ function loadScript(src) {
     })
 }
 
+
 let leafletPromise = null
 let leafletDrawPromise = null
+
 
 function loadLeaflet() {
     if (leafletPromise) {
@@ -75,6 +88,7 @@ function loadLeaflet() {
 
     return leafletPromise
 }
+
 
 function loadLeafletDraw() {
     if (leafletDrawPromise) {
@@ -96,6 +110,383 @@ function loadLeafletDraw() {
 
     return leafletDrawPromise
 }
+
+
+/*
+|--------------------------------------------------------------------------
+| Leaflet adapter
+|--------------------------------------------------------------------------
+|
+| Everything Leaflet-specific stays here.
+|
+*/
+
+class LeafletMapAdapter {
+    constructor({
+        element,
+        options,
+        type,
+        disabled = false,
+    }) {
+        this.element = element
+        this.options = options
+        this.type = type
+        this.disabled = disabled
+
+        this.map = null
+        this.layers = null
+        this.tiles = null
+        this.drawControl = null
+
+        this.geometry = null
+
+        this.changeListeners = []
+        this.busyListeners = []
+    }
+
+    async mount() {
+        const L = window.L
+
+        this.map = L.map(this.element).setView(
+            this.options.center,
+            this.options.zoom,
+        )
+
+        this.tiles = L.tileLayer(
+            this.options.tiles.url,
+            {
+                maxZoom: this.options.tiles.maxZoom,
+                attribution: this.options.tiles.attribution,
+            },
+        ).addTo(this.map)
+
+        this.layers =
+            new L.FeatureGroup().addTo(this.map)
+
+        if (
+            !this.disabled &&
+            this.type !== 'point'
+        ) {
+            this.configureDrawing()
+        }
+
+        if (
+            !this.disabled &&
+            this.type === 'point'
+        ) {
+            this.configurePointEditing()
+        }
+
+        this.applyTheme()
+
+        return this
+    }
+
+    setGeometry(
+        geometry,
+        { fit = false } = {},
+    ) {
+        this.geometry =
+            geometry ?? null
+
+        this.layers.clearLayers()
+
+        if (!this.geometry) {
+            return
+        }
+
+        const L = window.L
+
+        L.geoJSON(
+            this.geometry,
+            {
+                pointToLayer: (_, latlng) =>
+                    this.createMarker(latlng),
+            },
+        ).eachLayer(
+            (layer) =>
+                this.layers.addLayer(layer),
+        )
+
+        if (fit) {
+            this.fitGeometry()
+        }
+    }
+
+    getGeometry() {
+        const layer =
+            this.layers?.getLayers()[0]
+
+        if (!layer) {
+            return null
+        }
+
+        return layer.toGeoJSON(7).geometry
+    }
+
+    fitGeometry() {
+        if (!this.map || !this.layers) {
+            return
+        }
+
+        if (this.type === 'point') {
+            const layer =
+                this.layers.getLayers()[0]
+
+            if (layer) {
+                this.map.panTo(
+                    layer.getLatLng(),
+                )
+            }
+
+            return
+        }
+
+        const bounds =
+            this.layers.getBounds()
+
+        if (bounds.isValid()) {
+            this.map.fitBounds(
+                bounds,
+                {
+                    maxZoom: 18,
+                    padding: [30, 30],
+                },
+            )
+        }
+    }
+
+    configurePointEditing() {
+        this.map.on(
+            'click',
+            (event) => {
+                this.layers.clearLayers()
+
+                this.layers.addLayer(
+                    this.createMarker(
+                        event.latlng,
+                    ),
+                )
+
+                this.emitChange(
+                    this.getGeometry(),
+                )
+            },
+        )
+    }
+
+    configureDrawing() {
+        const L = window.L
+
+        this.drawControl =
+            new L.Control.Draw({
+                position: 'topright',
+
+                draw: {
+                    marker: false,
+
+                    polyline:
+                        this.type === 'linestring'
+                            ? {
+                                showLength: true,
+                                metric: true,
+                            }
+                            : false,
+
+                    polygon:
+                        this.type === 'polygon'
+                            ? {
+                                allowIntersection: false,
+                                showArea: false,
+                            }
+                            : false,
+
+                    rectangle: false,
+                    circle: false,
+                    circlemarker: false,
+                },
+
+                edit: {
+                    featureGroup:
+                        this.layers,
+                },
+            })
+
+        this.map.addControl(
+            this.drawControl,
+        )
+
+        this.map.on(
+            L.Draw.Event.DRAWSTART,
+            () => this.emitBusy(true),
+        )
+
+        this.map.on(
+            L.Draw.Event.DRAWSTOP,
+            () => this.emitBusy(false),
+        )
+
+        this.map.on(
+            L.Draw.Event.EDITSTART,
+            () => this.emitBusy(true),
+        )
+
+        this.map.on(
+            L.Draw.Event.EDITSTOP,
+            () => this.emitBusy(false),
+        )
+
+        this.map.on(
+            L.Draw.Event.CREATED,
+            (event) => {
+                this.layers.clearLayers()
+
+                this.layers.addLayer(
+                    event.layer,
+                )
+
+                this.emitChange(
+                    this.getGeometry(),
+                )
+            },
+        )
+
+        this.map.on(
+            L.Draw.Event.EDITED,
+            () => {
+                this.emitChange(
+                    this.getGeometry(),
+                )
+            },
+        )
+
+        this.map.on(
+            L.Draw.Event.DELETED,
+            () => {
+                this.emitChange(null)
+            },
+        )
+    }
+
+    createMarker(latlng) {
+        const L = window.L
+
+        const marker = L.marker(
+            latlng,
+            {
+                draggable:
+                    !this.disabled,
+            },
+        )
+
+        if (!this.disabled) {
+            marker.on(
+                'dragend',
+                () => {
+                    this.emitChange(
+                        this.getGeometry(),
+                    )
+                },
+            )
+        }
+
+        return marker
+    }
+
+    onChange(callback) {
+        this.changeListeners.push(
+            callback,
+        )
+
+        return () => {
+            this.changeListeners =
+                this.changeListeners.filter(
+                    (listener) =>
+                        listener !== callback,
+                )
+        }
+    }
+
+    onBusyChange(callback) {
+        this.busyListeners.push(
+            callback,
+        )
+
+        return () => {
+            this.busyListeners =
+                this.busyListeners.filter(
+                    (listener) =>
+                        listener !== callback,
+                )
+        }
+    }
+
+    emitChange(geometry) {
+        this.geometry =
+            geometry ?? null
+
+        this.changeListeners.forEach(
+            (listener) =>
+                listener(this.geometry),
+        )
+    }
+
+    emitBusy(value) {
+        this.busyListeners.forEach(
+            (listener) =>
+                listener(value),
+        )
+    }
+
+    resize() {
+        this.map?.invalidateSize()
+    }
+
+    applyTheme() {
+        if (!this.tiles) {
+            return
+        }
+
+        const dark =
+            document.documentElement.classList.contains(
+                'dark',
+            )
+
+        this.tiles.getContainer().style.filter =
+            dark
+                ? 'invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9)'
+                : ''
+    }
+
+    destroy() {
+        this.changeListeners = []
+        this.busyListeners = []
+
+        if (this.map) {
+            this.map.off()
+
+            if (this.drawControl) {
+                this.map.removeControl(
+                    this.drawControl,
+                )
+            }
+
+            this.map.remove()
+        }
+
+        this.map = null
+        this.layers = null
+        this.tiles = null
+        this.drawControl = null
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Alpine component
+|--------------------------------------------------------------------------
+*/
 
 export default function geometryMap({
     state,
@@ -133,9 +524,13 @@ export default function geometryMap({
 
                 this.adapter =
                     new LeafletMapAdapter({
-                        element: this.$refs.map,
+                        element:
+                            this.$refs.map,
+
                         options,
+
                         type,
+
                         disabled,
                     })
 
@@ -149,10 +544,12 @@ export default function geometryMap({
                 )
 
                 this.attachAdapterListeners()
+
                 this.attachStateWatchers()
+
                 this.watchResize()
+
                 this.watchTheme()
-                this.hookFormSubmit()
             } catch (error) {
                 console.error(
                     'Unable to initialize geometry map.',
@@ -163,13 +560,15 @@ export default function geometryMap({
 
         value() {
             if (bound) {
-                const lat = Number.parseFloat(
-                    this.latitude,
-                )
+                const lat =
+                    Number.parseFloat(
+                        this.latitude,
+                    )
 
-                const lng = Number.parseFloat(
-                    this.longitude,
-                )
+                const lng =
+                    Number.parseFloat(
+                        this.longitude,
+                    )
 
                 if (
                     !Number.isFinite(lat) ||
@@ -196,13 +595,15 @@ export default function geometryMap({
                 const [
                     longitude,
                     latitude,
-                ] = geometry?.coordinates ?? [
-                    null,
-                    null,
-                ]
+                ] =
+                    geometry?.coordinates ??
+                    [null, null]
 
-                this.latitude = latitude
-                this.longitude = longitude
+                this.latitude =
+                    latitude
+
+                this.longitude =
+                    longitude
 
                 return
             }
@@ -211,23 +612,22 @@ export default function geometryMap({
         },
 
         attachAdapterListeners() {
-            const removeChangeListener =
+            this.cleanups.push(
                 this.adapter.onChange(
                     (geometry) => {
-                        this.write(geometry)
+                        this.write(
+                            geometry,
+                        )
                     },
-                )
+                ),
+            )
 
-            const removeBusyListener =
+            this.cleanups.push(
                 this.adapter.onBusyChange(
                     (busy) => {
                         this.busy = busy
                     },
-                )
-
-            this.cleanups.push(
-                removeChangeListener,
-                removeBusyListener,
+                ),
             )
         },
 
@@ -235,12 +635,14 @@ export default function geometryMap({
             if (bound) {
                 this.$watch(
                     'latitude',
-                    () => this.syncExternalState(),
+                    () =>
+                        this.syncExternalState(),
                 )
 
                 this.$watch(
                     'longitude',
-                    () => this.syncExternalState(),
+                    () =>
+                        this.syncExternalState(),
                 )
 
                 return
@@ -248,7 +650,8 @@ export default function geometryMap({
 
             this.$watch(
                 'state',
-                () => this.syncExternalState(),
+                () =>
+                    this.syncExternalState(),
             )
         },
 
@@ -278,37 +681,6 @@ export default function geometryMap({
             )
         },
 
-        hookFormSubmit() {
-            const form =
-                this.$root.closest('form')
-
-            if (!form) {
-                return
-            }
-
-            const submit = () => {
-                if (!this.busy) {
-                    return
-                }
-
-                this.adapter?.finishDrawing()
-            }
-
-            form.addEventListener(
-                'submit',
-                submit,
-                true,
-            )
-
-            this.cleanups.push(
-                () => form.removeEventListener(
-                    'submit',
-                    submit,
-                    true,
-                ),
-            )
-        },
-
         watchResize() {
             if (
                 typeof ResizeObserver ===
@@ -318,46 +690,57 @@ export default function geometryMap({
             }
 
             const observer =
-                new ResizeObserver(() => {
-                    this.adapter?.resize()
-                })
+                new ResizeObserver(
+                    () =>
+                        this.adapter?.resize(),
+                )
 
             observer.observe(
                 this.$refs.map,
             )
 
-            this.observers.push(observer)
+            this.observers.push(
+                observer,
+            )
         },
 
         watchTheme() {
             const apply =
-                () => this.adapter?.applyTheme()
+                () =>
+                    this.adapter?.applyTheme()
 
             apply()
 
             const observer =
-                new MutationObserver(apply)
+                new MutationObserver(
+                    apply,
+                )
 
             observer.observe(
                 document.documentElement,
                 {
                     attributes: true,
+
                     attributeFilter: [
                         'class',
                     ],
                 },
             )
 
-            this.observers.push(observer)
+            this.observers.push(
+                observer,
+            )
         },
 
         destroy() {
             this.cleanups.forEach(
-                (cleanup) => cleanup(),
+                (cleanup) =>
+                    cleanup(),
             )
 
             this.observers.forEach(
-                (observer) => observer.disconnect(),
+                (observer) =>
+                    observer.disconnect(),
             )
 
             this.adapter?.destroy()
