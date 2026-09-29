@@ -33,6 +33,10 @@ class AppServiceProvider extends ServiceProvider
 
         FilamentAsset::register([
             AlpineComponent::make('geometry-map', resource_path('js/filament/geometry-map.js')),
+            AlpineComponent::make(
+                'leaflet-adapter',
+                resource_path('js/filament/leaflet-adapter.js'),
+            ),
         ]);
     }
 }
