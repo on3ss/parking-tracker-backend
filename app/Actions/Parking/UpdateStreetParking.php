@@ -1,25 +1,20 @@
 <?php
 
-namespace App\Filament\Provider\Resources\StreetParkings\Pages;
+namespace App\Actions\Parking;
 
-use App\Filament\Provider\Resources\StreetParkings\StreetParkingResource;
 use App\Models\Location;
+use App\Models\StreetParking;
 use Clickbar\Magellan\Data\Geometries\Point;
-use Filament\Facades\Filament;
-use Filament\Resources\Pages\CreateRecord;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
-class CreateStreetParking extends CreateRecord
+final class UpdateStreetParking
 {
-    protected static string $resource =
-        StreetParkingResource::class;
-
-    protected function handleRecordCreation(
+    public function handle(
+        StreetParking $streetParking,
         array $data,
-    ): Model {
+    ): StreetParking {
         return DB::transaction(
-            function () use ($data): Model {
+            function () use ($streetParking, $data, ): StreetParking {
                 $locationData =
                     $data['location'] ?? [];
 
@@ -34,7 +29,11 @@ class CreateStreetParking extends CreateRecord
                         $locationData['longitude'] ?? null,
                     )
                 ) {
-                    $location = Location::create([
+                    $location =
+                        $streetParking->location
+                        ?? new Location();
+
+                    $location->fill([
                         'address_line1' =>
                             $locationData['address_line1'] ?? null,
 
@@ -60,16 +59,15 @@ class CreateStreetParking extends CreateRecord
                             ),
                     ]);
 
+                    $location->save();
+
                     $data['location_id'] =
                         $location->id;
                 }
 
-                $data['parking_provider_id'] =
-                    Filament::getTenant()->id;
+                $streetParking->update($data);
 
-                return static::getModel()::create(
-                    $data,
-                );
+                return $streetParking->refresh();
             },
         );
     }

@@ -5,12 +5,17 @@ namespace App\Filament\Concerns;
 trait HasMapOptions
 {
     protected ?array $mapCenter = null;
+
     protected ?int $mapZoom = null;
+
     protected ?int $mapHeight = null;
 
-    public function center(float $lat, float $lng): static
+    public function center(float $latitude, float $longitude): static
     {
-        $this->mapCenter = [$lat, $lng];
+        $this->mapCenter = [
+            $latitude,
+            $longitude,
+        ];
 
         return $this;
     }
@@ -22,14 +27,13 @@ trait HasMapOptions
         return $this;
     }
 
-    public function height(int $px): static
+    public function height(int $pixels): static
     {
-        $this->mapHeight = $px;
+        $this->mapHeight = $pixels;
 
         return $this;
     }
 
-    /** Classes using this trait can override this to change their default. */
     protected function defaultMapHeight(): int
     {
         return 400;
@@ -37,10 +41,10 @@ trait HasMapOptions
 
     public function getHeight(): int
     {
-        return $this->mapHeight ?? $this->defaultMapHeight();
+        return $this->mapHeight
+            ?? $this->defaultMapHeight();
     }
 
-    /** Everything the JS component needs, with config fallbacks. */
     public function getMapOptions(): array
     {
         return [
@@ -48,7 +52,10 @@ trait HasMapOptions
                 config('maps.center.latitude'),
                 config('maps.center.longitude'),
             ],
-            'zoom' => $this->mapZoom ?? config('maps.zoom'),
+
+            'zoom' => $this->mapZoom
+                ?? config('maps.zoom'),
+
             'tiles' => [
                 'url' => config('maps.tiles.url'),
                 'attribution' => config('maps.tiles.attribution'),

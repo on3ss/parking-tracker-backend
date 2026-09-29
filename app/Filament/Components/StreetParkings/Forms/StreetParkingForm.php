@@ -14,7 +14,9 @@ final class StreetParkingForm
 {
     public static function information(): Section
     {
-        return Section::make(__('Street Parking Information'))
+        return Section::make(
+            __('Street Parking Information'),
+        )
             ->columnSpanFull()
             ->schema([
                 TextInput::make('name')
@@ -28,7 +30,9 @@ final class StreetParkingForm
                     ->dehydrated(false)
                     ->visibleOn('edit')
                     ->maxLength(255)
-                    ->helperText(__('Generated automatically and cannot be changed.')),
+                    ->helperText(
+                        __('Generated automatically and cannot be changed.'),
+                    ),
 
                 TextInput::make('road_name')
                     ->label(__('Road name'))
@@ -118,6 +122,8 @@ final class StreetParkingForm
                     ->label(__('Coordinates'))
                     ->coordinateFields()
                     ->zoom(16)
+                    ->height(300)
+                    ->columnSpanFull(),
             ])
             ->columns(2);
     }
@@ -131,6 +137,8 @@ final class StreetParkingForm
                     ->label(__('Street segment'))
                     ->geometryType('linestring')
                     ->zoom(16)
+                    ->height(450)
+                    ->maxVertices(500)
                     ->required()
                     ->columnSpanFull(),
             ]);

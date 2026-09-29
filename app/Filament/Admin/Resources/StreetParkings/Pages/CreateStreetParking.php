@@ -12,41 +12,66 @@ use Illuminate\Support\Facades\DB;
 
 class CreateStreetParking extends CreateRecord
 {
-    protected static string $resource = StreetParkingResource::class;
+    protected static string $resource =
+        StreetParkingResource::class;
 
-    protected function handleRecordCreation(array $data): Model
-    {
-        return DB::transaction(function () use ($data): Model {
-            $locationData = $data['location'] ?? [];
+    protected function handleRecordCreation(
+        array $data,
+    ): Model {
+        return DB::transaction(
+            function () use ($data): Model {
+                $locationData =
+                    $data['location'] ?? [];
 
-            unset($data['location']);
+                unset($data['location']);
 
-            if (
-                filled($locationData['latitude'] ?? null) &&
-                filled($locationData['longitude'] ?? null)
-            ) {
-                $location = Location::create([
-                    'address_line1' => $locationData['address_line1'] ?? null,
-                    'address_line2' => $locationData['address_line2'] ?? null,
-                    'locality' => $locationData['locality'] ?? null,
-                    'administrative_area' => $locationData['administrative_area'] ?? null,
-                    'postal_code' => $locationData['postal_code'] ?? null,
-                    'country_code' => $locationData['country_code'] ?? 'IN',
-                    'coordinates' => Point::makeGeodetic(
-                        latitude: (float) $locationData['latitude'],
-                        longitude: (float) $locationData['longitude'],
-                    ),
-                ]);
+                if (
+                    filled(
+                        $locationData['latitude'] ?? null,
+                    )
+                    &&
+                    filled(
+                        $locationData['longitude'] ?? null,
+                    )
+                ) {
+                    $location = Location::create([
+                        'address_line1' =>
+                            $locationData['address_line1'] ?? null,
 
-                $data['location_id'] = $location->id;
-            }
+                        'address_line2' =>
+                            $locationData['address_line2'] ?? null,
 
-            // $data['geometry'] is already a Magellan LineString (SRID 4326),
-            // produced by GeometryPicker's dehydrateStateUsing().
+                        'locality' =>
+                            $locationData['locality'] ?? null,
 
-            $data['parking_provider_id'] = Filament::getTenant()->id;
+                        'administrative_area' =>
+                            $locationData['administrative_area'] ?? null,
 
-            return static::getModel()::create($data);
-        });
+                        'postal_code' =>
+                            $locationData['postal_code'] ?? null,
+
+                        'country_code' =>
+                            $locationData['country_code'] ?? 'IN',
+
+                        'coordinates' =>
+                            Point::makeGeodetic(
+                                latitude: (float) $locationData['latitude'],
+                                longitude: (float) $locationData['longitude'],
+                            ),
+                    ]);
+
+                    $data['location_id'] =
+                        $location->id;
+                }
+
+                $data['parking_provider_id'] =
+                    $data['parking_provider_id']
+                    ?? Filament::getTenant()?->id;
+
+                return static::getModel()::create(
+                    $data,
+                );
+            },
+        );
     }
 }

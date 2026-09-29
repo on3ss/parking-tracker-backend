@@ -15,5 +15,9 @@
     },
     "optionalDependencies": {
         "@laravel/multiplex": "^0.4.1"
+    },
+    "dependencies": {
+        "leaflet": "^1.9.4",
+        "leaflet-draw": "^1.0.4"
     }
 }
