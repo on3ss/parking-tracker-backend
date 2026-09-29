@@ -23,7 +23,7 @@ final class ReportAvailabilityAction
             ->color('primary')
 
             ->authorize(
-                fn(ParkingFacility|StreetParking $record): bool => !$tenantScoped
+                fn (ParkingFacility|StreetParking $record): bool => ! $tenantScoped
                     || (
                         Filament::getTenant() !== null
                         && $record->parking_provider_id === Filament::getTenant()->getKey()
@@ -37,12 +37,10 @@ final class ReportAvailabilityAction
                     ->integer()
                     ->minValue(0)
                     ->maxValue(
-                        fn(ParkingFacility|StreetParking $record): ?int =>
-                            $record->capacity
+                        fn (ParkingFacility|StreetParking $record): ?int => $record->capacity
                     )
                     ->helperText(
-                        fn(ParkingFacility|StreetParking $record): ?string =>
-                            $record->capacity === null
+                        fn (ParkingFacility|StreetParking $record): ?string => $record->capacity === null
                             ? __('Set parking capacity before reporting availability.')
                             : null
                     )
@@ -50,12 +48,11 @@ final class ReportAvailabilityAction
             ])
 
             ->disabled(
-                fn(ParkingFacility|StreetParking $record): bool =>
-                    $record->capacity === null
+                fn (ParkingFacility|StreetParking $record): bool => $record->capacity === null
             )
 
             ->fillForm(
-                fn(ParkingFacility|StreetParking $record): array => [
+                fn (ParkingFacility|StreetParking $record): array => [
                     'available_spaces' => $record->available_spaces,
                 ],
             )
@@ -63,7 +60,7 @@ final class ReportAvailabilityAction
             ->modalHeading(__('Report parking availability'))
             ->modalSubmitActionLabel(__('Report availability'))
 
-            ->action(function (ParkingFacility|StreetParking $record, array $data, ): void {
+            ->action(function (ParkingFacility|StreetParking $record, array $data): void {
                 app(ReportParkingAvailability::class)->execute(
                     new ReportParkingAvailabilityData(
                         parkingIdentifier: ParkingIdentifier::for($record),

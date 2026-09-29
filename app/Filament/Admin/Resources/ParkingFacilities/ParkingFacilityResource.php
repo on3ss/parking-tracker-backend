@@ -10,6 +10,7 @@ use App\Filament\Components\ParkingFacilities\Forms\ParkingFacilityForm;
 use App\Filament\Components\ParkingFacilities\Infolists\ParkingFacilityInfolist;
 use App\Filament\Components\ParkingFacilities\Tables\ParkingFacilityColumns;
 use App\Filament\Components\ParkingFacilities\Tables\ParkingFacilityFilters;
+use App\Filament\RelationManagers\OccupancyReportsRelationManager;
 use App\Models\ParkingFacility;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
@@ -102,7 +103,7 @@ class ParkingFacilityResource extends Resource
     {
         return [
             RelationManagers\AreasRelationManager::class,
-            \App\Filament\RelationManagers\OccupancyReportsRelationManager::class,
+            OccupancyReportsRelationManager::class,
         ];
     }
 

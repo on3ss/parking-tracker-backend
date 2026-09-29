@@ -10,6 +10,7 @@ use App\Filament\Components\StreetParkings\Forms\StreetParkingForm;
 use App\Filament\Components\StreetParkings\Infolists\StreetParkingInfolist;
 use App\Filament\Components\StreetParkings\Tables\StreetParkingColumns;
 use App\Filament\Components\StreetParkings\Tables\StreetParkingFilters;
+use App\Filament\RelationManagers\OccupancyReportsRelationManager;
 use App\Models\StreetParking;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
@@ -107,7 +108,7 @@ class StreetParkingResource extends Resource
     public static function getRelations(): array
     {
         return [
-            \App\Filament\RelationManagers\OccupancyReportsRelationManager::class,
+            OccupancyReportsRelationManager::class,
         ];
     }
 

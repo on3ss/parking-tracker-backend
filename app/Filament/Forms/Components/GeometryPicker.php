@@ -27,7 +27,7 @@ class GeometryPicker extends Field
 
     public function geometryType(string $type): static
     {
-        if (!isset(GeoJson::TYPES[$type])) {
+        if (! isset(GeoJson::TYPES[$type])) {
             throw new InvalidArgumentException(
                 "Unsupported geometry type [{$type}].",
             );
@@ -111,11 +111,11 @@ class GeometryPicker extends Field
     {
         $path = $this->getStatePath();
 
-        if (!Str::contains($path, '.')) {
+        if (! Str::contains($path, '.')) {
             return $name;
         }
 
-        return Str::beforeLast($path, '.') . '.' . $name;
+        return Str::beforeLast($path, '.').'.'.$name;
     }
 
     protected function setUp(): void
@@ -132,7 +132,7 @@ class GeometryPicker extends Field
          * GeoJSON array
          */
         $this->afterStateHydrated(
-            fn(GeometryPicker $component, mixed $state) => $component->state(GeoJson::from($state)),
+            fn (GeometryPicker $component, mixed $state) => $component->state(GeoJson::from($state)),
         );
 
         /*
@@ -145,11 +145,11 @@ class GeometryPicker extends Field
          * Magellan Geometry
          */
         $this->dehydrateStateUsing(
-            fn(mixed $state) => GeoJson::toGeometry($state),
+            fn (mixed $state) => GeoJson::toGeometry($state),
         );
 
         $this->rule(
-            fn() => function (string $attribute, mixed $value, Closure $fail): void {
+            fn () => function (string $attribute, mixed $value, Closure $fail): void {
                 // Coordinate-bound mode stores state on sibling fields;
                 // this field's own state is never set and must not be validated.
                 if ($this->isBoundToCoordinates()) {

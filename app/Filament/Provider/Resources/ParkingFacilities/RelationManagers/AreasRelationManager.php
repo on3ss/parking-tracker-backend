@@ -4,16 +4,11 @@ namespace App\Filament\Provider\Resources\ParkingFacilities\RelationManagers;
 
 use App\Enums\VehicleType;
 use App\Models\ParkingArea;
-use Filament\Actions\AssociateAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\DissociateAction;
-use Filament\Actions\DissociateBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Actions\ForceDeleteAction;
-use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
@@ -23,6 +18,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Infolists\Components\IconEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -119,7 +115,7 @@ class AreasRelationManager extends RelationManager
                             ->dateTime()
                             ->placeholder(__('—'))
                             ->visible(
-                                fn(ParkingArea $record): bool => $record->trashed()
+                                fn (ParkingArea $record): bool => $record->trashed()
                             ),
                     ])
                     ->columns(3)
@@ -193,7 +189,7 @@ class AreasRelationManager extends RelationManager
                 ]),
             ])
             ->modifyQueryUsing(
-                fn(Builder $query) => $query->withoutGlobalScopes([
+                fn (Builder $query) => $query->withoutGlobalScopes([
                     SoftDeletingScope::class,
                 ])
             );

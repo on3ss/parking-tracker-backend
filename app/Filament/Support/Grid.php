@@ -19,7 +19,5 @@ final class Grid
     /** @var array<string, int> */
     public const FOUR = ['default' => 1, 'sm' => 2, 'lg' => 4];
 
-    private function __construct()
-    {
-    }
+    private function __construct() {}
 }

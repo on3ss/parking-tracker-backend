@@ -16,8 +16,7 @@ final class ReportParkingAvailability
 {
     public function __construct(
         private ResolveParkingIdentifier $resolveParkingIdentifier,
-    ) {
-    }
+    ) {}
 
     public function execute(
         ReportParkingAvailabilityData $data,

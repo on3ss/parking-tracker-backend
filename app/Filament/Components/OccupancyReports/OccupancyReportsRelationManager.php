@@ -40,12 +40,12 @@ class OccupancyReportsRelationManager extends RelationManager
                     TextEntry::make('confidence')
                         ->label(__('Confidence'))
                         ->formatStateUsing(
-                            fn($state): string => $state === null
+                            fn ($state): string => $state === null
                                 ? '—'
                                 : number_format(
                                     (float) $state * 100,
                                     1
-                                ) . '%',
+                                ).'%',
                         ),
 
                     TextEntry::make('reported_at')
@@ -67,8 +67,7 @@ class OccupancyReportsRelationManager extends RelationManager
                     ->dateTime()
                     ->sortable()
                     ->description(
-                        fn($record): string =>
-                            $record->reported_at?->diffForHumans() ?? '—',
+                        fn ($record): string => $record->reported_at?->diffForHumans() ?? '—',
                     ),
 
                 TextColumn::make('available_spaces')

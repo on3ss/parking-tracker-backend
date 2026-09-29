@@ -19,7 +19,7 @@ class StreetParkingFactory extends Factory
 
     public function definition(): array
     {
-        $name = fake()->streetName() . ' Parking';
+        $name = fake()->streetName().' Parking';
 
         $latitude = fake()->latitude(8, 35);
         $longitude = fake()->longitude(68, 97);
@@ -59,7 +59,7 @@ class StreetParkingFactory extends Factory
 
     public function available(int $spaces = 5): static
     {
-        return $this->state(fn() => [
+        return $this->state(fn () => [
             'availability_status' => AvailabilityStatus::AVAILABLE,
             'available_spaces' => $spaces,
             'availability_updated_at' => now(),
@@ -68,7 +68,7 @@ class StreetParkingFactory extends Factory
 
     public function full(): static
     {
-        return $this->state(fn() => [
+        return $this->state(fn () => [
             'availability_status' => AvailabilityStatus::FULL,
             'available_spaces' => 0,
             'availability_updated_at' => now(),

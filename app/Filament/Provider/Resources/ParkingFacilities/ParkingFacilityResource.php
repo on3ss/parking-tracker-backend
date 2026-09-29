@@ -79,7 +79,7 @@ class ParkingFacilityResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\AreasRelationManager::class,
+            AreasRelationManager::class,
             OccupancyReportsRelationManager::class,
         ];
     }
