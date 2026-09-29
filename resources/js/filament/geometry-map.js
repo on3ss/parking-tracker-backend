@@ -1,150 +1,21 @@
-import LeafletMapAdapter from './leaflet-adapter.js'
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
-/* ------------------------------------------------------------------ */
-/*  CDN assets                                                         */
-/* ------------------------------------------------------------------ */
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 
-const LEAFLET_CSS =
-    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css'
+import LeafletMapAdapter from './leaflet-adapter.js';
 
-const LEAFLET_JS =
-    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js'
+delete L.Icon.Default.prototype._getIconUrl;
 
-const LEAFLET_DRAW_CSS =
-    'https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css'
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: markerIcon2x,
+    iconUrl: markerIcon,
+    shadowUrl: markerShadow,
+});
 
-const LEAFLET_DRAW_JS =
-    'https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js'
-
-/* ------------------------------------------------------------------ */
-/*  Asset loading                                                      */
-/* ------------------------------------------------------------------ */
-
-function loadCss(href) {
-    return new Promise((resolve, reject) => {
-        const existing = document.querySelector(
-            `link[data-geometry-map="${href}"]`,
-        )
-
-        if (existing) {
-            if (existing.sheet) {
-                resolve()
-                return
-            }
-
-            existing.addEventListener('load', resolve, { once: true })
-            existing.addEventListener('error', reject, { once: true })
-
-            return
-        }
-
-        const link = document.createElement('link')
-        link.rel = 'stylesheet'
-        link.href = href
-        link.dataset.geometryMap = href
-
-        link.addEventListener('load', resolve, { once: true })
-        link.addEventListener(
-            'error',
-            () => {
-                link.remove()
-                reject(new Error(`Failed to load stylesheet: ${href}`))
-            },
-            { once: true },
-        )
-
-        document.head.appendChild(link)
-    })
-}
-
-function loadScript(src) {
-    return new Promise((resolve, reject) => {
-        const existing = document.querySelector(
-            `script[data-geometry-map="${src}"]`,
-        )
-
-        if (existing) {
-            if (existing.dataset.loaded === 'true') {
-                resolve()
-                return
-            }
-
-            existing.addEventListener('load', resolve, { once: true })
-            existing.addEventListener('error', reject, { once: true })
-
-            return
-        }
-
-        const script = document.createElement('script')
-        script.src = src
-        script.dataset.geometryMap = src
-
-        script.addEventListener(
-            'load',
-            () => {
-                script.dataset.loaded = 'true'
-                resolve()
-            },
-            { once: true },
-        )
-
-        script.addEventListener(
-            'error',
-            () => {
-                script.remove()
-                reject(new Error(`Failed to load script: ${src}`))
-            },
-            { once: true },
-        )
-
-        document.head.appendChild(script)
-    })
-}
-
-let leafletPromise = null
-let leafletDrawPromise = null
-
-function loadLeaflet() {
-    if (leafletPromise) {
-        return leafletPromise
-    }
-
-    leafletPromise = Promise.all([
-        loadCss(LEAFLET_CSS),
-        loadScript(LEAFLET_JS),
-    ]).catch((error) => {
-        leafletPromise = null
-        throw error
-    })
-
-    return leafletPromise
-}
-
-function loadLeafletDraw() {
-    if (leafletDrawPromise) {
-        return leafletDrawPromise
-    }
-
-    leafletDrawPromise = loadLeaflet()
-        .then(() =>
-            Promise.all([
-                loadCss(LEAFLET_DRAW_CSS),
-                loadScript(LEAFLET_DRAW_JS),
-            ]),
-        )
-        .catch((error) => {
-            leafletDrawPromise = null
-            throw error
-        })
-
-    return leafletDrawPromise
-}
-
-/* ------------------------------------------------------------------ */
-/*  Alpine component                                                   */
-/* ------------------------------------------------------------------ */
-
-export default function geometryMap({
+function geometryMap({
     state,
     latitude,
     longitude,
@@ -164,140 +35,201 @@ export default function geometryMap({
         observers: [],
         cleanups: [],
 
-        async init() {
+        init() {
             try {
-                if (!disabled && type !== 'point') {
-                    await loadLeafletDraw()
-                } else {
-                    await loadLeaflet()
-                }
-
                 this.adapter = new LeafletMapAdapter({
+                    leaflet: L,
                     element: this.$refs.map,
                     options,
                     type,
                     disabled,
-                })
+                });
 
-                await this.adapter.mount()
+                this.adapter.mount();
 
-                this.adapter.setGeometry(this.value(), { fit: true })
+                this.adapter.setGeometry(this.value(), {
+                    fit: true,
+                });
 
-                this.attachAdapterListeners()
-                this.attachStateWatchers()
-                this.watchResize()
-                this.watchTheme()
+                this.attachAdapterListeners();
+                this.attachStateWatchers();
+                this.watchResize();
+                this.watchTheme();
             } catch (error) {
                 console.error(
                     'Unable to initialize geometry map.',
                     error,
-                )
+                );
             }
         },
 
         value() {
             if (bound) {
-                const lat = Number.parseFloat(this.latitude)
-                const lng = Number.parseFloat(this.longitude)
+                const latitude = Number.parseFloat(this.latitude);
+                const longitude = Number.parseFloat(this.longitude);
 
-                if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
-                    return null
+                if (
+                    !Number.isFinite(latitude) ||
+                    !Number.isFinite(longitude)
+                ) {
+                    return null;
                 }
 
                 return {
                     type: 'Point',
-                    coordinates: [lng, lat],
-                }
+                    coordinates: [longitude, latitude],
+                };
             }
 
-            return this.state ?? null
+            return this.state ?? null;
         },
 
         write(geometry) {
             if (bound) {
-                const [longitude, latitude] =
-                    geometry?.coordinates ?? [null, null]
+                const coordinates = geometry?.coordinates;
 
-                this.latitude = latitude
-                this.longitude = longitude
+                if (!Array.isArray(coordinates)) {
+                    this.latitude = null;
+                    this.longitude = null;
 
-                return
+                    return;
+                }
+
+                const [longitude, latitude] = coordinates;
+
+                this.latitude = latitude;
+                this.longitude = longitude;
+
+                return;
             }
 
-            this.state = geometry
+            this.state = geometry;
         },
 
         attachAdapterListeners() {
             this.cleanups.push(
-                this.adapter.onChange((geometry) => this.write(geometry)),
-            )
+                this.adapter.onChange((geometry) => {
+                    this.write(geometry);
+                }),
+            );
 
             this.cleanups.push(
                 this.adapter.onBusyChange((busy) => {
-                    this.busy = busy
+                    this.busy = busy;
                 }),
-            )
+            );
         },
 
         attachStateWatchers() {
             if (bound) {
-                this.$watch('latitude', () => this.syncExternalState())
-                this.$watch('longitude', () => this.syncExternalState())
-                return
+                this.$watch(
+                    'latitude',
+                    () => this.syncExternalState(),
+                );
+
+                this.$watch(
+                    'longitude',
+                    () => this.syncExternalState(),
+                );
+
+                return;
             }
 
-            this.$watch('state', () => this.syncExternalState())
+            this.$watch(
+                'state',
+                () => this.syncExternalState(),
+            );
         },
 
         syncExternalState() {
-            if (this.busy) {
-                return
+            if (this.busy || !this.adapter) {
+                return;
             }
 
-            const external = this.value()
-            const current = this.adapter?.getGeometry()
+            const external = this.value();
+            const current = this.adapter.getGeometry();
 
-            if (JSON.stringify(external) === JSON.stringify(current)) {
-                return
+            if (
+                JSON.stringify(external) ===
+                JSON.stringify(current)
+            ) {
+                return;
             }
 
-            this.adapter?.setGeometry(external, { fit: false })
+            this.adapter.setGeometry(external, {
+                fit: false,
+            });
         },
 
         watchResize() {
             if (typeof ResizeObserver === 'undefined') {
-                return
+                return;
             }
 
-            const observer = new ResizeObserver(() =>
-                this.adapter?.resize(),
-            )
+            const observer = new ResizeObserver(() => {
+                this.adapter?.resize();
+            });
 
-            observer.observe(this.$refs.map)
-            this.observers.push(observer)
+            observer.observe(this.$refs.map);
+
+            this.observers.push(observer);
         },
 
         watchTheme() {
-            const apply = () => this.adapter?.applyTheme()
+            const applyTheme = () => {
+                this.adapter?.applyTheme();
+            };
 
-            apply()
+            applyTheme();
 
-            const observer = new MutationObserver(apply)
+            const observer = new MutationObserver(applyTheme);
 
             observer.observe(document.documentElement, {
                 attributes: true,
                 attributeFilter: ['class'],
-            })
+            });
 
-            this.observers.push(observer)
+            this.observers.push(observer);
         },
 
         destroy() {
-            this.cleanups.forEach((cleanup) => cleanup())
-            this.observers.forEach((observer) => observer.disconnect())
+            this.cleanups.forEach((cleanup) => cleanup());
 
-            this.adapter?.destroy()
-            this.adapter = null
+            this.observers.forEach((observer) => {
+                observer.disconnect();
+            });
+
+            this.adapter?.destroy();
+
+            this.adapter = null;
         },
+    };
+}
+
+/*
+ * Register with Filament's existing Alpine instance.
+ */
+function register() {
+    if (!window.Alpine) {
+        return;
     }
+
+    window.Alpine.data('geometryMap', geometryMap);
+}
+
+/*
+ * Keep the factory globally available because x-data evaluates
+ * geometryMap(...) as a JavaScript expression.
+ *
+ * This also makes registration independent of Alpine's initialization
+ * timing.
+ */
+window.geometryMap = geometryMap;
+
+if (window.Alpine) {
+    register();
+} else {
+    document.addEventListener('alpine:init', register, {
+        once: true,
+    });
 }
