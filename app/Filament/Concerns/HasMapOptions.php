@@ -53,13 +53,19 @@ trait HasMapOptions
                 config('maps.center.longitude'),
             ],
 
-            'zoom' => $this->mapZoom
-                ?? config('maps.zoom'),
+            'zoom' => $this->mapZoom ?? config('maps.zoom'),
+
+            // Adapter defaults — defined here so the JS never needs
+            // its own fallbacks.
+            'precision' => 7,
+            'fitPadding' => [30, 30],
+            'fitMaxZoom' => 18,
 
             'tiles' => [
                 'url' => config('maps.tiles.url'),
                 'attribution' => config('maps.tiles.attribution'),
                 'maxZoom' => config('maps.tiles.max_zoom'),
+                'maxNativeZoom' => config('maps.tiles.max_native_zoom'),
             ],
         ];
     }

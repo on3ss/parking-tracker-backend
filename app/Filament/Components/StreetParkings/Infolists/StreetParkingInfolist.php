@@ -2,35 +2,21 @@
 
 namespace App\Filament\Components\StreetParkings\Infolists;
 
-use App\Filament\Infolists\Components\GeometryEntry;
+use App\Filament\Components\Shared\Infolists\DescriptionSection;
+use App\Filament\Components\Shared\Infolists\GeometrySection;
+use App\Filament\Components\Shared\Infolists\LocationSection;
+use App\Filament\Components\Shared\Infolists\RecordInformationSection;
+use App\Filament\Support\Grid;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
-use Illuminate\Database\Eloquent\Model;
 
 final class StreetParkingInfolist
 {
-    /**
-     * Shared responsive grid definition for the sections below.
-     *
-     * default : 1 column  (mobile, < 640px)
-     * sm      : 2 columns (small tablets, >= 640px)
-     * lg      : 4 columns (desktop, >= 1024px)
-     */
-    private const GRID = [
-        'default' => 1,
-        'sm' => 2,
-        'lg' => 4,
-    ];
-
     public static function information(): Section
     {
         return Section::make(__('Street Parking Information'))
             ->columnSpanFull()
-            ->columns([
-                'default' => 1,
-                'sm' => 2,
-                'lg' => 3,
-            ])
+            ->columns(Grid::THREE)
             ->schema([
                 TextEntry::make('name')
                     ->label(__('Name'))
@@ -43,8 +29,7 @@ final class StreetParkingInfolist
 
                 TextEntry::make('slug')
                     ->label(__('Slug'))
-                    ->fontFamily('mono')
-                    ->columnSpan(2),
+                    ->fontFamily('mono'),
 
                 TextEntry::make('provider.name')
                     ->label(__('Provider'))
@@ -71,157 +56,46 @@ final class StreetParkingInfolist
 
     public static function location(): Section
     {
-        return Section::make(__('Location'))
-            ->columnSpanFull()
-            ->columns(self::GRID)
-            ->schema([
-                TextEntry::make('location.address_line1')
-                    ->label(__('Address'))
-                    ->columnSpanFull(),
-
-                TextEntry::make('location.address_line2')
-                    ->label(__('Address line 2'))
-                    ->columnSpanFull(),
-
-                TextEntry::make('location.locality')
-                    ->label(__('Locality'))
-                    ->columnSpan([
-                        'default' => 1,
-                        'sm' => 1,
-                        'lg' => 2,
-                    ]),
-
-                TextEntry::make('location.administrative_area')
-                    ->label(__('Administrative area'))
-                    ->columnSpan([
-                        'default' => 1,
-                        'sm' => 1,
-                        'lg' => 2,
-                    ]),
-
-                TextEntry::make('location.postal_code')
-                    ->label(__('Postal code'))
-                    ->columnSpan([
-                        'default' => 1,
-                        'sm' => 1,
-                        'lg' => 2,
-                    ]),
-
-                TextEntry::make('location.country_code')
-                    ->label(__('Country'))
-                    ->columnSpan([
-                        'default' => 1,
-                        'sm' => 1,
-                        'lg' => 2,
-                    ]),
-
-                GeometryEntry::make('location.coordinates')
-                    ->label(__('Map'))
-                    ->zoom(16)
-                    ->height(260)
-                    ->hidden(fn(?Model $record): bool => blank($record?->location?->coordinates))
-                    ->columnSpanFull(),
-            ]);
+        return LocationSection::make('location');
     }
 
     public static function geometry(): Section
     {
-        return Section::make(__('Street Geometry'))
-            ->columnSpanFull()
-            ->schema([
-                GeometryEntry::make('geometry')
-                    ->label(__('Street segment'))
-                    ->columnSpanFull(),
-            ]);
+        return GeometrySection::make(
+            name: 'geometry',
+            label: __('Street segment'),
+        );
     }
 
     public static function availability(): Section
     {
         return Section::make(__('Availability'))
             ->columnSpanFull()
-            ->columns(self::GRID)
+            ->columns(Grid::THREE)
             ->schema([
                 TextEntry::make('availability_status')
                     ->label(__('Status'))
                     ->badge()
-                    ->columnSpan([
-                        'default' => 1,
-                        'sm' => 1,
-                        'lg' => 2,
-                    ]),
+                    ->columnSpan(2),
 
                 TextEntry::make('available_spaces')
                     ->label(__('Available spaces'))
-                    ->columnSpan([
-                        'default' => 1,
-                        'sm' => 1,
-                        'lg' => 1,
-                    ]),
+                    ->numeric(),
 
                 TextEntry::make('availability_updated_at')
                     ->label(__('Last updated'))
                     ->dateTime()
-                    ->columnSpan([
-                        'default' => 1,
-                        'sm' => 2,
-                        'lg' => 1,
-                    ]),
+                    ->columnSpan(3),
             ]);
     }
 
     public static function description(): Section
     {
-        return Section::make(__('Description'))
-            ->columnSpanFull()
-            ->schema([
-                TextEntry::make('description')
-                    ->label(__('Description'))
-                    ->html()
-                    ->columnSpanFull(),
-            ]);
+        return DescriptionSection::make();
     }
 
     public static function recordInformation(): Section
     {
-        return Section::make(__('Record Information'))
-            ->columnSpanFull()
-            ->columns(self::GRID)
-            ->schema([
-                TextEntry::make('id')
-                    ->label(__('ID'))
-                    ->columnSpan([
-                        'default' => 1,
-                        'sm' => 1,
-                        'lg' => 1,
-                    ]),
-
-                TextEntry::make('created_at')
-                    ->label(__('Created'))
-                    ->dateTime()
-                    ->columnSpan([
-                        'default' => 1,
-                        'sm' => 1,
-                        'lg' => 1,
-                    ]),
-
-                TextEntry::make('updated_at')
-                    ->label(__('Updated'))
-                    ->dateTime()
-                    ->columnSpan([
-                        'default' => 1,
-                        'sm' => 1,
-                        'lg' => 1,
-                    ]),
-
-                TextEntry::make('deleted_at')
-                    ->label(__('Deleted'))
-                    ->dateTime()
-                    ->placeholder('—')
-                    ->columnSpan([
-                        'default' => 1,
-                        'sm' => 1,
-                        'lg' => 1,
-                    ]),
-            ]);
+        return RecordInformationSection::make();
     }
 }

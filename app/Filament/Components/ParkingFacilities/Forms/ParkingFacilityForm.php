@@ -4,8 +4,8 @@ namespace App\Filament\Components\ParkingFacilities\Forms;
 
 use App\Enums\ParkingFacilityType;
 use App\Enums\ParkingStatus;
-use App\Filament\Forms\Components\GeometryPicker;
-use Filament\Forms\Components\RichEditor;
+use App\Filament\Components\Shared\Forms\DescriptionSection;
+use App\Filament\Components\Shared\Infolists\LocationSection;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\TimePicker;
@@ -86,62 +86,11 @@ final class ParkingFacilityForm
 
     public static function location(): Section
     {
-        return Section::make(__('Location'))
-            ->statePath('location')
-            ->schema([
-                TextInput::make('address_line1')
-                    ->label(__('Address'))
-                    ->maxLength(255),
-
-                TextInput::make('address_line2')
-                    ->label(__('Address line 2'))
-                    ->maxLength(255),
-
-                TextInput::make('locality')
-                    ->label(__('Locality'))
-                    ->maxLength(255),
-
-                TextInput::make('administrative_area')
-                    ->label(__('Administrative area'))
-                    ->maxLength(255),
-
-                TextInput::make('postal_code')
-                    ->label(__('Postal code'))
-                    ->maxLength(20),
-
-                TextInput::make('country_code')
-                    ->label(__('Country code'))
-                    ->length(2)
-                    ->default('IN')
-                    ->required(),
-
-                TextInput::make('latitude')
-                    ->label(__('Latitude'))
-                    ->numeric()
-                    ->required(),
-
-                TextInput::make('longitude')
-                    ->label(__('Longitude'))
-                    ->numeric()
-                    ->required(),
-
-                GeometryPicker::make('coordinates')
-                    ->label(__('Coordinates'))
-                    ->coordinateFields()
-                    ->zoom(16),
-            ])
-            ->columns(2);
+        return LocationSection::make('location');
     }
 
     public static function description(): Section
     {
-        return Section::make(__('Description'))
-            ->columnSpanFull()
-            ->schema([
-                RichEditor::make('description')
-                    ->label(__('Description'))
-                    ->maxLength(5000)
-                    ->columnSpanFull(),
-            ]);
+        return DescriptionSection::make();
     }
 }

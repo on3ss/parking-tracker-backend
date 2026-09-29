@@ -5,42 +5,28 @@ namespace App\Filament\Components\StreetParkings\Forms;
 use App\Enums\ParkingStatus;
 use App\Enums\StreetParkingSide;
 use App\Enums\StreetParkingType;
-use App\Filament\Forms\Components\GeometryPicker;
-use Filament\Forms\Components\RichEditor;
+use App\Filament\Components\Shared\Forms\DescriptionSection;
+use App\Filament\Components\Shared\Forms\GeometrySection;
+use App\Filament\Components\Shared\Forms\LocationSection;
+use App\Filament\Support\Grid;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 
 final class StreetParkingForm
 {
-    /**
-     * Shared responsive grid definition for the sections below.
-     *
-     * default : 1 column  (mobile, < 640px)
-     * sm      : 2 columns (small tablets, >= 640px)
-     * lg      : 4 columns (desktop, >= 1024px)
-     */
-    private const GRID = [
-        'default' => 1,
-        'sm' => 2,
-        'lg' => 4,
-    ];
-
     public static function information(): Section
     {
         return Section::make(__('Street Parking Information'))
             ->columnSpanFull()
-            ->columns(self::GRID)
+            ->columns(Grid::THREE)
             ->schema([
                 TextInput::make('name')
                     ->label(__('Name'))
                     ->required()
                     ->maxLength(255)
-                    ->columnSpan([
-                        'default' => 1,
-                        'sm' => 2,
-                        'lg' => 3,
-                    ]),
+                    ->autofocus()
+                    ->columnSpan(2),
 
                 Select::make('status')
                     ->label(__('Status'))
@@ -57,18 +43,13 @@ final class StreetParkingForm
                     ->maxLength(255)
                     ->helperText(
                         __('Generated automatically and cannot be changed.'),
-                    )
-                    ->columnSpanFull(),
+                    ),
 
                 TextInput::make('road_name')
                     ->label(__('Road name'))
                     ->required()
                     ->maxLength(255)
-                    ->columnSpan([
-                        'default' => 1,
-                        'sm' => 2,
-                        'lg' => 3,
-                    ]),
+                    ->columnSpan(2),
 
                 Select::make('side')
                     ->label(__('Side'))
@@ -81,23 +62,14 @@ final class StreetParkingForm
                     ->options(StreetParkingType::class)
                     ->native(false)
                     ->required()
-                    ->columnSpan([
-                        'default' => 1,
-                        'sm' => 1,
-                        'lg' => 2,
-                    ]),
+                    ->columnSpan(2),
 
                 TextInput::make('capacity')
                     ->label(__('Capacity'))
                     ->numeric()
                     ->integer()
                     ->minValue(0)
-                    ->required()
-                    ->columnSpan([
-                        'default' => 1,
-                        'sm' => 1,
-                        'lg' => 2,
-                    ]),
+                    ->required(),
             ]);
     }
 
@@ -113,113 +85,20 @@ final class StreetParkingForm
 
     public static function location(): Section
     {
-        return Section::make(__('Location'))
-            ->statePath('location')
-            ->columnSpanFull()
-            ->columns(self::GRID)
-            ->schema([
-                TextInput::make('address_line1')
-                    ->label(__('Address'))
-                    ->maxLength(255)
-                    ->columnSpanFull(),
-
-                TextInput::make('address_line2')
-                    ->label(__('Address line 2'))
-                    ->maxLength(255)
-                    ->columnSpanFull(),
-
-                TextInput::make('locality')
-                    ->label(__('Locality'))
-                    ->maxLength(255)
-                    ->columnSpan([
-                        'default' => 1,
-                        'sm' => 1,
-                        'lg' => 2,
-                    ]),
-
-                TextInput::make('administrative_area')
-                    ->label(__('Administrative area'))
-                    ->maxLength(255)
-                    ->columnSpan([
-                        'default' => 1,
-                        'sm' => 1,
-                        'lg' => 2,
-                    ]),
-
-                TextInput::make('postal_code')
-                    ->label(__('Postal code'))
-                    ->maxLength(20)
-                    ->columnSpan([
-                        'default' => 1,
-                        'sm' => 1,
-                        'lg' => 2,
-                    ]),
-
-                TextInput::make('country_code')
-                    ->label(__('Country code'))
-                    ->length(2)
-                    ->default('IN')
-                    ->required()
-                    ->columnSpan([
-                        'default' => 1,
-                        'sm' => 1,
-                        'lg' => 2,
-                    ]),
-
-                TextInput::make('latitude')
-                    ->label(__('Latitude'))
-                    ->numeric()
-                    ->required()
-                    ->columnSpan([
-                        'default' => 1,
-                        'sm' => 1,
-                        'lg' => 2,
-                    ]),
-
-                TextInput::make('longitude')
-                    ->label(__('Longitude'))
-                    ->numeric()
-                    ->required()
-                    ->columnSpan([
-                        'default' => 1,
-                        'sm' => 1,
-                        'lg' => 2,
-                    ]),
-
-                GeometryPicker::make('coordinates')
-                    ->label(__('Coordinates'))
-                    ->coordinateFields()
-                    ->zoom(16)
-                    ->height(260)
-                    ->columnSpanFull(),
-            ]);
+        return LocationSection::make('location');
     }
 
     public static function geometry(): Section
     {
-        return Section::make(__('Street Geometry'))
-            ->columnSpanFull()
-            ->schema([
-                GeometryPicker::make('geometry')
-                    ->label(__('Street segment'))
-                    ->geometryType('linestring')
-                    ->zoom(16)
-                    ->height(450)
-                    ->maxVertices(500)
-                    ->required()
-                    ->columnSpanFull(),
-            ]);
+        return GeometrySection::make(
+            name: 'geometry',
+            label: __('Street segment'),
+            geometryType: 'linestring',
+        );
     }
 
     public static function description(): Section
     {
-        return Section::make(__('Description'))
-            ->columnSpanFull()
-            ->schema([
-                RichEditor::make('description')
-                    ->label(__('Description'))
-                    ->maxLength(5000)
-                    ->columnSpanFull(),
-            ]);
+        return DescriptionSection::make();
     }
 }

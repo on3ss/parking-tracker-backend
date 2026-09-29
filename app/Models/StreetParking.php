@@ -70,22 +70,4 @@ class StreetParking extends Model
     {
         return $this->hasMany(OccupancyReport::class);
     }
-
-    public function available(int $spaces = 5): static
-    {
-        return $this->state(fn() => [
-            'availability_status' => 'AVAILABLE',
-            'available_spaces' => $spaces,
-            'availability_updated_at' => now(),
-        ]);
-    }
-
-    public function full(): static
-    {
-        return $this->state(fn() => [
-            'availability_status' => 'FULL',
-            'available_spaces' => 0,
-            'availability_updated_at' => now(),
-        ]);
-    }
 }
