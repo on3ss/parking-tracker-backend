@@ -5,6 +5,8 @@ namespace App\Providers;
 use App\Models\ParkingFacility;
 use App\Models\StreetParking;
 use App\Models\User;
+use Filament\Support\Assets\AlpineComponent;
+use Filament\Support\Facades\FilamentAsset;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider;
 
@@ -27,6 +29,10 @@ class AppServiceProvider extends ServiceProvider
             'user' => User::class,
             'facility' => ParkingFacility::class,
             'street' => StreetParking::class,
+        ]);
+
+        FilamentAsset::register([
+            AlpineComponent::make('geometry-picker', resource_path('js/filament/geometry-picker.js')),
         ]);
     }
 }

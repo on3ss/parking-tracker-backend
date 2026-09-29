@@ -4,10 +4,12 @@ namespace App\Filament\Components\StreetParkings\Forms;
 
 use App\Enums\ParkingStatus;
 use App\Enums\StreetParkingType;
+use App\Filament\Forms\Components\GeometryPicker;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Set;
 
 final class StreetParkingForm
 {
@@ -119,28 +121,30 @@ final class StreetParkingForm
     public static function geometry(): Section
     {
         return Section::make(__('Street Geometry'))
+            ->columnSpanFull()
             ->schema([
-                TextInput::make('geometry_start_latitude')
-                    ->label(__('Start latitude'))
-                    ->numeric()
-                    ->required(),
+                GeometryPicker::make('geometry')
+                    ->label(__('Street segment'))
+                    ->geometryType('linestring')
+                    ->center(25.5779, 91.8837)
+                    ->zoom(16)
+                    ->height(450)
+                    ->required()
+                    ->live()
+                    ->afterStateUpdated(function (?array $state, Set $set) {
+                        $coords = $state['coordinates'] ?? [];
 
-                TextInput::make('geometry_start_longitude')
-                    ->label(__('Start longitude'))
-                    ->numeric()
-                    ->required(),
+                        if (count($coords) < 2) {
+                            return;
+                        }
 
-                TextInput::make('geometry_end_latitude')
-                    ->label(__('End latitude'))
-                    ->numeric()
-                    ->required(),
-
-                TextInput::make('geometry_end_longitude')
-                    ->label(__('End longitude'))
-                    ->numeric()
-                    ->required(),
-            ])
-            ->columns(2);
+                        [$lng, $lat] = $coords[intdiv(count($coords), 2)]; // middle vertex
+            
+                        $set('location.latitude', round($lat, 7));
+                        $set('location.longitude', round($lng, 7));
+                    })
+                    ->columnSpanFull(),
+            ]);
     }
 
     public static function description(): Section

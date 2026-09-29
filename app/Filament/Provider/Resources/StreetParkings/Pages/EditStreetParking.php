@@ -2,8 +2,9 @@
 
 namespace App\Filament\Provider\Resources\StreetParkings\Pages;
 
+use App\Filament\Forms\Components\GeometryPicker;
 use App\Filament\Provider\Resources\StreetParkings\StreetParkingResource;
-use Clickbar\Magellan\Data\Geometries\LineString;
+use App\Models\Location;
 use Clickbar\Magellan\Data\Geometries\Point;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
@@ -23,7 +24,9 @@ class EditStreetParking extends EditRecord
 
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        unset($data['geometry']);
+        // Hand the picker GeoJSON explicitly, rather than relying on how
+        // attributesToArray() happens to serialize the Magellan cast.
+        $data['geometry'] = GeometryPicker::toGeoJson($this->record->geometry);
 
         $location = $this->record->location;
 
@@ -42,67 +45,42 @@ class EditStreetParking extends EditRecord
             ];
         }
 
-        $geometry = $this->record->geometry;
-
-        if ($geometry) {
-            $points = $geometry->getPoints();
-
-            $start = $points[0] ?? null;
-            $end = $points[1] ?? null;
-
-            $data['geometry_start_latitude'] = $start?->getLatitude();
-            $data['geometry_start_longitude'] = $start?->getLongitude();
-            $data['geometry_end_latitude'] = $end?->getLatitude();
-            $data['geometry_end_longitude'] = $end?->getLongitude();
-        }
-
         return $data;
     }
 
-    protected function handleRecordUpdate(
-        Model $record,
-        array $data,
-    ): Model {
+    protected function handleRecordUpdate(Model $record, array $data): Model
+    {
         return DB::transaction(function () use ($record, $data): Model {
-            $location = $data['location'];
+            $locationData = $data['location'] ?? [];
 
-            unset($data['location'], $data['geometry']);
+            unset($data['location']);
 
-            $data['geometry'] = LineString::make([
-                Point::makeGeodetic(
-                    latitude: (float) $data['geometry_start_latitude'],
-                    longitude: (float) $data['geometry_start_longitude'],
-                ),
-                Point::makeGeodetic(
-                    latitude: (float) $data['geometry_end_latitude'],
-                    longitude: (float) $data['geometry_end_longitude'],
-                ),
-            ]);
+            // $data['geometry'] is already a Magellan LineString (SRID 4326),
+            // produced by GeometryPicker's dehydrateStateUsing().
 
-            unset(
-                $data['geometry_start_latitude'],
-                $data['geometry_start_longitude'],
-                $data['geometry_end_latitude'],
-                $data['geometry_end_longitude'],
-            );
+            if (
+                filled($locationData['latitude'] ?? null) &&
+                filled($locationData['longitude'] ?? null)
+            ) {
+                $location = $record->location ?? new Location();
+
+                $location->fill([
+                    'address_line1' => $locationData['address_line1'] ?? null,
+                    'address_line2' => $locationData['address_line2'] ?? null,
+                    'locality' => $locationData['locality'] ?? null,
+                    'administrative_area' => $locationData['administrative_area'] ?? null,
+                    'postal_code' => $locationData['postal_code'] ?? null,
+                    'country_code' => $locationData['country_code'] ?? 'IN',
+                    'coordinates' => Point::makeGeodetic(
+                        latitude: (float) $locationData['latitude'],
+                        longitude: (float) $locationData['longitude'],
+                    ),
+                ])->save();
+
+                $data['location_id'] = $location->id;
+            }
 
             $record->update($data);
-
-            $record->location()->updateOrCreate(
-                [],
-                [
-                    'address_line1' => $location['address_line1'] ?? null,
-                    'address_line2' => $location['address_line2'] ?? null,
-                    'locality' => $location['locality'] ?? null,
-                    'administrative_area' => $location['administrative_area'] ?? null,
-                    'postal_code' => $location['postal_code'] ?? null,
-                    'country_code' => $location['country_code'] ?? 'IN',
-                    'coordinates' => Point::makeGeodetic(
-                        latitude: (float) $location['latitude'],
-                        longitude: (float) $location['longitude'],
-                    ),
-                ],
-            );
 
             return $record->refresh();
         });

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Components\StreetParkings\Infolists;
 
+use App\Filament\Infolists\Components\GeometryEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 
@@ -67,9 +68,9 @@ final class StreetParkingInfolist
     {
         return Section::make(__('Street Geometry'))
             ->schema([
-                TextEntry::make('geometry')
-                    ->label(__('Geometry'))
-                    ->formatStateUsing(fn ($state) => $state?->__toString() ?? '—')
+                GeometryEntry::make('geometry')
+                    ->label(__('Street segment'))
+                    ->height(350)
                     ->columnSpanFull(),
             ])
             ->columnSpanFull();
