@@ -3,6 +3,7 @@
 namespace App\Filament\Components\StreetParkings\Forms;
 
 use App\Enums\ParkingStatus;
+use App\Enums\StreetParkingSide;
 use App\Enums\StreetParkingType;
 use App\Filament\Forms\Components\GeometryPicker;
 use Filament\Forms\Components\RichEditor;
@@ -69,9 +70,10 @@ final class StreetParkingForm
                         'lg' => 3,
                     ]),
 
-                TextInput::make('side')
+                Select::make('side')
                     ->label(__('Side'))
-                    ->maxLength(20)
+                    ->options(StreetParkingSide::class)
+                    ->native(false)
                     ->required(),
 
                 Select::make('parking_type')

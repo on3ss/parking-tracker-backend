@@ -7,6 +7,7 @@ use App\Enums\ParkingFacilityType;
 use App\Enums\ParkingProviderType;
 use App\Enums\ParkingSource;
 use App\Enums\ParkingStatus;
+use App\Enums\StreetParkingSide;
 use App\Enums\StreetParkingType;
 use App\Enums\VehicleType;
 use App\Models\Location;
@@ -37,7 +38,7 @@ class ShillongParkingSeeder extends Seeder
             ['slug' => 'shillong-private-parking'],
             [
                 'name' => 'Shillong Private Parking',
-                'type' => ParkingProviderType::PRIVATE,
+                'type' => ParkingProviderType::PRIVATE ,
                 'description' => 'Development/demo private parking provider.',
                 'is_active' => true,
             ],
@@ -64,7 +65,7 @@ class ShillongParkingSeeder extends Seeder
                 'location_id' => $policeBazarLocation->id,
 
                 'name' => 'Police Bazar Parking',
-                'type' => ParkingFacilityType::PUBLIC,
+                'type' => ParkingFacilityType::PUBLIC ,
                 'status' => ParkingStatus::ACTIVE,
 
                 'capacity' => 180,
@@ -174,7 +175,7 @@ class ShillongParkingSeeder extends Seeder
             slug: 'demo-police-bazar-road-west',
             name: 'Police Bazar Road — West Side',
             roadName: 'Police Bazar Road',
-            side: 'LEFT',
+            side: StreetParkingSide::LEFT,
             latitude: 25.5768,
             longitude: 91.8826,
             capacity: 24,
@@ -187,7 +188,7 @@ class ShillongParkingSeeder extends Seeder
             slug: 'demo-police-bazar-road-east',
             name: 'Police Bazar Road — East Side',
             roadName: 'Police Bazar Road',
-            side: 'RIGHT',
+            side: StreetParkingSide::RIGHT,
             latitude: 25.5765,
             longitude: 91.8832,
             capacity: 18,
@@ -206,7 +207,7 @@ class ShillongParkingSeeder extends Seeder
             slug: 'demo-laitumkhrah-road',
             name: 'Laitumkhrah Road Parking',
             roadName: 'Laitumkhrah Road',
-            side: 'LEFT',
+            side: StreetParkingSide::LEFT,
             latitude: 25.5707,
             longitude: 91.8977,
             capacity: 15,
@@ -290,7 +291,7 @@ class ShillongParkingSeeder extends Seeder
         string $slug,
         string $name,
         string $roadName,
-        string $side,
+        StreetParkingSide $side,
         float $latitude,
         float $longitude,
         int $capacity,

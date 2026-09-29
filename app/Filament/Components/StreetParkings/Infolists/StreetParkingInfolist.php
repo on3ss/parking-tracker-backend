@@ -55,7 +55,8 @@ final class StreetParkingInfolist
                     ->columnSpan(2),
 
                 TextEntry::make('side')
-                    ->label(__('Side')),
+                    ->label(__('Side'))
+                    ->badge(),
 
                 TextEntry::make('parking_type')
                     ->label(__('Parking type'))

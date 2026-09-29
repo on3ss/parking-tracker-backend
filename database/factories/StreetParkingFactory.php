@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Enums\AvailabilityStatus;
 use App\Enums\ParkingStatus;
+use App\Enums\StreetParkingSide;
 use App\Enums\StreetParkingType;
 use App\Models\Location;
 use App\Models\ParkingProvider;
@@ -18,7 +19,7 @@ class StreetParkingFactory extends Factory
 
     public function definition(): array
     {
-        $name = fake()->streetName().' Parking';
+        $name = fake()->streetName() . ' Parking';
 
         $latitude = fake()->latitude(8, 35);
         $longitude = fake()->longitude(68, 97);
@@ -32,7 +33,7 @@ class StreetParkingFactory extends Factory
             'name' => $name,
 
             'road_name' => fake()->streetName(),
-            'side' => 'RIGHT',
+            'side' => fake()->randomElement(StreetParkingSide::cases()),
             'parking_type' => StreetParkingType::CURBSIDE,
             'status' => ParkingStatus::ACTIVE,
 

@@ -4,8 +4,12 @@ namespace App\Models;
 
 use App\Enums\AvailabilityStatus;
 use App\Enums\ParkingStatus;
+use App\Enums\StreetParkingSide;
 use App\Enums\StreetParkingType;
 use App\Models\Concerns\HasSlug;
+use App\Models\Location;
+use App\Models\OccupancyReport;
+use App\Models\ParkingProvider;
 use Clickbar\Magellan\Data\Geometries\LineString;
 use Database\Factories\StreetParkingFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -48,6 +52,7 @@ class StreetParking extends Model
             'availability_updated_at' => 'datetime',
 
             'geometry' => LineString::class,
+            'side' => StreetParkingSide::class,
         ];
     }
 
@@ -68,7 +73,7 @@ class StreetParking extends Model
 
     public function available(int $spaces = 5): static
     {
-        return $this->state(fn () => [
+        return $this->state(fn() => [
             'availability_status' => 'AVAILABLE',
             'available_spaces' => $spaces,
             'availability_updated_at' => now(),
@@ -77,7 +82,7 @@ class StreetParking extends Model
 
     public function full(): static
     {
-        return $this->state(fn () => [
+        return $this->state(fn() => [
             'availability_status' => 'FULL',
             'available_spaces' => 0,
             'availability_updated_at' => now(),
