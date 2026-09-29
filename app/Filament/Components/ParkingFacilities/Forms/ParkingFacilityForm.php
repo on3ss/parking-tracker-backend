@@ -4,6 +4,7 @@ namespace App\Filament\Components\ParkingFacilities\Forms;
 
 use App\Enums\ParkingFacilityType;
 use App\Enums\ParkingStatus;
+use App\Filament\Forms\Components\GeometryPicker;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -123,6 +124,11 @@ final class ParkingFacilityForm
                     ->label(__('Longitude'))
                     ->numeric()
                     ->required(),
+
+                GeometryPicker::make('coordinates')
+                    ->label(__('Coordinates'))
+                    ->coordinateFields()
+                    ->zoom(16)
             ])
             ->columns(2);
     }

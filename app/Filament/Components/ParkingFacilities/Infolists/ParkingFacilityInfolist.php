@@ -2,8 +2,10 @@
 
 namespace App\Filament\Components\ParkingFacilities\Infolists;
 
+use App\Filament\Infolists\Components\GeometryEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
+use Illuminate\Database\Eloquent\Model;
 
 final class ParkingFacilityInfolist
 {
@@ -63,6 +65,13 @@ final class ParkingFacilityInfolist
                 TextEntry::make('location.country_code')
                     ->label(__('Country'))
                     ->placeholder(__('—')),
+
+                GeometryEntry::make('location.coordinates')
+                    ->label(__('Map'))
+                    ->zoom(16)
+                    ->height(250)
+                    ->hidden(fn(?Model $record): bool => blank($record?->location?->coordinates))
+                    ->columnSpanFull(),
             ])
             ->columns(2);
     }
@@ -138,7 +147,7 @@ final class ParkingFacilityInfolist
                     ->label(__('Deleted'))
                     ->dateTime()
                     ->placeholder(__('—'))
-                    ->visible(fn ($record): bool => $record->trashed()),
+                    ->visible(fn($record): bool => $record->trashed()),
             ])
             ->columns(3)
             ->collapsible();
