@@ -128,7 +128,7 @@ final class ParkingFacilityForm
                 GeometryPicker::make('coordinates')
                     ->label(__('Coordinates'))
                     ->coordinateFields()
-                    ->zoom(16)
+                    ->zoom(16),
             ])
             ->columns(2);
     }

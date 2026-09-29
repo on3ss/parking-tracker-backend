@@ -37,29 +37,21 @@ class EditStreetParking extends EditRecord
                 $location->coordinates;
 
             $data['location'] = [
-                'address_line1' =>
-                    $location->address_line1,
+                'address_line1' => $location->address_line1,
 
-                'address_line2' =>
-                    $location->address_line2,
+                'address_line2' => $location->address_line2,
 
-                'locality' =>
-                    $location->locality,
+                'locality' => $location->locality,
 
-                'administrative_area' =>
-                    $location->administrative_area,
+                'administrative_area' => $location->administrative_area,
 
-                'postal_code' =>
-                    $location->postal_code,
+                'postal_code' => $location->postal_code,
 
-                'country_code' =>
-                    $location->country_code,
+                'country_code' => $location->country_code,
 
-                'latitude' =>
-                    $coordinates?->getLatitude(),
+                'latitude' => $coordinates?->getLatitude(),
 
-                'longitude' =>
-                    $coordinates?->getLongitude(),
+                'longitude' => $coordinates?->getLongitude(),
             ];
         }
 

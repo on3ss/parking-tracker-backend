@@ -66,7 +66,7 @@ final class StreetParkingInfolist
                     ->label(__('Map'))
                     ->zoom(16)
                     ->height(250)
-                    ->hidden(fn(?Model $record): bool => blank($record?->location?->coordinates))
+                    ->hidden(fn (?Model $record): bool => blank($record?->location?->coordinates))
                     ->columnSpanFull(),
             ])
             ->columns(2);

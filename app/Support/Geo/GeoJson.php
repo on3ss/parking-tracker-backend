@@ -45,14 +45,13 @@ final class GeoJson
 
             is_array($value)
             && is_numeric($value['latitude'] ?? null)
-            && is_numeric($value['longitude'] ?? null)
-            => [
-                    'type' => 'Point',
-                    'coordinates' => [
-                        (float) $value['longitude'],
-                        (float) $value['latitude'],
-                    ],
+            && is_numeric($value['longitude'] ?? null) => [
+                'type' => 'Point',
+                'coordinates' => [
+                    (float) $value['longitude'],
+                    (float) $value['latitude'],
                 ],
+            ],
 
             default => null,
         };
@@ -91,7 +90,7 @@ final class GeoJson
         string $type,
         int $maxVertices = 500,
     ): ?string {
-        if (!isset(self::TYPES[$type])) {
+        if (! isset(self::TYPES[$type])) {
             return __('Unsupported geometry type.');
         }
 
@@ -99,9 +98,9 @@ final class GeoJson
         $name = $definition['name'];
 
         if (
-            !is_array($value)
+            ! is_array($value)
             || ($value['type'] ?? null) !== $name
-            || !is_array($value['coordinates'] ?? null)
+            || ! is_array($value['coordinates'] ?? null)
         ) {
             return __('The geometry must be a :type.', [
                 'type' => $name,
@@ -134,10 +133,10 @@ final class GeoJson
 
         foreach ($vertices as $vertex) {
             if (
-                !is_array($vertex)
+                ! is_array($vertex)
                 || count($vertex) < 2
-                || !is_numeric($vertex[0] ?? null)
-                || !is_numeric($vertex[1] ?? null)
+                || ! is_numeric($vertex[0] ?? null)
+                || ! is_numeric($vertex[1] ?? null)
             ) {
                 return __('The geometry contains an invalid coordinate.');
             }
