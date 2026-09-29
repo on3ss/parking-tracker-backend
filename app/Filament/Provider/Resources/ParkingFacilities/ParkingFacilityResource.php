@@ -9,6 +9,7 @@ use App\Filament\Provider\Resources\ParkingFacilities\Pages\CreateParkingFacilit
 use App\Filament\Provider\Resources\ParkingFacilities\Pages\EditParkingFacility;
 use App\Filament\Provider\Resources\ParkingFacilities\Pages\ListParkingFacilities;
 use App\Filament\Provider\Resources\ParkingFacilities\Pages\ViewParkingFacility;
+use App\Filament\RelationManagers\OccupancyReportsRelationManager;
 use App\Models\ParkingFacility;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
@@ -76,7 +77,9 @@ class ParkingFacilityResource extends Resource
 
     public static function getRelations(): array
     {
-        return [];
+        return [
+            OccupancyReportsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array
