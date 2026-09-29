@@ -9,21 +9,27 @@ use App\Models\ParkingFacility;
 use App\Models\StreetParking;
 use App\Support\Parking\ParkingIdentifier;
 use Filament\Actions\Action;
+use Filament\Facades\Filament;
 use Filament\Forms\Components\TextInput;
-use Illuminate\Database\Eloquent\Model;
+use Filament\Notifications\Notification;
 
 final class ReportAvailabilityAction
 {
-    public static function make(): Action
+    public static function make(bool $tenantScoped = false): Action
     {
         return Action::make('reportAvailability')
             ->label(__('Report availability'))
-            ->icon('heroicon-o-chart-bar')
+            ->icon('heroicon-o-clipboard-document-check')
             ->color('primary')
-            ->modalHeading(__('Report parking availability'))
-            ->modalDescription(
-                __('Enter the number of spaces currently available.')
+
+            ->authorize(
+                fn(ParkingFacility|StreetParking $record): bool => !$tenantScoped
+                    || (
+                        Filament::getTenant() !== null
+                        && $record->parking_provider_id === Filament::getTenant()->getKey()
+                    ),
             )
+
             ->schema([
                 TextInput::make('available_spaces')
                     ->label(__('Available spaces'))
@@ -31,18 +37,33 @@ final class ReportAvailabilityAction
                     ->integer()
                     ->minValue(0)
                     ->maxValue(
-                        fn(ParkingFacility|StreetParking $record): int =>
-                            $record->capacity,
+                        fn(ParkingFacility|StreetParking $record): ?int =>
+                            $record->capacity
+                    )
+                    ->helperText(
+                        fn(ParkingFacility|StreetParking $record): ?string =>
+                            $record->capacity === null
+                            ? __('Set parking capacity before reporting availability.')
+                            : null
                     )
                     ->required(),
             ])
+
+            ->disabled(
+                fn(ParkingFacility|StreetParking $record): bool =>
+                    $record->capacity === null
+            )
+
             ->fillForm(
                 fn(ParkingFacility|StreetParking $record): array => [
                     'available_spaces' => $record->available_spaces,
                 ],
             )
-            ->action(function (Model $record, array $data, ): void {
-                /** @var ParkingFacility|StreetParking $record */
+
+            ->modalHeading(__('Report parking availability'))
+            ->modalSubmitActionLabel(__('Report availability'))
+
+            ->action(function (ParkingFacility|StreetParking $record, array $data, ): void {
                 app(ReportParkingAvailability::class)->execute(
                     new ReportParkingAvailabilityData(
                         parkingIdentifier: ParkingIdentifier::for($record),
@@ -52,8 +73,14 @@ final class ReportAvailabilityAction
                     userId: auth()->id(),
                 );
             })
-            ->successNotificationTitle(
-                __('Availability reported successfully.'),
+
+            ->successNotification(
+                Notification::make()
+                    ->success()
+                    ->title(__('Availability reported'))
+                    ->body(
+                        __('The current parking availability has been updated.')
+                    ),
             );
     }
 }

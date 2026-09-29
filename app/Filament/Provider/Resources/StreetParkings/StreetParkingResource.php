@@ -10,6 +10,7 @@ use App\Filament\Provider\Resources\StreetParkings\Pages\CreateStreetParking;
 use App\Filament\Provider\Resources\StreetParkings\Pages\EditStreetParking;
 use App\Filament\Provider\Resources\StreetParkings\Pages\ListStreetParkings;
 use App\Filament\Provider\Resources\StreetParkings\Pages\ViewStreetParking;
+use App\Filament\RelationManagers\OccupancyReportsRelationManager;
 use App\Models\StreetParking;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
@@ -87,7 +88,9 @@ class StreetParkingResource extends Resource
 
     public static function getRelations(): array
     {
-        return [];
+        return [
+            OccupancyReportsRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

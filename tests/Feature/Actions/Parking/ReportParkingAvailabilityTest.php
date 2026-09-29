@@ -8,6 +8,7 @@ use App\Exceptions\Parking\InvalidParkingAvailability;
 use App\Models\OccupancyReport;
 use App\Models\ParkingFacility;
 use App\Models\StreetParking;
+use App\Support\Parking\ParkingIdentifier;
 
 /*
 |--------------------------------------------------------------------------
@@ -102,12 +103,12 @@ it('calculates availability status', function (int $capacity, int $available, Av
 
     expect($facility->refresh()->availability_status)->toBe($expected);
 })->with([
-    'full' => [50, 0, AvailabilityStatus::FULL],
-    'at threshold' => [50, 10, AvailabilityStatus::LIMITED],
-    'below threshold' => [100, 19, AvailabilityStatus::LIMITED],
-    'above threshold' => [100, 21, AvailabilityStatus::AVAILABLE],
-    'zero capacity' => [0, 0, AvailabilityStatus::UNKNOWN],
-]);
+            'full' => [50, 0, AvailabilityStatus::FULL],
+            'at threshold' => [50, 10, AvailabilityStatus::LIMITED],
+            'below threshold' => [100, 19, AvailabilityStatus::LIMITED],
+            'above threshold' => [100, 21, AvailabilityStatus::AVAILABLE],
+            'zero capacity' => [0, 0, AvailabilityStatus::UNKNOWN],
+        ]);
 
 /*
 |--------------------------------------------------------------------------
@@ -122,7 +123,7 @@ it('rejects invalid availability', function (int $capacity, int $available, ?int
         'availability_status' => AvailabilityStatus::AVAILABLE,
     ]);
 
-    expect(fn () => app(ReportParkingAvailability::class)->execute(
+    expect(fn() => app(ReportParkingAvailability::class)->execute(
         new ReportParkingAvailabilityData(
             parkingIdentifier: "facility:{$facility->id}",
             availableSpaces: $available,
@@ -140,22 +141,77 @@ it('rejects invalid availability', function (int $capacity, int $available, ?int
 
     expect($facility->available_spaces)->toBe($capacity);
 })->with([
-    'available exceeds capacity' => [
-        10,
-        11,
-        null,
-        'Available spaces cannot exceed parking capacity.',
-    ],
-    'occupied exceeds capacity' => [
-        10,
-        2,
-        11,
-        'Occupied spaces cannot exceed parking capacity.',
-    ],
-    'occupied plus available exceeds capacity' => [
-        20,
-        15,
-        10,
-        'Occupied and available spaces cannot exceed parking capacity.',
-    ],
-]);
+            'available exceeds capacity' => [
+                10,
+                11,
+                null,
+                'Available spaces cannot exceed parking capacity.',
+            ],
+            'occupied exceeds capacity' => [
+                10,
+                2,
+                11,
+                'Occupied spaces cannot exceed parking capacity.',
+            ],
+            'occupied plus available exceeds capacity' => [
+                20,
+                15,
+                10,
+                'Occupied and available spaces cannot exceed parking capacity.',
+            ],
+        ]);
+
+it('rejects negative available spaces', function () {
+    $parking = ParkingFacility::factory()->create([
+        'capacity' => 20,
+        'available_spaces' => 10,
+    ]);
+
+    expect(fn() => app(ReportParkingAvailability::class)->execute(
+        new ReportParkingAvailabilityData(
+            parkingIdentifier: ParkingIdentifier::for($parking),
+            availableSpaces: -1,
+        ),
+    ))
+        ->toThrow(
+            InvalidParkingAvailability::class,
+            'Available spaces cannot be negative.',
+        );
+});
+
+it('rejects negative occupied spaces', function () {
+    $parking = ParkingFacility::factory()->create([
+        'capacity' => 20,
+        'available_spaces' => 10,
+    ]);
+
+    expect(fn() => app(ReportParkingAvailability::class)->execute(
+        new ReportParkingAvailabilityData(
+            parkingIdentifier: ParkingIdentifier::for($parking),
+            availableSpaces: 10,
+            occupiedSpaces: -1,
+        ),
+    ))
+        ->toThrow(
+            InvalidParkingAvailability::class,
+            'Occupied spaces cannot be negative.',
+        );
+});
+
+it('rejects availability reports when capacity is not set', function () {
+    $parking = ParkingFacility::factory()->create([
+        'capacity' => null,
+        'available_spaces' => null,
+    ]);
+
+    expect(fn() => app(ReportParkingAvailability::class)->execute(
+        new ReportParkingAvailabilityData(
+            parkingIdentifier: ParkingIdentifier::for($parking),
+            availableSpaces: 5,
+        ),
+    ))
+        ->toThrow(
+            InvalidParkingAvailability::class,
+            'Parking capacity must be set before availability can be reported.',
+        );
+});

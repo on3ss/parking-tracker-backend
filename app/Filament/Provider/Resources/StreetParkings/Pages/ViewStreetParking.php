@@ -15,7 +15,9 @@ class ViewStreetParking extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            ReportAvailabilityAction::make(),
+            ReportAvailabilityAction::make(
+                tenantScoped: true,
+            ),
             EditAction::make(),
             DeleteAction::make(),
         ];

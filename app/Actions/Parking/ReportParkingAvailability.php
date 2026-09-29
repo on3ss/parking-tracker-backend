@@ -16,7 +16,8 @@ final class ReportParkingAvailability
 {
     public function __construct(
         private ResolveParkingIdentifier $resolveParkingIdentifier,
-    ) {}
+    ) {
+    }
 
     public function execute(
         ReportParkingAvailabilityData $data,
@@ -68,6 +69,27 @@ final class ReportParkingAvailability
         int $availableSpaces,
         ?int $occupiedSpaces,
     ): void {
+        if ($parking->capacity === null) {
+            throw new InvalidParkingAvailability(
+                field: 'available_spaces',
+                message: 'Parking capacity must be set before availability can be reported.',
+            );
+        }
+
+        if ($availableSpaces < 0) {
+            throw new InvalidParkingAvailability(
+                field: 'available_spaces',
+                message: 'Available spaces cannot be negative.',
+            );
+        }
+
+        if ($occupiedSpaces !== null && $occupiedSpaces < 0) {
+            throw new InvalidParkingAvailability(
+                field: 'occupied_spaces',
+                message: 'Occupied spaces cannot be negative.',
+            );
+        }
+
         if ($availableSpaces > $parking->capacity) {
             throw new InvalidParkingAvailability(
                 field: 'available_spaces',
