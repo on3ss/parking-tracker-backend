@@ -5,6 +5,7 @@ namespace App\Filament\Components\StreetParkings\Infolists;
 use App\Filament\Infolists\Components\GeometryEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
+use Illuminate\Database\Eloquent\Model;
 
 final class StreetParkingInfolist
 {
@@ -60,6 +61,13 @@ final class StreetParkingInfolist
 
                 TextEntry::make('location.country_code')
                     ->label(__('Country')),
+
+                GeometryEntry::make('location.coordinates')
+                    ->label(__('Map'))
+                    ->zoom(16)
+                    ->height(250)
+                    ->hidden(fn(?Model $record): bool => blank($record?->location?->coordinates))
+                    ->columnSpanFull(),
             ])
             ->columns(2);
     }
@@ -70,7 +78,6 @@ final class StreetParkingInfolist
             ->schema([
                 GeometryEntry::make('geometry')
                     ->label(__('Street segment'))
-                    ->height(350)
                     ->columnSpanFull(),
             ])
             ->columnSpanFull();

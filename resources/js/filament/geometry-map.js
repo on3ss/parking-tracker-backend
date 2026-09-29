@@ -1,5 +1,4 @@
 const CDN = 'https://cdnjs.cloudflare.com/ajax/libs'
-let leafletPromise = null
 
 const loadStyle = (href) =>
     new Promise((resolve, reject) => {
@@ -41,22 +40,46 @@ const patchLeafletDraw = () => {
     guard(L.Draw.Feature.prototype, '_updateTooltip')
 }
 
-// Shared across every picker on the page; retried if it fails.
-const loadLeaflet = () =>
-(leafletPromise ??= Promise.all([
-    loadStyle(`${CDN}/leaflet/1.9.4/leaflet.min.css`),
-    loadStyle(`${CDN}/leaflet.draw/1.0.4/leaflet.draw.css`),
-    loadScript(`${CDN}/leaflet/1.9.4/leaflet.min.js`)
-        .then(() => loadScript(`${CDN}/leaflet.draw/1.0.4/leaflet.draw.js`))
-        .then(patchLeafletDraw),
-]).catch((error) => {
-    leafletPromise = null
+// One shared load per page, retried if it fails.
+const memo = (key, factory) =>
+(window[key] ??= factory().catch((error) => {
+    window[key] = null
     throw error
 }))
 
-export default function geometryPicker({ state, type, center, zoom, disabled }) {
+const loadLeaflet = () =>
+    memo('__leafletPromise', () =>
+        Promise.all([
+            loadStyle(`${CDN}/leaflet/1.9.4/leaflet.min.css`),
+            loadScript(`${CDN}/leaflet/1.9.4/leaflet.min.js`),
+        ]),
+    )
+
+// Only loaded for line/polygon editing; points and read-only maps don't need it.
+const loadLeafletDraw = () =>
+    memo('__leafletDrawPromise', () =>
+        loadLeaflet()
+            .then(() =>
+                Promise.all([
+                    loadStyle(`${CDN}/leaflet.draw/1.0.4/leaflet.draw.css`),
+                    loadScript(`${CDN}/leaflet.draw/1.0.4/leaflet.draw.js`),
+                ]),
+            )
+            .then(patchLeafletDraw),
+    )
+
+/**
+ * Generic geometry map.
+ *
+ *  - bound === false: `state` holds a GeoJSON geometry (or null).
+ *  - bound === true:  `latitude` / `longitude` hold a point; `state` is unused.
+ *  - type: 'point' | 'linestring' | 'polygon' (null when read-only).
+ */
+export default function geometryMap({ state, latitude, longitude, bound, type, map: options, disabled }) {
     return {
         state,
+        latitude,
+        longitude,
         map: null,
         layers: null,
         tiles: null,
@@ -67,36 +90,125 @@ export default function geometryPicker({ state, type, center, zoom, disabled }) 
         cleanups: [],
 
         async init() {
-            await loadLeaflet()
+            const needsDraw = !disabled && type !== 'point'
+            await (needsDraw ? loadLeafletDraw() : loadLeaflet())
             const L = window.L
 
-            this.map = L.map(this.$refs.map).setView(center, zoom)
-            this.tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '&copy; OpenStreetMap contributors',
+            this.map = L.map(this.$refs.map).setView(options.center, options.zoom)
+            this.tiles = L.tileLayer(options.tiles.url, {
+                maxZoom: options.tiles.maxZoom,
+                attribution: options.tiles.attribution,
             }).addTo(this.map)
             this.layers = new L.FeatureGroup().addTo(this.map)
 
-            this.render(this.state)
+            this.render(this.value(), true)
 
             if (!disabled) {
-                this.addDrawControls()
-                this.hookFormSubmit()
+                if (type === 'point') {
+                    this.enablePointPlacement()
+                } else {
+                    this.addDrawControls()
+                    this.hookFormSubmit()
+                }
             }
 
-            // Re-render only when the change came from outside the map
-            // (form reset, other fields...), and never mid-draw or mid-edit.
-            this.$watch('state', (value) => {
-                if (this.busy) return
-
-                if (JSON.stringify(value ?? null) !== JSON.stringify(this.current())) {
-                    this.render(value)
-                }
-            })
+            // Changes that come from outside the map: typed values, server-side
+            // $set() calls, form resets. Never applied mid-draw or mid-edit.
+            if (bound) {
+                this.$watch('latitude', () => this.onExternalChange())
+                this.$watch('longitude', () => this.onExternalChange())
+            } else {
+                this.$watch('state', () => this.onExternalChange())
+            }
 
             this.watchResize()
             this.watchTheme()
         },
+
+        // --- state adapters -------------------------------------------------
+
+        // The current external value as a GeoJSON geometry (or null).
+        value() {
+            if (bound) {
+                const lat = parseFloat(this.latitude)
+                const lng = parseFloat(this.longitude)
+
+                return Number.isFinite(lat) && Number.isFinite(lng)
+                    ? { type: 'Point', coordinates: [lng, lat] }
+                    : null
+            }
+
+            return this.state ?? null
+        },
+
+        write(geometry) {
+            if (bound) {
+                const [lng, lat] = geometry?.coordinates ?? [null, null]
+                this.latitude = lat
+                this.longitude = lng
+                return
+            }
+
+            this.state = geometry
+        },
+
+        // The geometry currently on the map (precision 7 is about 1 cm).
+        current() {
+            const layer = this.layers?.getLayers()[0]
+            return layer ? layer.toGeoJSON(7).geometry : null
+        },
+
+        commit() {
+            this.write(this.current())
+        },
+
+        onExternalChange() {
+            if (this.busy) return
+
+            const value = this.value()
+            if (JSON.stringify(value) === JSON.stringify(this.current())) return
+
+            this.render(value)
+        },
+
+        // --- rendering ------------------------------------------------------
+
+        render(value, initial = false) {
+            this.layers.clearLayers()
+            if (!value?.type) return
+
+            window.L.geoJSON(value, {
+                pointToLayer: (feature, latlng) => this.makeMarker(latlng),
+            }).eachLayer((layer) => this.layers.addLayer(layer))
+
+            if (value.type === 'Point') {
+                const [lng, lat] = value.coordinates
+                initial ? this.map.setView([lat, lng], options.zoom) : this.map.panTo([lat, lng])
+                return
+            }
+
+            const bounds = this.layers.getBounds()
+            if (bounds.isValid()) this.map.fitBounds(bounds, { maxZoom: 18, padding: [30, 30] })
+        },
+
+        makeMarker(latlng) {
+            const marker = window.L.marker(latlng, { draggable: !disabled })
+            if (!disabled) marker.on('dragend', () => this.commit())
+
+            return marker
+        },
+
+        // --- point editing: click to place, drag to adjust -------------------
+
+        enablePointPlacement() {
+            this.map.on('click', (event) => {
+                this.layers.clearLayers()
+                this.layers.addLayer(this.makeMarker(event.latlng))
+                this.commit()
+            })
+        },
+
+        // --- line / polygon editing (Leaflet.draw) ---------------------------
 
         addDrawControls() {
             const L = window.L
@@ -104,7 +216,7 @@ export default function geometryPicker({ state, type, center, zoom, disabled }) 
             this.drawControl = new L.Control.Draw({
                 position: 'topright',
                 draw: {
-                    marker: type === 'point',
+                    marker: false,
                     polyline: type === 'linestring' ? { showLength: true, metric: true } : false,
                     polygon: type === 'polygon' ? { allowIntersection: false, showArea: false } : false,
                     rectangle: false,
@@ -159,24 +271,7 @@ export default function geometryPicker({ state, type, center, zoom, disabled }) 
             handler?.completeShape?.()
         },
 
-        render(value) {
-            this.layers.clearLayers()
-            if (!value?.type) return
-
-            window.L.geoJSON(value).eachLayer((layer) => this.layers.addLayer(layer))
-
-            const bounds = this.layers.getBounds()
-            if (bounds.isValid()) this.map.fitBounds(bounds, { maxZoom: 18, padding: [30, 30] })
-        },
-
-        current() {
-            const layer = this.layers?.getLayers()[0]
-            return layer ? layer.toGeoJSON(7).geometry : null
-        },
-
-        commit() {
-            this.state = this.current()
-        },
+        // --- housekeeping ---------------------------------------------------
 
         // Fixes a blank or misaligned map inside tabs and collapsed sections.
         watchResize() {

@@ -32,7 +32,7 @@ class AppServiceProvider extends ServiceProvider
         ]);
 
         FilamentAsset::register([
-            AlpineComponent::make('geometry-picker', resource_path('js/filament/geometry-picker.js')),
+            AlpineComponent::make('geometry-map', resource_path('js/filament/geometry-map.js')),
         ]);
     }
 }

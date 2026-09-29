@@ -2,51 +2,24 @@
 
 namespace App\Filament\Infolists\Components;
 
-use App\Filament\Forms\Components\GeometryPicker;
+use App\Filament\Concerns\HasMapOptions;
+use App\Support\Geo\GeoJson;
 use Filament\Infolists\Components\Entry;
 
 class GeometryEntry extends Entry
 {
+    use HasMapOptions;
+
     protected string $view = 'filament.infolists.components.geometry-entry';
 
-    protected array $center = [25.5779, 91.8837]; // [lat, lng], fallback only
-    protected int $zoom = 14;
-    protected int $height = 350;
-
-    public function center(float $lat, float $lng): static
+    protected function defaultMapHeight(): int
     {
-        $this->center = [$lat, $lng];
-
-        return $this;
+        return 350;
     }
 
-    public function zoom(int $zoom): static
-    {
-        $this->zoom = $zoom;
-        return $this;
-    }
-    public function height(int $px): static
-    {
-        $this->height = $px;
-        return $this;
-    }
-
-    public function getCenter(): array
-    {
-        return $this->center;
-    }
-    public function getZoom(): int
-    {
-        return $this->zoom;
-    }
-    public function getHeight(): int
-    {
-        return $this->height;
-    }
-
-    // Reuses the picker's converter: Magellan geometry (or array/string) -> GeoJSON array
+    /** State may be a Magellan geometry, GeoJSON, or ['latitude' => .., 'longitude' => ..]. */
     public function getGeoJson(): ?array
     {
-        return GeometryPicker::toGeoJson($this->getState());
+        return GeoJson::from($this->getState());
     }
 }

@@ -9,7 +9,6 @@ use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Utilities\Set;
 
 final class StreetParkingForm
 {
@@ -114,6 +113,11 @@ final class StreetParkingForm
                     ->label(__('Longitude'))
                     ->numeric()
                     ->required(),
+
+                GeometryPicker::make('coordinates')
+                    ->label(__('Coordinates'))
+                    ->coordinateFields()
+                    ->zoom(16)
             ])
             ->columns(2);
     }
@@ -126,23 +130,8 @@ final class StreetParkingForm
                 GeometryPicker::make('geometry')
                     ->label(__('Street segment'))
                     ->geometryType('linestring')
-                    ->center(25.5779, 91.8837)
                     ->zoom(16)
-                    ->height(450)
                     ->required()
-                    ->live()
-                    ->afterStateUpdated(function (?array $state, Set $set) {
-                        $coords = $state['coordinates'] ?? [];
-
-                        if (count($coords) < 2) {
-                            return;
-                        }
-
-                        [$lng, $lat] = $coords[intdiv(count($coords), 2)]; // middle vertex
-            
-                        $set('location.latitude', round($lat, 7));
-                        $set('location.longitude', round($lng, 7));
-                    })
                     ->columnSpanFull(),
             ]);
     }
