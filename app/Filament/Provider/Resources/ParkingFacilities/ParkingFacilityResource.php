@@ -9,6 +9,7 @@ use App\Filament\Provider\Resources\ParkingFacilities\Pages\CreateParkingFacilit
 use App\Filament\Provider\Resources\ParkingFacilities\Pages\EditParkingFacility;
 use App\Filament\Provider\Resources\ParkingFacilities\Pages\ListParkingFacilities;
 use App\Filament\Provider\Resources\ParkingFacilities\Pages\ViewParkingFacility;
+use App\Filament\Provider\Resources\ParkingFacilities\RelationManagers\AreasRelationManager;
 use App\Filament\RelationManagers\OccupancyReportsRelationManager;
 use App\Models\ParkingFacility;
 use BackedEnum;
@@ -78,6 +79,7 @@ class ParkingFacilityResource extends Resource
     public static function getRelations(): array
     {
         return [
+            RelationManagers\AreasRelationManager::class,
             OccupancyReportsRelationManager::class,
         ];
     }
