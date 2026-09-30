@@ -6,285 +6,185 @@ use App\Data\Parking\ParkingSearchResult;
 use App\Data\Parking\SearchParkingData;
 use App\Models\ParkingFacility;
 use App\Models\StreetParking;
-use Clickbar\Magellan\Data\Geometries\Point;
-use Clickbar\Magellan\Database\Expressions\AsGeometry;
-use Clickbar\Magellan\Database\PostgisFunctions\ST;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
-use Spatie\QueryBuilder\QueryBuilder;
+use Illuminate\Support\Facades\DB;
 
 final class SearchParking
 {
-    public function execute(
-        SearchParkingData $data,
-    ): LengthAwarePaginator {
-        $point = $this->point($data);
-
-        $results = collect();
+    public function execute(SearchParkingData $data): LengthAwarePaginator
+    {
+        $queries = [];
 
         if ($data->type !== 'street') {
-            $results = $results->merge(
-                $this->searchFacilities(
-                    $data,
-                    $point,
-                ),
-            );
+            $queries[] = $this->facilityQuery($data);
         }
 
         if ($data->type !== 'facility') {
-            $results = $results->merge(
-                $this->searchStreetParking(
-                    $data,
-                    $point,
-                ),
-            );
+            $queries[] = $this->streetQuery($data);
         }
 
-        $results = $this->sortResults(
-            $results,
-            $data,
-        );
+        $union = array_shift($queries);
 
-        return $this->paginate(
-            $results,
+        foreach ($queries as $query) {
+            $union->unionAll($query);
+        }
+
+        $page = $this->sort(
+            DB::query()->fromSub($union, 'results'),
             $data,
+        )->paginate(
+                perPage: $data->perPage,
+                page: $data->page,
+            );
+
+        return $page->setCollection(
+            $this->hydrate($page->getCollection()),
         );
     }
 
-    private function searchFacilities(
-        SearchParkingData $data,
-        ?Point $point,
-    ): Collection {
-        $query = QueryBuilder::for(ParkingFacility::class)
-            ->where('status', 'ACTIVE')
-            ->with([
-                'provider',
-                'location',
-            ]);
+    /**
+     * Lightweight projection: kind, id, name, capacity, available_spaces, distance_meters.
+     */
+    private function facilityQuery(SearchParkingData $data): BaseBuilder
+    {
+        $query = ParkingFacility::query()
+            ->where('parking_facilities.status', 'ACTIVE')
+            ->select([
+                'parking_facilities.id',
+                'parking_facilities.name',
+                'parking_facilities.capacity',
+                'parking_facilities.available_spaces',
+            ])
+            ->selectRaw("'facility' as kind");
 
-        $this->applyFilters(
-            $query,
-            $data,
-        );
+        $this->applyFilters($query->getQuery(), 'parking_facilities', $data);
 
-        if ($point !== null) {
-            $distance = ST::distanceSphere(
-                $point,
-                new AsGeometry('locations.coordinates'),
-            );
+        if ($this->hasPoint($data)) {
+            $distance = 'ST_DistanceSphere(ST_SetSRID(ST_MakePoint(?, ?), 4326), locations.coordinates::geometry)';
 
             $query
-                ->join(
-                    'locations',
-                    'locations.id',
-                    '=',
-                    'parking_facilities.location_id',
-                )
-                ->select(
-                    'parking_facilities.*',
-                )
-                ->addSelect(
-                    $distance->as('distance_meters'),
-                );
+                ->join('locations', 'locations.id', '=', 'parking_facilities.location_id')
+                ->selectRaw("$distance as distance_meters", [$data->longitude, $data->latitude]);
 
             if ($data->radiusMeters !== null) {
-                $query->where(
-                    $distance,
-                    '<=',
-                    $data->radiusMeters,
-                );
+                $query->whereRaw("$distance <= ?", [$data->longitude, $data->latitude, $data->radiusMeters]);
             }
+        } else {
+            $query->selectRaw('NULL::float8 as distance_meters');
         }
 
-        return $query
-            ->get()
-            ->map(
-                fn (ParkingFacility $parking) => new ParkingSearchResult(
-                    parking: $parking,
-                    distanceMeters: isset(
-                        $parking->distance_meters,
-                    )
-                    ? (float) $parking->distance_meters
-                    : null,
-                ),
-            );
+        return $query->toBase(); // applies SoftDeletes scope
     }
 
-    private function searchStreetParking(
-        SearchParkingData $data,
-        ?Point $point,
-    ): Collection {
-        $query = QueryBuilder::for(StreetParking::class)
-            ->where('status', 'ACTIVE')
-            ->with([
-                'provider',
-                'location',
-            ]);
+    private function streetQuery(SearchParkingData $data): BaseBuilder
+    {
+        $query = StreetParking::query()
+            ->where('street_parkings.status', 'ACTIVE')
+            ->select([
+                'street_parkings.id',
+                'street_parkings.name',
+                'street_parkings.capacity',
+                'street_parkings.available_spaces',
+            ])
+            ->selectRaw("'street' as kind");
 
-        $this->applyFilters(
-            $query,
-            $data,
-        );
+        $this->applyFilters($query->getQuery(), 'street_parkings', $data);
 
-        if ($point !== null) {
-            $distance = ST::distanceSphere(
-                $point,
-                'street_parkings.geometry',
-            );
+        if ($this->hasPoint($data)) {
+            $distance = 'ST_DistanceSphere(ST_SetSRID(ST_MakePoint(?, ?), 4326), street_parkings.geometry)';
 
-            $query
-                ->select(
-                    'street_parkings.*',
-                )
-                ->addSelect(
-                    $distance->as('distance_meters'),
-                );
+            $query->selectRaw("$distance as distance_meters", [$data->longitude, $data->latitude]);
 
             if ($data->radiusMeters !== null) {
-                $query->where(
-                    $distance,
-                    '<=',
-                    $data->radiusMeters,
-                );
+                $query->whereRaw("$distance <= ?", [$data->longitude, $data->latitude, $data->radiusMeters]);
             }
+        } else {
+            $query->selectRaw('NULL::float8 as distance_meters');
         }
 
-        return $query
-            ->get()
-            ->map(
-                fn (StreetParking $parking) => new ParkingSearchResult(
-                    parking: $parking,
-                    distanceMeters: isset(
-                        $parking->distance_meters,
-                    )
-                    ? (float) $parking->distance_meters
-                    : null,
-                ),
-            );
+        return $query->toBase();
     }
 
-    private function applyFilters(
-        QueryBuilder $query,
-        SearchParkingData $data,
-    ): void {
+    private function applyFilters(BaseBuilder $query, string $table, SearchParkingData $data): void
+    {
         if ($data->availability !== null) {
-            $query->where(
-                'availability_status',
-                $data->availability->value,
-            );
+            $query->where("$table.availability_status", $data->availability->value);
         }
 
         if ($data->providerId !== null) {
-            $query->where(
-                'parking_provider_id',
-                $data->providerId,
-            );
+            $query->where("$table.parking_provider_id", $data->providerId);
         }
     }
 
-    private function point(
-        SearchParkingData $data,
-    ): ?Point {
-        if (
-            $data->latitude === null ||
-            $data->longitude === null
-        ) {
-            return null;
-        }
+    private function sort(BaseBuilder $query, SearchParkingData $data): BaseBuilder
+    {
+        $sort = $data->sort
+            ?? ($this->hasPoint($data) ? 'distance' : 'name');
 
-        return Point::makeGeodetic(
-            latitude: $data->latitude,
-            longitude: $data->longitude,
-        );
-    }
+        $direction = str_starts_with($sort, '-') ? 'desc' : 'asc';
 
-    private function sortResults(
-        Collection $results,
-        SearchParkingData $data,
-    ): Collection {
-        $sort = $data->sort;
-
-        if (
-            $sort === null &&
-            $data->latitude !== null &&
-            $data->longitude !== null
-        ) {
-            return $results
-                ->sortBy(
-                    fn (ParkingSearchResult $result) => $result->distanceMeters,
-                    SORT_NUMERIC,
-                )
-                ->values();
-        }
-
-        if ($sort === null) {
-            return $results
-                ->sortBy(
-                    fn (ParkingSearchResult $result) => $result->parking->name,
-                    SORT_NATURAL,
-                )
-                ->values();
-        }
-
-        $descending = str_starts_with(
-            $sort,
-            '-',
-        );
-
-        $field = ltrim(
-            $sort,
-            '-',
-        );
-
-        $sorted = match ($field) {
-            'distance' => $results->sortBy(
-                fn (ParkingSearchResult $result) => $result->distanceMeters,
-                SORT_NUMERIC,
-                $descending,
-            ),
-
-            'name' => $results->sortBy(
-                fn (ParkingSearchResult $result) => $result->parking->name,
-                SORT_NATURAL,
-                $descending,
-            ),
-
-            'capacity' => $results->sortBy(
-                fn (ParkingSearchResult $result) => $result->parking->capacity,
-                SORT_NUMERIC,
-                $descending,
-            ),
-
-            'available_spaces' => $results->sortBy(
-                fn (ParkingSearchResult $result) => $result->parking->available_spaces,
-                SORT_NUMERIC,
-                $descending,
-            ),
-
-            default => $results,
+        $column = match (ltrim($sort, '-')) {
+            'distance' => 'distance_meters',
+            'capacity' => 'capacity',
+            'available_spaces' => 'available_spaces',
+            default => 'name',
         };
 
-        return $sorted->values();
+        // Whitelisted column + direction, safe for orderByRaw.
+        return $query
+            ->orderByRaw("$column $direction NULLS LAST")
+            ->orderBy('kind')
+            ->orderBy('id'); // deterministic pagination
     }
 
-    private function paginate(
-        Collection $results,
-        SearchParkingData $data,
-    ): LengthAwarePaginator {
-        $total = $results->count();
+    /**
+     * Load full models for the current page only (2 queries + eager loads).
+     */
+    private function hydrate(Collection $rows): Collection
+    {
+        $models = [
+            'facility' => $this->loadModels(ParkingFacility::class, $rows, 'facility'),
+            'street' => $this->loadModels(StreetParking::class, $rows, 'street'),
+        ];
 
-        $items = $results
-            ->forPage(
-                $data->page,
-                $data->perPage,
-            )
+        return $rows
+            ->map(function (object $row) use ($models) {
+                $parking = $models[$row->kind][$row->id] ?? null;
+
+                return $parking === null ? null : new ParkingSearchResult(
+                    parking: $parking,
+                    distanceMeters: $row->distance_meters !== null
+                    ? (float) $row->distance_meters
+                    : null,
+                );
+            })
+            ->filter()
             ->values();
+    }
 
-        return new LengthAwarePaginator(
-            items: $items,
-            total: $total,
-            perPage: $data->perPage,
-            currentPage: $data->page,
-        );
+    /**
+     * @param  class-string<Model>  $model
+     */
+    private function loadModels(string $model, Collection $rows, string $kind): Collection
+    {
+        $ids = $rows->where('kind', $kind)->pluck('id');
+
+        if ($ids->isEmpty()) {
+            return collect();
+        }
+
+        return $model::query()
+            ->with(['provider', 'location'])
+            ->whereKey($ids)
+            ->get()
+            ->keyBy('id');
+    }
+
+    private function hasPoint(SearchParkingData $data): bool
+    {
+        return $data->latitude !== null && $data->longitude !== null;
     }
 }
