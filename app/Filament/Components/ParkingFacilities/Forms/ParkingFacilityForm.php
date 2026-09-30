@@ -5,7 +5,7 @@ namespace App\Filament\Components\ParkingFacilities\Forms;
 use App\Enums\ParkingFacilityType;
 use App\Enums\ParkingStatus;
 use App\Filament\Components\Shared\Forms\DescriptionSection;
-use App\Filament\Components\Shared\Infolists\LocationSection;
+use App\Filament\Components\Shared\Forms\LocationSection;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\TimePicker;
