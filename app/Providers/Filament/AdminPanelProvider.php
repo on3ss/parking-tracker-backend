@@ -9,6 +9,7 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\Support\Enums\Width;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -33,7 +34,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->renderHook(
                 'panels::head.start',
-                fn (): string => Vite::withEntryPoints([
+                fn(): string => Vite::withEntryPoints([
                     'resources/js/filament/geometry-map.js',
                 ])->toHtml(),
             )
@@ -66,6 +67,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            ->maxContentWidth(Width::Full);
     }
 }
