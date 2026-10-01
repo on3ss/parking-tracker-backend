@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'computed_confidence',
     'reported_at',
 ])]
+// TODO: Remove confidence column
 class OccupancyReport extends Model
 {
     /** @use HasFactory<OccupancyReportFactory> */
