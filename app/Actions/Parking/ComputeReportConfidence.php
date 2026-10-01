@@ -27,17 +27,21 @@ final class ComputeReportConfidence
         CarbonInterface $reportedAt,
     ): float {
         $self = $this->selfAssessment($source, $reportedConfidence);
+
         $corroboration = $this->corroboration(
             $parking,
             $source,
             $availableSpaces,
             $reportedAt,
         );
+
         $recency = $this->recency($reportedAt);
 
-        // Self is a hard ceiling; corroboration and recency only pull down.
         return round(
-            $self * $corroboration * $recency,
+            min(
+                $self * $corroboration * $recency,
+                $source->confidenceCeiling(),
+            ),
             4,
         );
     }
