@@ -18,10 +18,12 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Facades\Filament;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class StreetParkingResource extends Resource
 {
@@ -101,5 +103,21 @@ class StreetParkingResource extends Resource
             'view' => ViewStreetParking::route('/{record}'),
             'edit' => EditStreetParking::route('/{record}/edit'),
         ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        $tenant = Filament::getTenant();
+
+        if ($tenant === null) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query->where(
+            'parking_provider_id',
+            $tenant->getKey(),
+        );
     }
 }

@@ -4,7 +4,9 @@ namespace App\Filament\Provider\Resources\ParkingFacilities\Pages;
 
 use App\Filament\Provider\Resources\ParkingFacilities\ParkingFacilityResource;
 use App\Models\Location;
+use App\Models\ParkingProvider;
 use Clickbar\Magellan\Data\Geometries\Point;
+use Filament\Facades\Filament;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +18,13 @@ class CreateParkingFacility extends CreateRecord
     protected function handleRecordCreation(array $data): Model
     {
         return DB::transaction(function () use ($data): Model {
+            $provider = Filament::getTenant();
+
+            abort_unless(
+                $provider instanceof ParkingProvider,
+                403,
+            );
+
             $location = $data['location'];
 
             unset($data['location']);
@@ -34,6 +43,7 @@ class CreateParkingFacility extends CreateRecord
             ]);
 
             $data['location_id'] = $location->id;
+            $data['parking_provider_id'] = $provider->getKey();
 
             return static::getModel()::create($data);
         });
