@@ -79,22 +79,4 @@ class ParkingFacility extends Model
     {
         return $this->belongsTo(OccupancyReport::class, 'availability_report_id');
     }
-
-    public function unavailable(): static
-    {
-        return $this->state(fn() => [
-            'availability_status' => 'FULL',
-            'available_spaces' => 0,
-            'availability_updated_at' => now(),
-        ]);
-    }
-
-    public function available(int $spaces = 20): static
-    {
-        return $this->state(fn() => [
-            'availability_status' => 'AVAILABLE',
-            'available_spaces' => $spaces,
-            'availability_updated_at' => now(),
-        ]);
-    }
 }
