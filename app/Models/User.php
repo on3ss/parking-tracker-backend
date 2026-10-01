@@ -77,11 +77,11 @@ class User extends Authenticatable implements HasTenants
      */
     public function canAccessTenant(Model $tenant): bool
     {
-        if (!$tenant instanceof ParkingProvider) {
+        if (! $tenant instanceof ParkingProvider) {
             return false;
         }
 
-        if (!$tenant->is_active) {
+        if (! $tenant->is_active) {
             return false;
         }
 

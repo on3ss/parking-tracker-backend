@@ -65,7 +65,7 @@ class OccupancyReport extends Model
 
     public function forFacility(): static
     {
-        return $this->state(fn() => [
+        return $this->state(fn () => [
             'parking_facility_id' => ParkingFacility::factory(),
             'street_parking_id' => null,
         ]);
@@ -73,7 +73,7 @@ class OccupancyReport extends Model
 
     public function forStreetParking(): static
     {
-        return $this->state(fn() => [
+        return $this->state(fn () => [
             'parking_facility_id' => null,
             'street_parking_id' => StreetParking::factory(),
         ]);

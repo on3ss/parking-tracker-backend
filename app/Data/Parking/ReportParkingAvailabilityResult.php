@@ -12,6 +12,5 @@ final readonly class ReportParkingAvailabilityResult
         public ParkingFacility|StreetParking $parking,
         public OccupancyReport $report,
         public bool $accepted,
-    ) {
-    }
+    ) {}
 }

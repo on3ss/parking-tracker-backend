@@ -36,9 +36,9 @@ final class SearchParking
             DB::query()->fromSub($union, 'results'),
             $data,
         )->paginate(
-                perPage: $data->perPage,
-                page: $data->page,
-            );
+            perPage: $data->perPage,
+            page: $data->page,
+        );
 
         return $page->setCollection(
             $this->hydrate($page->getCollection()),

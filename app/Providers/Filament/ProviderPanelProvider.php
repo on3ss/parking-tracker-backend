@@ -37,7 +37,7 @@ class ProviderPanelProvider extends PanelProvider
             ])
             ->renderHook(
                 'panels::head.start',
-                fn(): string => Vite::withEntryPoints([
+                fn (): string => Vite::withEntryPoints([
                     'resources/js/filament/geometry-map.js',
                 ])->toHtml(),
             )

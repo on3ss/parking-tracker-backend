@@ -75,7 +75,7 @@ final class ComputeReportConfidence
             ->whereNotNull('available_spaces')
             ->get(['available_spaces'])
             ->filter(
-                fn($r) => abs($r->available_spaces - $availableSpaces)
+                fn ($r) => abs($r->available_spaces - $availableSpaces)
                     <= self::AGREEMENT_TOLERANCE
             )
             ->count();

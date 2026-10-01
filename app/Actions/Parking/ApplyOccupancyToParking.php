@@ -11,8 +11,7 @@ final class ApplyOccupancyToParking
 {
     public function __construct(
         private EvaluateOccupancyReport $evaluate,
-    ) {
-    }
+    ) {}
 
     public function execute(
         ParkingFacility|StreetParking $parking,
@@ -25,7 +24,7 @@ final class ApplyOccupancyToParking
             reportedAt: $report->reported_at,
         );
 
-        if (!$accepted) {
+        if (! $accepted) {
             return false;
         }
 

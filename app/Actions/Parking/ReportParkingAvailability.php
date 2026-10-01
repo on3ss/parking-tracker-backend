@@ -16,8 +16,7 @@ final class ReportParkingAvailability
         private ResolveParkingIdentifier $resolveParkingIdentifier,
         private RecordOccupancyObservation $recordOccupancyObservation,
         private ApplyOccupancyToParking $applyOccupancyToParking,
-    ) {
-    }
+    ) {}
 
     public function execute(
         ReportParkingAvailabilityData $data,

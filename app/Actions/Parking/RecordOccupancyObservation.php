@@ -12,8 +12,7 @@ final class RecordOccupancyObservation
 {
     public function __construct(
         private ComputeReportConfidence $computeConfidence,
-    ) {
-    }
+    ) {}
 
     public function execute(
         ParkingFacility|StreetParking $parking,
