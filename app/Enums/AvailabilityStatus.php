@@ -43,4 +43,19 @@ enum AvailabilityStatus: string implements HasColor, HasIcon, HasLabel
             self::FULL => 'heroicon-m-x-circle',
         };
     }
+
+    public static function for(int $capacity, int $availableSpaces): self
+    {
+        if ($capacity === 0) {
+            return self::UNKNOWN;
+        }
+
+        if ($availableSpaces === 0) {
+            return self::FULL;
+        }
+
+        return $availableSpaces / $capacity <= 0.20
+            ? self::LIMITED
+            : self::AVAILABLE;
+    }
 }
