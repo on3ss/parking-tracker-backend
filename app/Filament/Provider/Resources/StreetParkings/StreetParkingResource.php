@@ -104,20 +104,4 @@ class StreetParkingResource extends Resource
             'edit' => EditStreetParking::route('/{record}/edit'),
         ];
     }
-
-    public static function getEloquentQuery(): Builder
-    {
-        $query = parent::getEloquentQuery();
-
-        $tenant = Filament::getTenant();
-
-        if ($tenant === null) {
-            return $query->whereRaw('1 = 0');
-        }
-
-        return $query->where(
-            'parking_provider_id',
-            $tenant->getKey(),
-        );
-    }
 }
