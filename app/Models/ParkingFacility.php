@@ -4,8 +4,13 @@ namespace App\Models;
 
 use App\Enums\AvailabilityStatus;
 use App\Enums\ParkingFacilityType;
+use App\Enums\ParkingSource;
 use App\Enums\ParkingStatus;
 use App\Models\Concerns\HasSlug;
+use App\Models\Location;
+use App\Models\OccupancyReport;
+use App\Models\ParkingArea;
+use App\Models\ParkingProvider;
 use Database\Factories\ParkingFacilitiesFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -26,6 +31,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
     'closing_time',
     'available_spaces',
     'availability_status',
+    'availability_source',
+    'availability_report_id',
     'availability_updated_at',
     'description',
 ])]
@@ -40,6 +47,7 @@ class ParkingFacility extends Model
             'type' => ParkingFacilityType::class,
             'status' => ParkingStatus::class,
             'availability_status' => AvailabilityStatus::class,
+            'availability_source' => ParkingSource::class,
 
             'capacity' => 'integer',
             'available_spaces' => 'integer',
@@ -67,9 +75,14 @@ class ParkingFacility extends Model
         return $this->hasMany(OccupancyReport::class);
     }
 
+    public function availabilityReport(): BelongsTo
+    {
+        return $this->belongsTo(OccupancyReport::class, 'availability_report_id');
+    }
+
     public function unavailable(): static
     {
-        return $this->state(fn () => [
+        return $this->state(fn() => [
             'availability_status' => 'FULL',
             'available_spaces' => 0,
             'availability_updated_at' => now(),
@@ -78,7 +91,7 @@ class ParkingFacility extends Model
 
     public function available(int $spaces = 20): static
     {
-        return $this->state(fn () => [
+        return $this->state(fn() => [
             'availability_status' => 'AVAILABLE',
             'available_spaces' => $spaces,
             'availability_updated_at' => now(),

@@ -16,7 +16,7 @@ final class ReportParkingAvailabilityController extends Controller
         string $parking,
         ReportParkingAvailability $reportParkingAvailability,
     ): ParkingDetailResource {
-        $parkingModel = $reportParkingAvailability->execute(
+        $result = $reportParkingAvailability->execute(
             new ReportParkingAvailabilityData(
                 parkingIdentifier: $parking,
                 availableSpaces: $request->availableSpaces(),
@@ -27,11 +27,14 @@ final class ReportParkingAvailabilityController extends Controller
             userId: $request->user()->id,
         );
 
-        $parkingModel->load([
-            'location',
-            'provider',
-        ]);
+        $result->parking->load(['location', 'provider']);
 
-        return new ParkingDetailResource($parkingModel);
+        return (new ParkingDetailResource($result->parking))
+            ->additional([
+                'meta' => [
+                    'report_id' => $result->report->id,
+                    'report_accepted' => $result->accepted,
+                ],
+            ]);
     }
 }

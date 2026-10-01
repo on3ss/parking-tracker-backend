@@ -30,7 +30,7 @@ it('creates an occupancy report and updates facility availability', function () 
         ),
     );
 
-    expect($result->id)->toBe($facility->id);
+    expect($result->parking->id)->toBe($facility->id);
 
     $facility->refresh();
 
@@ -63,7 +63,7 @@ it('creates an occupancy report and updates street parking availability', functi
         ),
     );
 
-    expect($result->id)->toBe($parking->id);
+    expect($result->parking->id)->toBe($parking->id);
 
     $parking->refresh();
 
@@ -103,12 +103,12 @@ it('calculates availability status', function (int $capacity, int $available, Av
 
     expect($facility->refresh()->availability_status)->toBe($expected);
 })->with([
-    'full' => [50, 0, AvailabilityStatus::FULL],
-    'at threshold' => [50, 10, AvailabilityStatus::LIMITED],
-    'below threshold' => [100, 19, AvailabilityStatus::LIMITED],
-    'above threshold' => [100, 21, AvailabilityStatus::AVAILABLE],
-    'zero capacity' => [0, 0, AvailabilityStatus::UNKNOWN],
-]);
+            'full' => [50, 0, AvailabilityStatus::FULL],
+            'at threshold' => [50, 10, AvailabilityStatus::LIMITED],
+            'below threshold' => [100, 19, AvailabilityStatus::LIMITED],
+            'above threshold' => [100, 21, AvailabilityStatus::AVAILABLE],
+            'zero capacity' => [0, 0, AvailabilityStatus::UNKNOWN],
+        ]);
 
 /*
 |--------------------------------------------------------------------------
@@ -123,7 +123,7 @@ it('rejects invalid availability', function (int $capacity, int $available, ?int
         'availability_status' => AvailabilityStatus::AVAILABLE,
     ]);
 
-    expect(fn () => app(ReportParkingAvailability::class)->execute(
+    expect(fn() => app(ReportParkingAvailability::class)->execute(
         new ReportParkingAvailabilityData(
             parkingIdentifier: "facility:{$facility->id}",
             availableSpaces: $available,
@@ -141,25 +141,25 @@ it('rejects invalid availability', function (int $capacity, int $available, ?int
 
     expect($facility->available_spaces)->toBe($capacity);
 })->with([
-    'available exceeds capacity' => [
-        10,
-        11,
-        null,
-        'Available spaces cannot exceed parking capacity.',
-    ],
-    'occupied exceeds capacity' => [
-        10,
-        2,
-        11,
-        'Occupied spaces cannot exceed parking capacity.',
-    ],
-    'occupied plus available exceeds capacity' => [
-        20,
-        15,
-        10,
-        'Occupied and available spaces cannot exceed parking capacity.',
-    ],
-]);
+            'available exceeds capacity' => [
+                10,
+                11,
+                null,
+                'Available spaces cannot exceed parking capacity.',
+            ],
+            'occupied exceeds capacity' => [
+                10,
+                2,
+                11,
+                'Occupied spaces cannot exceed parking capacity.',
+            ],
+            'occupied plus available exceeds capacity' => [
+                20,
+                15,
+                10,
+                'Occupied and available spaces cannot exceed parking capacity.',
+            ],
+        ]);
 
 it('rejects negative available spaces', function () {
     $parking = ParkingFacility::factory()->create([
@@ -167,7 +167,7 @@ it('rejects negative available spaces', function () {
         'available_spaces' => 10,
     ]);
 
-    expect(fn () => app(ReportParkingAvailability::class)->execute(
+    expect(fn() => app(ReportParkingAvailability::class)->execute(
         new ReportParkingAvailabilityData(
             parkingIdentifier: ParkingIdentifier::for($parking),
             availableSpaces: -1,
@@ -185,7 +185,7 @@ it('rejects negative occupied spaces', function () {
         'available_spaces' => 10,
     ]);
 
-    expect(fn () => app(ReportParkingAvailability::class)->execute(
+    expect(fn() => app(ReportParkingAvailability::class)->execute(
         new ReportParkingAvailabilityData(
             parkingIdentifier: ParkingIdentifier::for($parking),
             availableSpaces: 10,
@@ -204,7 +204,7 @@ it('rejects availability reports when capacity is not set', function () {
         'available_spaces' => null,
     ]);
 
-    expect(fn () => app(ReportParkingAvailability::class)->execute(
+    expect(fn() => app(ReportParkingAvailability::class)->execute(
         new ReportParkingAvailabilityData(
             parkingIdentifier: ParkingIdentifier::for($parking),
             availableSpaces: 5,
@@ -214,4 +214,74 @@ it('rejects availability reports when capacity is not set', function () {
             InvalidParkingAvailability::class,
             'Parking capacity must be set before availability can be reported.',
         );
+});
+
+it('records but does not apply a user report when a fresh sensor observation is active', function () {
+    $facility = ParkingFacility::factory()->create([
+        'capacity' => 50,
+        'available_spaces' => 30,
+        'availability_source' => ParkingSource::SENSOR,
+        'availability_updated_at' => now()->subMinute(),
+    ]);
+
+    $result = app(ReportParkingAvailability::class)->execute(
+        new ReportParkingAvailabilityData(
+            parkingIdentifier: "facility:{$facility->id}",
+            availableSpaces: 0,
+        ),
+        source: ParkingSource::USER,
+    );
+
+    expect($result->accepted)->toBeFalse();
+    expect($facility->refresh()->available_spaces)->toBe(30);
+    expect($facility->availability_source)->toBe(ParkingSource::SENSOR);
+
+    expect(
+        OccupancyReport::query()
+            ->where('parking_facility_id', $facility->id)
+            ->count(),
+    )->toBe(1);
+});
+
+it('applies a user report over a stale sensor observation', function () {
+    $facility = ParkingFacility::factory()->create([
+        'capacity' => 50,
+        'available_spaces' => 30,
+        'availability_source' => ParkingSource::SENSOR,
+        'availability_updated_at' => now()->subHour(),
+    ]);
+
+    $result = app(ReportParkingAvailability::class)->execute(
+        new ReportParkingAvailabilityData(
+            parkingIdentifier: "facility:{$facility->id}",
+            availableSpaces: 12,
+        ),
+        source: ParkingSource::USER,
+    );
+
+    expect($result->accepted)->toBeTrue();
+    expect($facility->refresh()->available_spaces)->toBe(12);
+    expect($facility->availability_source)->toBe(ParkingSource::USER);
+    expect($facility->availability_report_id)->toBe($result->report->id);
+});
+
+it('applies an operator report over a fresh user observation', function () {
+    $facility = ParkingFacility::factory()->create([
+        'capacity' => 50,
+        'available_spaces' => 40,
+        'availability_source' => ParkingSource::USER,
+        'availability_updated_at' => now()->subMinute(),
+    ]);
+
+    $result = app(ReportParkingAvailability::class)->execute(
+        new ReportParkingAvailabilityData(
+            parkingIdentifier: "facility:{$facility->id}",
+            availableSpaces: 5,
+        ),
+        source: ParkingSource::OPERATOR,
+    );
+
+    expect($result->accepted)->toBeTrue();
+    expect($facility->refresh()->availability_source)
+        ->toBe(ParkingSource::OPERATOR);
 });

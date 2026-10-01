@@ -2,7 +2,10 @@
 
 namespace App\Actions\Parking;
 
+use App\Actions\Parking\EvaluateOccupancyReport;
+use App\Actions\Parking\ResolveParkingIdentifier;
 use App\Data\Parking\ReportParkingAvailabilityData;
+use App\Data\Parking\ReportParkingAvailabilityResult;
 use App\Enums\AvailabilityStatus;
 use App\Enums\ParkingSource;
 use App\Exceptions\Parking\InvalidParkingAvailability;
@@ -16,15 +19,16 @@ final class ReportParkingAvailability
 {
     public function __construct(
         private ResolveParkingIdentifier $resolveParkingIdentifier,
-    ) {}
+        private EvaluateOccupancyReport $evaluateOccupancyReport,
+    ) {
+    }
 
     public function execute(
         ReportParkingAvailabilityData $data,
         ParkingSource $source = ParkingSource::USER,
         ?int $userId = null,
-    ): ParkingFacility|StreetParking {
+    ): ReportParkingAvailabilityResult {
         return DB::transaction(function () use ($data, $source, $userId) {
-            /** @var ParkingFacility|StreetParking $parking */
             $parking = $this->resolveParkingIdentifier->execute(
                 $data->parkingIdentifier,
             );
@@ -40,7 +44,7 @@ final class ReportParkingAvailability
             $occupiedSpaces = $data->occupiedSpaces
                 ?? $parking->capacity - $data->availableSpaces;
 
-            $this->createReport(
+            $report = $this->createReport(
                 parking: $parking,
                 source: $source,
                 userId: $userId,
@@ -50,16 +54,30 @@ final class ReportParkingAvailability
                 reportedAt: $reportedAt,
             );
 
-            $parking->update([
-                'available_spaces' => $data->availableSpaces,
-                'availability_status' => $this->availabilityStatus(
-                    capacity: $parking->capacity,
-                    availableSpaces: $data->availableSpaces,
-                ),
-                'availability_updated_at' => $reportedAt,
-            ]);
+            $accepted = $this->evaluateOccupancyReport->execute(
+                parking: $parking,
+                source: $source,
+                reportedAt: $reportedAt,
+            );
 
-            return $parking->fresh();
+            if ($accepted) {
+                $parking->update([
+                    'available_spaces' => $data->availableSpaces,
+                    'availability_status' => $this->availabilityStatus(
+                        capacity: $parking->capacity,
+                        availableSpaces: $data->availableSpaces,
+                    ),
+                    'availability_updated_at' => $reportedAt,
+                    'availability_source' => $source,
+                    'availability_report_id' => $report->id,
+                ]);
+            }
+
+            return new ReportParkingAvailabilityResult(
+                parking: $parking->fresh(),
+                report: $report,
+                accepted: $accepted,
+            );
         });
     }
 
