@@ -8,14 +8,22 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 final class ResolveParkingIdentifier
 {
-    public function execute(string $identifier): ParkingFacility|StreetParking
-    {
+    public function execute(
+        string $identifier,
+        bool $lockForUpdate = false,
+    ): ParkingFacility|StreetParking {
         [$type, $id] = $this->parse($identifier);
 
-        return match ($type) {
-            'facility' => ParkingFacility::query()->findOrFail($id),
-            'street' => StreetParking::query()->findOrFail($id),
+        $query = match ($type) {
+            'facility' => ParkingFacility::query(),
+            'street' => StreetParking::query(),
         };
+
+        if ($lockForUpdate) {
+            $query->lockForUpdate();
+        }
+
+        return $query->findOrFail($id);
     }
 
     /**
@@ -24,7 +32,7 @@ final class ResolveParkingIdentifier
     private function parse(string $identifier): array
     {
         if (
-            ! preg_match(
+            !preg_match(
                 '/^(facility|street):([1-9][0-9]*)$/',
                 $identifier,
                 $matches,

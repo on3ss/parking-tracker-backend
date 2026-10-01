@@ -32,6 +32,7 @@ final class ReportParkingAvailability
         return DB::transaction(function () use ($data, $source, $userId) {
             $parking = $this->resolveParkingIdentifier->execute(
                 $data->parkingIdentifier,
+                lockForUpdate: true,   // ← everything below runs under the lock
             );
 
             $this->validateAvailability(
@@ -45,6 +46,14 @@ final class ReportParkingAvailability
             $occupiedSpaces = $data->occupiedSpaces
                 ?? $parking->capacity - $data->availableSpaces;
 
+            $computedConfidence = $this->computeConfidence->execute(
+                parking: $parking,
+                source: $source,
+                availableSpaces: $data->availableSpaces,
+                claimedConfidence: $data->confidence,
+                reportedAt: $reportedAt,
+            );
+
             $report = $this->createReport(
                 parking: $parking,
                 source: $source,
@@ -52,14 +61,6 @@ final class ReportParkingAvailability
                 occupiedSpaces: $occupiedSpaces,
                 availableSpaces: $data->availableSpaces,
                 confidence: $data->confidence,
-                reportedAt: $reportedAt,
-            );
-
-            $computedConfidence = $this->computeConfidence->execute(
-                parking: $parking,
-                source: $source,
-                availableSpaces: $data->availableSpaces,
-                claimedConfidence: $data->confidence,
                 reportedAt: $reportedAt,
             );
 
@@ -84,7 +85,7 @@ final class ReportParkingAvailability
             }
 
             return new ReportParkingAvailabilityResult(
-                parking: $parking->fresh(),
+                parking: $parking->refresh(),
                 report: $report,
                 accepted: $accepted,
             );
