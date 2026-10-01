@@ -16,7 +16,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'source',
     'occupied_spaces',
     'available_spaces',
-    'confidence',
+    'reported_confidence',
+    'computed_confidence',
     'reported_at',
 ])]
 class OccupancyReport extends Model
@@ -31,7 +32,8 @@ class OccupancyReport extends Model
 
             'occupied_spaces' => 'integer',
             'available_spaces' => 'integer',
-            'confidence' => 'decimal:4',
+            'reported_confidence' => 'decimal:4',
+            'computed_confidence' => 'decimal:4',
             'reported_at' => 'datetime',
         ];
     }

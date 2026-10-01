@@ -63,7 +63,7 @@ it('stores occupied spaces and confidence when supplied', function () {
     expect($report->user_id)->toBe($this->user->id);
     expect($report->available_spaces)->toBe(12);
     expect($report->occupied_spaces)->toBe(38);
-    expect((float) $report->confidence)->toBe(0.95);
+    expect((float) $report->reported_confidence)->toBe(0.95);
 });
 
 it('reports availability for street parking', function () {

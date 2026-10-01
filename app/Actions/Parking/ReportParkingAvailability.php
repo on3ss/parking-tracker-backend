@@ -20,6 +20,7 @@ final class ReportParkingAvailability
     public function __construct(
         private ResolveParkingIdentifier $resolveParkingIdentifier,
         private EvaluateOccupancyReport $evaluateOccupancyReport,
+        private ComputeReportConfidence $computeConfidence
     ) {
     }
 
@@ -54,9 +55,18 @@ final class ReportParkingAvailability
                 reportedAt: $reportedAt,
             );
 
+            $computedConfidence = $this->computeConfidence->execute(
+                parking: $parking,
+                source: $source,
+                availableSpaces: $data->availableSpaces,
+                claimedConfidence: $data->confidence,
+                reportedAt: $reportedAt,
+            );
+
             $accepted = $this->evaluateOccupancyReport->execute(
                 parking: $parking,
                 source: $source,
+                computedConfidence: $computedConfidence,
                 reportedAt: $reportedAt,
             );
 
@@ -144,12 +154,21 @@ final class ReportParkingAvailability
         ?float $confidence,
         Carbon $reportedAt,
     ): OccupancyReport {
+        $computedConfidence = $this->computeConfidence->execute(
+            parking: $parking,
+            source: $source,
+            availableSpaces: $availableSpaces,
+            claimedConfidence: $confidence,
+            reportedAt: $reportedAt,
+        );
+
         return OccupancyReport::query()->create([
             'user_id' => $userId,
             'source' => $source,
             'occupied_spaces' => $occupiedSpaces,
             'available_spaces' => $availableSpaces,
-            'confidence' => $confidence,
+            'reported_confidence' => $confidence,
+            'computed_confidence' => $computedConfidence,
             'reported_at' => $reportedAt,
             'parking_facility_id' => $parking instanceof ParkingFacility
                 ? $parking->id

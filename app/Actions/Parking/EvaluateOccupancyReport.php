@@ -12,6 +12,7 @@ final class EvaluateOccupancyReport
     public function execute(
         ParkingFacility|StreetParking $parking,
         ParkingSource $source,
+        float $computedConfidence,
         CarbonInterface $reportedAt,
     ): bool {
         if (
@@ -25,8 +26,25 @@ final class EvaluateOccupancyReport
             return true;
         }
 
-        return $source->trustLevel()
-            >= $parking->availability_source->trustLevel();
+        $currentTrust = $parking->availability_source->trustLevel();
+        $incomingTrust = $source->trustLevel();
+
+        // Higher trust always wins over a fresh incumbent.
+        if ($incomingTrust > $currentTrust) {
+            return true;
+        }
+
+        // Lower trust never wins over a fresh incumbent.
+        if ($incomingTrust < $currentTrust) {
+            return false;
+        }
+
+        // Same tier: compare computed confidence.
+        $currentConfidence = (float) (
+            $parking->availabilityReport?->computed_confidence ?? 0.0
+        );
+
+        return $computedConfidence > $currentConfidence;
     }
 
     private function isStale(
