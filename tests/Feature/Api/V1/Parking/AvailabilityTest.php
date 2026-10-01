@@ -50,7 +50,7 @@ it('stores occupied spaces and confidence when supplied', function () {
             [
                 'available_spaces' => 12,
                 'occupied_spaces' => 38,
-                'confidence' => 0.95,
+                'reported_confidence' => 0.95,
             ],
         )
         ->assertOk();

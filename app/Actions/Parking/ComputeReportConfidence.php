@@ -23,10 +23,10 @@ final class ComputeReportConfidence
         ParkingFacility|StreetParking $parking,
         ParkingSource $source,
         int $availableSpaces,
-        ?float $claimedConfidence,
+        ?float $reportedConfidence,
         CarbonInterface $reportedAt,
     ): float {
-        $self = $this->selfAssessment($source, $claimedConfidence);
+        $self = $this->selfAssessment($source, $reportedConfidence);
         $corroboration = $this->corroboration(
             $parking,
             $source,
@@ -75,7 +75,7 @@ final class ComputeReportConfidence
             ->whereNotNull('available_spaces')
             ->get(['available_spaces'])
             ->filter(
-                fn ($r) => abs($r->available_spaces - $availableSpaces)
+                fn($r) => abs($r->available_spaces - $availableSpaces)
                     <= self::AGREEMENT_TOLERANCE
             )
             ->count();

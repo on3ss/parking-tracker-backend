@@ -28,7 +28,7 @@ class OccupancyReportFactory extends Factory
                 20,
             ),
 
-            'confidence' => fake()->randomFloat(
+            'reported_confidence' => fake()->randomFloat(
                 4,
                 0.5,
                 1,

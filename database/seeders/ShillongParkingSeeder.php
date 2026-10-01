@@ -38,7 +38,7 @@ class ShillongParkingSeeder extends Seeder
             ['slug' => 'shillong-private-parking'],
             [
                 'name' => 'Shillong Private Parking',
-                'type' => ParkingProviderType::PRIVATE,
+                'type' => ParkingProviderType::PRIVATE ,
                 'description' => 'Development/demo private parking provider.',
                 'is_active' => true,
             ],
@@ -65,7 +65,7 @@ class ShillongParkingSeeder extends Seeder
                 'location_id' => $policeBazarLocation->id,
 
                 'name' => 'Police Bazar Parking',
-                'type' => ParkingFacilityType::PUBLIC,
+                'type' => ParkingFacilityType::PUBLIC ,
                 'status' => ParkingStatus::ACTIVE,
 
                 'capacity' => 180,
@@ -280,7 +280,7 @@ class ShillongParkingSeeder extends Seeder
             'occupied_spaces' => $occupied,
             'available_spaces' => $available,
 
-            'confidence' => 1.0000,
+            'reported_confidence' => 1.0000,
 
             'reported_at' => now(),
         ]);
@@ -350,7 +350,7 @@ class ShillongParkingSeeder extends Seeder
                 'occupied_spaces' => $capacity - $available,
                 'available_spaces' => $available,
 
-                'confidence' => 0.9000,
+                'reported_confidence' => 0.9000,
 
                 'reported_at' => now(),
             ],

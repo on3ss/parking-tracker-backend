@@ -12,7 +12,8 @@ final class RecordOccupancyObservation
 {
     public function __construct(
         private ComputeReportConfidence $computeConfidence,
-    ) {}
+    ) {
+    }
 
     public function execute(
         ParkingFacility|StreetParking $parking,
@@ -20,14 +21,14 @@ final class RecordOccupancyObservation
         ?int $userId,
         int $availableSpaces,
         int $occupiedSpaces,
-        ?float $claimedConfidence,
+        ?float $reportedConfidence,
         CarbonInterface $reportedAt,
     ): OccupancyReport {
         $computedConfidence = $this->computeConfidence->execute(
             parking: $parking,
             source: $source,
             availableSpaces: $availableSpaces,
-            claimedConfidence: $claimedConfidence,
+            reportedConfidence: $reportedConfidence,
             reportedAt: $reportedAt,
         );
 
@@ -36,7 +37,7 @@ final class RecordOccupancyObservation
             'source' => $source,
             'occupied_spaces' => $occupiedSpaces,
             'available_spaces' => $availableSpaces,
-            'reported_confidence' => $claimedConfidence,
+            'reported_confidence' => $reportedConfidence,
             'computed_confidence' => $computedConfidence,
             'reported_at' => $reportedAt,
             'parking_facility_id' => $parking instanceof ParkingFacility

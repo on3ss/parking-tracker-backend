@@ -60,15 +60,15 @@ class OccupancyReportInfolist
                             ->numeric()
                             ->placeholder(__('—')),
 
-                        TextEntry::make('confidence')
-                            ->label(__('Confidence'))
+                        TextEntry::make('reported_confidence')
+                            ->label(__('Reported Confidence'))
                             ->formatStateUsing(
-                                fn ($state): string => $state === null
+                                fn($state): string => $state === null
                                     ? '—'
                                     : number_format(
                                         (float) $state * 100,
                                         2,
-                                    ).'%',
+                                    ) . '%',
                             ),
                     ])
                     ->columns(3),

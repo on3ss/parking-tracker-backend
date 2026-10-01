@@ -8,6 +8,7 @@ final readonly class ReportParkingAvailabilityData
         public string $parkingIdentifier,
         public int $availableSpaces,
         public ?int $occupiedSpaces = null,
-        public ?float $confidence = null,
-    ) {}
+        public ?float $reportedConfidence = null,
+    ) {
+    }
 }

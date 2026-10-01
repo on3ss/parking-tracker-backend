@@ -21,7 +21,7 @@ final class ReportParkingAvailabilityController extends Controller
                 parkingIdentifier: $parking,
                 availableSpaces: $request->availableSpaces(),
                 occupiedSpaces: $request->occupiedSpaces(),
-                confidence: $request->confidence(),
+                reportedConfidence: $request->reportedConfidence(),
             ),
             source: ParkingSource::USER,
             userId: $request->user()->id,

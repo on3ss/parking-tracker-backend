@@ -16,7 +16,8 @@ final class ReportParkingAvailability
         private ResolveParkingIdentifier $resolveParkingIdentifier,
         private RecordOccupancyObservation $recordOccupancyObservation,
         private ApplyOccupancyToParking $applyOccupancyToParking,
-    ) {}
+    ) {
+    }
 
     public function execute(
         ReportParkingAvailabilityData $data,
@@ -44,7 +45,7 @@ final class ReportParkingAvailability
                 availableSpaces: $data->availableSpaces,
                 occupiedSpaces: $data->occupiedSpaces
                 ?? $parking->capacity - $data->availableSpaces,
-                claimedConfidence: $data->confidence,
+                reportedConfidence: $data->reportedConfidence,
                 reportedAt: $reportedAt,
             );
 

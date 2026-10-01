@@ -27,7 +27,7 @@ class OccupancyReportForm
                     ->numeric(),
                 TextInput::make('available_spaces')
                     ->numeric(),
-                TextInput::make('confidence')
+                TextInput::make('reported_confidence')
                     ->numeric(),
                 DateTimePicker::make('reported_at')
                     ->required(),

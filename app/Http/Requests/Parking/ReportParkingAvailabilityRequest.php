@@ -27,7 +27,7 @@ final class ReportParkingAvailabilityRequest extends FormRequest
                 'min:0',
             ],
 
-            'confidence' => [
+            'reported_confidence' => [
                 'sometimes',
                 'nullable',
                 'numeric',
@@ -48,9 +48,9 @@ final class ReportParkingAvailabilityRequest extends FormRequest
         return $value === null ? null : (int) $value;
     }
 
-    public function confidence(): ?float
+    public function reportedConfidence(): ?float
     {
-        $value = $this->validated('confidence');
+        $value = $this->validated('reported_confidence');
 
         return $value === null ? null : (float) $value;
     }
