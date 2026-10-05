@@ -18,3 +18,9 @@ it('returns the authenticated user', function () {
         ->assertJsonPath('data.name', 'John')
         ->assertJsonPath('data.email', 'john@example.com');
 });
+
+it('rejects unauthenticated requests', function () {
+    $this
+        ->getJson('/api/v1/auth/me')
+        ->assertUnauthorized();
+});

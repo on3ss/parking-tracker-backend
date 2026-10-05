@@ -30,3 +30,20 @@ it('allows a user to login', function () {
 
     expect($user->tokens()->count())->toBe(1);
 });
+
+it('rejects invalid credentials', function () {
+    User::factory()->create([
+        'email' => 'john@example.com',
+        'password' => Hash::make(
+            'secret123',
+        ),
+    ]);
+
+    $this
+        ->postJson('/api/v1/auth/login', [
+            'email' => 'john@example.com',
+            'password' => 'wrong-password',
+            'device_name' => 'test-device',
+        ])
+        ->assertUnauthorized();
+});

@@ -22,3 +22,9 @@ it('logs out the current device', function () {
         PersonalAccessToken::find($token->accessToken->id)
     )->toBeNull();
 });
+
+it('rejects unauthenticated requests', function () {
+    $this
+        ->postJson('/api/v1/auth/logout')
+        ->assertUnauthorized();
+});
