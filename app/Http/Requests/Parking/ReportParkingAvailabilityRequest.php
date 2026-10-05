@@ -26,13 +26,6 @@ final class ReportParkingAvailabilityRequest extends FormRequest
                 'integer',
                 'min:0',
             ],
-
-            'reported_confidence' => [
-                'sometimes',
-                'nullable',
-                'numeric',
-                'between:0,1',
-            ],
         ];
     }
 
@@ -46,12 +39,5 @@ final class ReportParkingAvailabilityRequest extends FormRequest
         $value = $this->validated('occupied_spaces');
 
         return $value === null ? null : (int) $value;
-    }
-
-    public function reportedConfidence(): ?float
-    {
-        $value = $this->validated('reported_confidence');
-
-        return $value === null ? null : (float) $value;
     }
 }

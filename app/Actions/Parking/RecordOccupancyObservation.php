@@ -10,35 +10,19 @@ use Carbon\CarbonInterface;
 
 final class RecordOccupancyObservation
 {
-    public function __construct(
-        private ComputeReportConfidence $computeConfidence,
-    ) {
-    }
-
     public function execute(
         ParkingFacility|StreetParking $parking,
         ParkingSource $source,
         ?int $userId,
         int $availableSpaces,
         int $occupiedSpaces,
-        ?float $reportedConfidence,
         CarbonInterface $reportedAt,
     ): OccupancyReport {
-        $computedConfidence = $this->computeConfidence->execute(
-            parking: $parking,
-            source: $source,
-            availableSpaces: $availableSpaces,
-            reportedConfidence: $reportedConfidence,
-            reportedAt: $reportedAt,
-        );
-
         return OccupancyReport::query()->create([
             'user_id' => $userId,
             'source' => $source,
             'occupied_spaces' => $occupiedSpaces,
             'available_spaces' => $availableSpaces,
-            'reported_confidence' => $reportedConfidence,
-            'computed_confidence' => $computedConfidence,
             'reported_at' => $reportedAt,
             'parking_facility_id' => $parking instanceof ParkingFacility
                 ? $parking->id

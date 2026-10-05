@@ -20,8 +20,7 @@ final class ReportParkingAvailabilityController extends Controller
             new ReportParkingAvailabilityData(
                 parkingIdentifier: $parking,
                 availableSpaces: $request->availableSpaces(),
-                occupiedSpaces: $request->occupiedSpaces(),
-                reportedConfidence: $request->reportedConfidence(),
+                occupiedSpaces: $request->occupiedSpaces()
             ),
             source: ParkingSource::USER,
             userId: $request->user()->id,

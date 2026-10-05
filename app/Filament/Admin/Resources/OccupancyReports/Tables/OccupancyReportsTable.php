@@ -63,15 +63,6 @@ class OccupancyReportsTable
                     ->badge()
                     ->sortable(),
 
-                TextColumn::make('confidence')
-                    ->label(__('Confidence'))
-                    ->formatStateUsing(
-                        fn ($state): string => $state === null
-                            ? '—'
-                            : number_format((float) $state * 100, 1).'%',
-                    )
-                    ->sortable(),
-
                 TextColumn::make('user.name')
                     ->label(__('Reported By'))
                     ->placeholder(__('System'))

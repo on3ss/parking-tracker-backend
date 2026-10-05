@@ -216,33 +216,6 @@ it('rejects availability reports when capacity is not set', function () {
         );
 });
 
-it('records but does not apply a user report when a fresh sensor observation is active', function () {
-    $facility = ParkingFacility::factory()->create([
-        'capacity' => 50,
-        'available_spaces' => 30,
-        'availability_source' => ParkingSource::SENSOR,
-        'availability_updated_at' => now()->subMinute(),
-    ]);
-
-    $result = app(ReportParkingAvailability::class)->execute(
-        new ReportParkingAvailabilityData(
-            parkingIdentifier: "facility:{$facility->id}",
-            availableSpaces: 0,
-        ),
-        source: ParkingSource::USER,
-    );
-
-    expect($result->accepted)->toBeFalse();
-    expect($facility->refresh()->available_spaces)->toBe(30);
-    expect($facility->availability_source)->toBe(ParkingSource::SENSOR);
-
-    expect(
-        OccupancyReport::query()
-            ->where('parking_facility_id', $facility->id)
-            ->count(),
-    )->toBe(1);
-});
-
 it('applies a user report over a stale sensor observation', function () {
     $facility = ParkingFacility::factory()->create([
         'capacity' => 50,

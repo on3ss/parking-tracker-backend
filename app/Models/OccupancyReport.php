@@ -16,8 +16,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'source',
     'occupied_spaces',
     'available_spaces',
-    'reported_confidence',
-    'computed_confidence',
     'reported_at',
 ])]
 class OccupancyReport extends Model
@@ -32,8 +30,6 @@ class OccupancyReport extends Model
 
             'occupied_spaces' => 'integer',
             'available_spaces' => 'integer',
-            'reported_confidence' => 'decimal:4',
-            'computed_confidence' => 'decimal:4',
             'reported_at' => 'datetime',
         ];
     }
@@ -64,7 +60,7 @@ class OccupancyReport extends Model
 
     public function forFacility(): static
     {
-        return $this->state(fn() => [
+        return $this->state(fn () => [
             'parking_facility_id' => ParkingFacility::factory(),
             'street_parking_id' => null,
         ]);
@@ -72,7 +68,7 @@ class OccupancyReport extends Model
 
     public function forStreetParking(): static
     {
-        return $this->state(fn() => [
+        return $this->state(fn () => [
             'parking_facility_id' => null,
             'street_parking_id' => StreetParking::factory(),
         ]);

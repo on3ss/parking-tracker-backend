@@ -59,17 +59,6 @@ class OccupancyReportInfolist
                             ->label(__('Occupied Spaces'))
                             ->numeric()
                             ->placeholder(__('—')),
-
-                        TextEntry::make('reported_confidence')
-                            ->label(__('Reported Confidence'))
-                            ->formatStateUsing(
-                                fn($state): string => $state === null
-                                    ? '—'
-                                    : number_format(
-                                        (float) $state * 100,
-                                        2,
-                                    ) . '%',
-                            ),
                     ])
                     ->columns(3),
 

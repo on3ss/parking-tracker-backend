@@ -35,8 +35,6 @@ return new class extends Migration
             $table->unsignedInteger('occupied_spaces')->nullable();
             $table->unsignedInteger('available_spaces')->nullable();
 
-            $table->decimal('confidence', 5, 4)->nullable();
-
             $table->timestampTz('reported_at');
 
             $table->timestamps();

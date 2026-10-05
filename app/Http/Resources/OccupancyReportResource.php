@@ -21,14 +21,6 @@ final class OccupancyReportResource extends JsonResource
 
             'source' => $report->source->value,
 
-            'reported_confidence' => $report->reported_confidence !== null
-                ? (float) $report->reported_confidence
-                : null,
-
-            'computed_confidence' => $report->computed_confidence !== null
-                ? (float) $report->computed_confidence
-                : null,
-
             'reported_at' => $report->reported_at,
         ];
     }

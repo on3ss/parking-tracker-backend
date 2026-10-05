@@ -9,24 +9,10 @@ use App\Models\StreetParking;
 
 final class ApplyOccupancyToParking
 {
-    public function __construct(
-        private EvaluateOccupancyReport $evaluate,
-    ) {}
-
     public function execute(
         ParkingFacility|StreetParking $parking,
         OccupancyReport $report,
     ): bool {
-        $accepted = $this->evaluate->execute(
-            parking: $parking,
-            source: $report->source,
-            computedConfidence: (float) $report->computed_confidence,
-            reportedAt: $report->reported_at,
-        );
-
-        if (! $accepted) {
-            return false;
-        }
 
         $parking->update([
             'available_spaces' => $report->available_spaces,

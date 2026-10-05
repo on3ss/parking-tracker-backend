@@ -37,35 +37,6 @@ it('reports parking availability through the API', function () {
     )->toBe(1);
 });
 
-it('stores occupied spaces and confidence when supplied', function () {
-    $facility = ParkingFacility::factory()->create([
-        'capacity' => 50,
-        'available_spaces' => 40,
-    ]);
-
-    $this
-        ->actingAs($this->user, 'sanctum')
-        ->postJson(
-            "/api/v1/parking/facility:{$facility->id}/availability",
-            [
-                'available_spaces' => 12,
-                'occupied_spaces' => 38,
-                'reported_confidence' => 0.95,
-            ],
-        )
-        ->assertOk();
-
-    $report = OccupancyReport::query()
-        ->where('parking_facility_id', $facility->id)
-        ->latest('id')
-        ->firstOrFail();
-
-    expect($report->user_id)->toBe($this->user->id);
-    expect($report->available_spaces)->toBe(12);
-    expect($report->occupied_spaces)->toBe(38);
-    expect((float) $report->reported_confidence)->toBe(0.95);
-});
-
 it('reports availability for street parking', function () {
     $street = StreetParking::factory()->create([
         'capacity' => 20,

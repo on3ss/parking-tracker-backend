@@ -5,7 +5,7 @@ use App\Models\StreetParking;
 use App\Support\Parking\ParkingIdentifier;
 
 it('returns the facility public identifier', function () {
-    $facility = new ParkingFacility();
+    $facility = new ParkingFacility;
     $facility->id = 42;
 
     expect(ParkingIdentifier::for($facility))
@@ -13,7 +13,7 @@ it('returns the facility public identifier', function () {
 });
 
 it('returns the street parking public identifier', function () {
-    $streetParking = new StreetParking();
+    $streetParking = new StreetParking;
     $streetParking->id = 17;
 
     expect(ParkingIdentifier::for($streetParking))
@@ -21,14 +21,14 @@ it('returns the street parking public identifier', function () {
 });
 
 it('returns facility type', function () {
-    $facility = new ParkingFacility();
+    $facility = new ParkingFacility;
 
     expect(ParkingIdentifier::type($facility))
         ->toBe('facility');
 });
 
 it('returns street parking type', function () {
-    $streetParking = new StreetParking();
+    $streetParking = new StreetParking;
 
     expect(ParkingIdentifier::type($streetParking))
         ->toBe('street');

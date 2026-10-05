@@ -8,12 +8,12 @@ describe('from', function () {
             'latitude' => 25.5788,
             'longitude' => 91.8933,
         ]))->toBe([
-                    'type' => 'Point',
-                    'coordinates' => [
-                        91.8933,
-                        25.5788,
-                    ],
-                ]);
+            'type' => 'Point',
+            'coordinates' => [
+                91.8933,
+                25.5788,
+            ],
+        ]);
     });
 
     it('accepts an existing GeoJSON geometry array', function () {
@@ -45,24 +45,24 @@ describe('from', function () {
         expect(GeoJson::from($value))
             ->toBeNull();
     })->with([
-                'null' => [null],
-                'string' => ['not geojson'],
-                'integer' => [123],
-                'object' => [new stdClass()],
-                'empty array' => [[]],
-            ]);
+        'null' => [null],
+        'string' => ['not geojson'],
+        'integer' => [123],
+        'object' => [new stdClass],
+        'empty array' => [[]],
+    ]);
 
     it('casts latitude and longitude to floats', function () {
         expect(GeoJson::from([
             'latitude' => '25.5788',
             'longitude' => '91.8933',
         ]))->toBe([
-                    'type' => 'Point',
-                    'coordinates' => [
-                        91.8933,
-                        25.5788,
-                    ],
-                ]);
+            'type' => 'Point',
+            'coordinates' => [
+                91.8933,
+                25.5788,
+            ],
+        ]);
     });
 });
 
@@ -100,7 +100,7 @@ describe('validate', function () {
                         [91.8940, 25.5788],
                         [91.8940, 25.5790],
                         [91.8933, 25.5788],
-                    ]
+                    ],
                 ],
             ],
             'polygon',
@@ -170,7 +170,7 @@ describe('vertex count', function () {
                         [91.8933, 25.5788],
                         [91.8940, 25.5788],
                         [91.8940, 25.5790],
-                    ]
+                    ],
                 ],
             ],
             'polygon',
@@ -191,8 +191,8 @@ describe('vertex count', function () {
             ],
             'linestring',
         ))->toBe(
-                'The geometry has too many points (maximum 500).'
-            );
+            'The geometry has too many points (maximum 500).'
+        );
     });
 
     it('allows a custom maximum vertex count', function () {
@@ -210,8 +210,8 @@ describe('vertex count', function () {
             'linestring',
             2,
         ))->toBe(
-                'The geometry has too many points (maximum 2).'
-            );
+            'The geometry has too many points (maximum 2).'
+        );
     });
 });
 
