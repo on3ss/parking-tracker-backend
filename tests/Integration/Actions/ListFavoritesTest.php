@@ -5,17 +5,30 @@ use App\Actions\Parking\ListFavorites;
 use App\Models\ParkingFacility;
 use App\Models\StreetParking;
 use App\Models\User;
+use Carbon\Carbon;
 
-it('lists only the current users favorites', function () {
+function listFavorites(
+    int $userId,
+    int $perPage = 20,
+    int $page = 1,
+) {
+    return app(ListFavorites::class)->execute(
+        userId: $userId,
+        perPage: $perPage,
+        page: $page,
+    );
+}
+
+it('lists only the users favorites', function () {
     $user = User::factory()->create();
     $otherUser = User::factory()->create();
 
-    $ownFacility = ParkingFacility::factory()->create();
+    $facility = ParkingFacility::factory()->create();
     $otherFacility = ParkingFacility::factory()->create();
 
     app(FavoriteParking::class)->execute(
         $user->id,
-        "facility:{$ownFacility->id}",
+        "facility:{$facility->id}",
     );
 
     app(FavoriteParking::class)->execute(
@@ -23,16 +36,15 @@ it('lists only the current users favorites', function () {
         "facility:{$otherFacility->id}",
     );
 
-    $results = app(ListFavorites::class)->execute(
-        userId: $user->id,
-    );
+    $favorites = listFavorites($user->id);
 
-    expect($results->total())->toBe(1)
-        ->and($results->first()->user_id)->toBe($user->id)
-        ->and($results->first()->favorable->is($ownFacility))->toBeTrue();
+    expect($favorites->items())
+        ->toHaveCount(1)
+        ->and($favorites->first()->favorable_id)
+        ->toBe($facility->id);
 });
 
-it('hydrates facility favorites', function () {
+it('hydrates the favorited parking', function () {
     $user = User::factory()->create();
     $facility = ParkingFacility::factory()->create();
 
@@ -41,105 +53,87 @@ it('hydrates facility favorites', function () {
         "facility:{$facility->id}",
     );
 
-    $result = app(ListFavorites::class)->execute($user->id);
+    $favorite = listFavorites($user->id)->first();
 
-    expect($result->first()->favorable)
-        ->toBeInstanceOf(ParkingFacility::class)
-        ->and($result->first()->favorable->is($facility))
-        ->toBeTrue();
+    expect($favorite->relationLoaded('favorable'))->toBeTrue()
+        ->and($favorite->favorable)->toBeInstanceOf(ParkingFacility::class)
+        ->and($favorite->favorable->is($facility))->toBeTrue();
 });
 
 it('hydrates street parking favorites', function () {
     $user = User::factory()->create();
-    $parking = StreetParking::factory()->create();
+    $streetParking = StreetParking::factory()->create();
 
     app(FavoriteParking::class)->execute(
         $user->id,
-        "street:{$parking->id}",
+        "street:{$streetParking->id}",
     );
 
-    $result = app(ListFavorites::class)->execute($user->id);
+    $favorite = listFavorites($user->id)->first();
 
-    expect($result->first()->favorable)
-        ->toBeInstanceOf(StreetParking::class)
-        ->and($result->first()->favorable->is($parking))
-        ->toBeTrue();
+    expect($favorite->favorable)->toBeInstanceOf(StreetParking::class)
+        ->and($favorite->favorable->is($streetParking))->toBeTrue();
 });
 
-it('orders favorites newest first', function () {
+it('lists newest favorites first', function () {
     $user = User::factory()->create();
 
-    $first = ParkingFacility::factory()->create();
-    $second = ParkingFacility::factory()->create();
+    $older = ParkingFacility::factory()->create();
+    $newer = ParkingFacility::factory()->create();
 
-    $firstFavorite = app(FavoriteParking::class)->execute(
+    Carbon::setTestNow('2026-10-01 10:00:00');
+
+    app(FavoriteParking::class)->execute(
         $user->id,
-        "facility:{$first->id}",
+        "facility:{$older->id}",
     );
 
-    $secondFavorite = app(FavoriteParking::class)->execute(
+    Carbon::setTestNow('2026-10-01 11:00:00');
+
+    app(FavoriteParking::class)->execute(
         $user->id,
-        "facility:{$second->id}",
+        "facility:{$newer->id}",
     );
 
-    $secondFavorite->update([
-        'created_at' => now()->addMinute(),
-    ]);
+    Carbon::setTestNow();
 
-    $results = app(ListFavorites::class)->execute($user->id);
+    $favorites = listFavorites($user->id);
 
-    expect($results->getCollection()->pluck('id')->all())
-        ->toBe([
-            $secondFavorite->id,
-            $firstFavorite->id,
-        ]);
+    expect($favorites->items())
+        ->toHaveCount(2)
+        ->and($favorites->first()->favorable_id)->toBe($newer->id)
+        ->and($favorites->last()->favorable_id)->toBe($older->id);
 });
 
 it('paginates favorites', function () {
     $user = User::factory()->create();
 
-    $facilities = ParkingFacility::factory()->count(5)->create();
+    foreach (range(1, 5) as $index) {
+        $facility = ParkingFacility::factory()->create();
 
-    foreach ($facilities as $facility) {
         app(FavoriteParking::class)->execute(
             $user->id,
             "facility:{$facility->id}",
         );
     }
 
-    $page = app(ListFavorites::class)->execute(
+    $favorites = listFavorites(
         userId: $user->id,
         perPage: 2,
         page: 2,
     );
 
-    expect($page->total())->toBe(5)
-        ->and($page->perPage())->toBe(2)
-        ->and($page->currentPage())->toBe(2)
-        ->and($page->count())->toBe(2);
+    expect($favorites->perPage())->toBe(2)
+        ->and($favorites->currentPage())->toBe(2)
+        ->and($favorites->total())->toBe(5)
+        ->and($favorites->items())->toHaveCount(2);
 });
 
 it('returns an empty paginator when the user has no favorites', function () {
     $user = User::factory()->create();
 
-    $results = app(ListFavorites::class)->execute($user->id);
+    $favorites = listFavorites($user->id);
 
-    expect($results->total())->toBe(0)
-        ->and($results->count())->toBe(0);
-});
-
-it('does not expose favorites belonging to another user', function () {
-    $user = User::factory()->create();
-    $otherUser = User::factory()->create();
-
-    $facility = ParkingFacility::factory()->create();
-
-    app(FavoriteParking::class)->execute(
-        $otherUser->id,
-        "facility:{$facility->id}",
-    );
-
-    $results = app(ListFavorites::class)->execute($user->id);
-
-    expect($results->total())->toBe(0);
+    expect($favorites->total())->toBe(0)
+        ->and($favorites->items())->toBeEmpty();
 });
