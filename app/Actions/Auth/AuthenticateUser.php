@@ -4,8 +4,8 @@ namespace App\Actions\Auth;
 
 use App\Data\Auth\LoginData;
 use App\Models\User;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
 
 final class AuthenticateUser
 {
@@ -16,12 +16,12 @@ final class AuthenticateUser
             ->first();
 
         if (
-            ! $user ||
-            ! Hash::check($data->password, $user->password)
+            !$user ||
+            !Hash::check($data->password, $user->password)
         ) {
-            throw ValidationException::withMessages([
-                'email' => 'The provided credentials are incorrect.',
-            ]);
+            throw new AuthenticationException(
+                'The provided credentials are incorrect.',
+            );
         }
 
         $token = $user
