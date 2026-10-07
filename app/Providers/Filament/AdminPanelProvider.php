@@ -2,6 +2,8 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Resources\ParkingFacilities\ParkingFacilityResource;
+use App\Filament\Resources\StreetParkings\StreetParkingResource;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -34,7 +36,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->renderHook(
                 'panels::head.start',
-                fn (): string => Vite::withEntryPoints([
+                fn(): string => Vite::withEntryPoints([
                     'resources/js/filament/geometry-map.js',
                 ])->toHtml(),
             )
@@ -42,6 +44,10 @@ class AdminPanelProvider extends PanelProvider
                 in: app_path('Filament/Admin/Resources'),
                 for: 'App\\Filament\\Admin\\Resources',
             )
+            ->resources([
+                ParkingFacilityResource::class,
+                StreetParkingResource::class,
+            ])
             ->discoverPages(
                 in: app_path('Filament/Admin/Pages'),
                 for: 'App\\Filament\\Admin\\Pages',

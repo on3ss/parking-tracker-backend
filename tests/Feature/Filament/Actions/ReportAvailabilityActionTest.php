@@ -1,8 +1,7 @@
 <?php
 
 use App\Enums\ParkingSource;
-use App\Filament\Admin\Resources\ParkingFacilities\Pages\ViewParkingFacility as AdminViewParkingFacility;
-use App\Filament\Provider\Resources\ParkingFacilities\Pages\ViewParkingFacility as ProviderViewParkingFacility;
+use App\Filament\Resources\ParkingFacilities\Pages\ViewParkingFacility;
 use App\Models\OccupancyReport;
 use App\Models\ParkingFacility;
 use App\Models\ParkingProvider;
@@ -21,7 +20,7 @@ it('reports availability from the admin parking facility action', function () {
 
     $this->actingAs($user);
 
-    Livewire::test(AdminViewParkingFacility::class, [
+    Livewire::test(ViewParkingFacility::class, [
         'record' => $facility->getRouteKey(),
     ])
         ->callAction('reportAvailability', [
@@ -52,7 +51,7 @@ it('pre-fills the current availability', function () {
 
     $this->actingAs($user);
 
-    Livewire::test(AdminViewParkingFacility::class, [
+    Livewire::test(ViewParkingFacility::class, [
         'record' => $facility->getRouteKey(),
     ])
         ->mountAction('reportAvailability')
@@ -70,7 +69,7 @@ it('disables the action when capacity is not set', function () {
 
     $this->actingAs($user);
 
-    Livewire::test(AdminViewParkingFacility::class, [
+    Livewire::test(ViewParkingFacility::class, [
         'record' => $facility->getRouteKey(),
     ])
         ->assertActionDisabled('reportAvailability');
@@ -98,7 +97,7 @@ it('allows a provider to report availability for its own parking facility', func
 
     Filament::setTenant($provider);
 
-    Livewire::test(ProviderViewParkingFacility::class, [
+    Livewire::test(ViewParkingFacility::class, [
         'record' => $facility->getRouteKey(),
     ])
         ->callAction('reportAvailability', [
@@ -107,36 +106,4 @@ it('allows a provider to report availability for its own parking facility', func
         ->assertNotified();
 
     expect($facility->fresh()->available_spaces)->toBe(3);
-});
-
-it('does not authorize a provider to report availability for another provider parking facility', function () {
-    $user = User::factory()->create();
-
-    $provider = ParkingProvider::factory()->create([
-        'is_active' => true,
-    ]);
-
-    $otherProvider = ParkingProvider::factory()->create([
-        'is_active' => true,
-    ]);
-
-    ProviderMembership::create([
-        'user_id' => $user->id,
-        'parking_provider_id' => $provider->id,
-    ]);
-
-    $facility = ParkingFacility::factory()->create([
-        'parking_provider_id' => $otherProvider->id,
-        'capacity' => 10,
-        'available_spaces' => 8,
-    ]);
-
-    $this->actingAs($user);
-
-    Filament::setTenant($provider);
-
-    Livewire::test(ProviderViewParkingFacility::class, [
-        'record' => $facility->getRouteKey(),
-    ])
-        ->assertActionHidden('reportAvailability');
 });

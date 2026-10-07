@@ -4,6 +4,8 @@ namespace App\Providers\Filament;
 
 use App\Filament\Pages\Tenancy\EditProviderProfile;
 use App\Filament\Pages\Tenancy\RegisterProvider;
+use App\Filament\Resources\ParkingFacilities\ParkingFacilityResource;
+use App\Filament\Resources\StreetParkings\StreetParkingResource;
 use App\Models\ParkingProvider;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -37,11 +39,15 @@ class ProviderPanelProvider extends PanelProvider
             ])
             ->renderHook(
                 'panels::head.start',
-                fn (): string => Vite::withEntryPoints([
+                fn(): string => Vite::withEntryPoints([
                     'resources/js/filament/geometry-map.js',
                 ])->toHtml(),
             )
             ->discoverResources(in: app_path('Filament/Provider/Resources'), for: 'App\Filament\Provider\Resources')
+            ->resources([
+                ParkingFacilityResource::class,
+                StreetParkingResource::class,
+            ])
             ->discoverPages(in: app_path('Filament/Provider/Pages'), for: 'App\Filament\Provider\Pages')
             ->discoverWidgets(in: app_path('Filament/Provider/Widgets'), for: 'App\Filament\Provider\Widgets')
             ->middleware([
