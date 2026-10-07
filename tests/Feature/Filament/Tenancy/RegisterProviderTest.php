@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\ParkingProviderType;
 use App\Filament\Pages\Tenancy\RegisterProvider;
 use App\Models\ParkingProvider;
 use App\Models\ProviderMembership;

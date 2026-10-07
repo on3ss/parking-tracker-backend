@@ -91,7 +91,7 @@ it('updates the parking facility and its existing location', function () {
     ])
         ->fillForm([
             'name' => 'Updated Facility Name',
-            'type' => ParkingFacilityType::PUBLIC ->value,
+            'type' => ParkingFacilityType::PUBLIC->value,
             'status' => ParkingStatus::ACTIVE->value,
             'capacity' => 30,
 

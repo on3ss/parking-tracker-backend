@@ -6,7 +6,6 @@ use App\Enums\StreetParkingType;
 use App\Filament\Admin\Resources\StreetParkings\Pages\CreateStreetParking;
 use App\Models\ParkingProvider;
 use App\Models\StreetParking;
-use Filament\Facades\Filament;
 use Livewire\Livewire;
 
 it('creates street parking with a location from the nested location data', function () {

@@ -7,6 +7,7 @@ use App\Models\OccupancyReport;
 use App\Models\ParkingFacility;
 use App\Models\StreetParking;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 function getAvailabilityHistory(
     string $parkingIdentifier,
@@ -189,11 +190,11 @@ it('uses report id as a deterministic tie breaker', function () {
 });
 
 it('throws when the parking identifier does not exist', function () {
-    expect(fn() => getAvailabilityHistory('facility:999999'))
-        ->toThrow(\Illuminate\Database\Eloquent\ModelNotFoundException::class);
+    expect(fn () => getAvailabilityHistory('facility:999999'))
+        ->toThrow(ModelNotFoundException::class);
 });
 
 it('throws for an invalid parking identifier', function () {
-    expect(fn() => getAvailabilityHistory('invalid:1'))
-        ->toThrow(\Illuminate\Database\Eloquent\ModelNotFoundException::class);
+    expect(fn () => getAvailabilityHistory('invalid:1'))
+        ->toThrow(ModelNotFoundException::class);
 });

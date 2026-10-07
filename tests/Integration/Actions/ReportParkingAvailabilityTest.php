@@ -2,6 +2,7 @@
 
 use App\Actions\Parking\ReportParkingAvailability;
 use App\Data\Parking\ReportParkingAvailabilityData;
+use App\Data\Parking\ReportParkingAvailabilityResult;
 use App\Enums\AvailabilityStatus;
 use App\Enums\ParkingSource;
 use App\Exceptions\Parking\InvalidParkingAvailability;
@@ -14,7 +15,7 @@ function reportAvailability(
     int $availableSpaces,
     ?int $occupiedSpaces = null,
     ParkingSource $source = ParkingSource::USER,
-): \App\Data\Parking\ReportParkingAvailabilityResult {
+): ReportParkingAvailabilityResult {
     return app(ReportParkingAvailability::class)->execute(
         new ReportParkingAvailabilityData(
             parkingIdentifier: $parkingIdentifier,

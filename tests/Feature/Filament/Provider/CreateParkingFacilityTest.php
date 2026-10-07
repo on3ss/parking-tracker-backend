@@ -23,7 +23,7 @@ it('creates a parking facility for the current provider tenant', function () {
     Livewire::test(CreateParkingFacility::class)
         ->fillForm([
             'name' => 'Police Bazaar Parking',
-            'type' => ParkingFacilityType::PUBLIC ->value,
+            'type' => ParkingFacilityType::PUBLIC->value,
             'status' => ParkingStatus::ACTIVE->value,
             'capacity' => 100,
             'location' => [
@@ -71,7 +71,7 @@ it('uses India as the default location country', function () {
     Livewire::test(CreateParkingFacility::class)
         ->fillForm([
             'name' => 'Shillong Parking',
-            'type' => ParkingFacilityType::PUBLIC ->value,
+            'type' => ParkingFacilityType::PUBLIC->value,
             'status' => ParkingStatus::ACTIVE->value,
             'capacity' => 50,
             'location' => [
@@ -107,7 +107,7 @@ it('does not allow the form to choose a different provider', function () {
     Livewire::test(CreateParkingFacility::class)
         ->fillForm([
             'name' => 'Provider Parking',
-            'type' => ParkingFacilityType::PUBLIC ->value,
+            'type' => ParkingFacilityType::PUBLIC->value,
             'status' => ParkingStatus::ACTIVE->value,
             'capacity' => 50,
 

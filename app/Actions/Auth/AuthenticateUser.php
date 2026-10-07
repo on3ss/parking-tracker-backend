@@ -16,8 +16,8 @@ final class AuthenticateUser
             ->first();
 
         if (
-            !$user ||
-            !Hash::check($data->password, $user->password)
+            ! $user ||
+            ! Hash::check($data->password, $user->password)
         ) {
             throw new AuthenticationException(
                 'The provided credentials are incorrect.',

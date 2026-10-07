@@ -91,7 +91,7 @@ it('paginates availability history', function () {
     $this
         ->getJson(
             "/api/v1/parking/facility:{$facility->id}/availability/history"
-            . '?per_page=2&page=2',
+            .'?per_page=2&page=2',
         )
         ->assertOk()
         ->assertJsonCount(2, 'data')
@@ -101,32 +101,32 @@ it('paginates availability history', function () {
         ->assertJsonPath('meta.last_page', 3);
 });
 
-it('returns not found for an invalid parking identifier', function (string $identifier, ) {
+it('returns not found for an invalid parking identifier', function (string $identifier) {
     $this
         ->getJson(
             "/api/v1/parking/{$identifier}/availability/history",
         )
         ->assertNotFound();
 })->with([
-            'invalid type' => 'invalid:1',
-            'zero facility id' => 'facility:0',
-            'non numeric facility id' => 'facility:abc',
-            'non numeric street id' => 'street:abc',
-            'plain number' => '123',
-        ]);
+    'invalid type' => 'invalid:1',
+    'zero facility id' => 'facility:0',
+    'non numeric facility id' => 'facility:abc',
+    'non numeric street id' => 'street:abc',
+    'plain number' => '123',
+]);
 
-it('validates pagination parameters', function (string $query, string $field, ) {
+it('validates pagination parameters', function (string $query, string $field) {
     $facility = ParkingFacility::factory()->create();
 
     $this
         ->getJson(
             "/api/v1/parking/facility:{$facility->id}/availability/history"
-            . "?{$query}",
+            ."?{$query}",
         )
         ->assertUnprocessable()
         ->assertJsonValidationErrors([$field]);
 })->with([
-            'page zero' => ['page=0', 'page'],
-            'per page zero' => ['per_page=0', 'per_page'],
-            'per page above max' => ['per_page=101', 'per_page'],
-        ]);
+    'page zero' => ['page=0', 'page'],
+    'per page zero' => ['per_page=0', 'per_page'],
+    'per page above max' => ['per_page=101', 'per_page'],
+]);

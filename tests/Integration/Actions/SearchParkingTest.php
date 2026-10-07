@@ -48,7 +48,7 @@ it('returns active facilities and street parking', function () {
         'geometry' => streetGeometryAt(25.5790, 91.8935),
     ]);
 
-    $results = searchParking(new SearchParkingData());
+    $results = searchParking(new SearchParkingData);
 
     expect($results->total())->toBe(2)
         ->and($results->getCollection()->pluck('parking.id'))
@@ -116,7 +116,7 @@ it('excludes inactive parking', function () {
 
     ParkingFacility::factory()->unavailable()->create();
 
-    $results = searchParking(new SearchParkingData());
+    $results = searchParking(new SearchParkingData);
 
     expect($results->total())->toBe(1)
         ->and($results->first()->parking->is($active))->toBeTrue();
@@ -185,7 +185,7 @@ it('filters spatial results by radius', function () {
 it('returns null distance when no coordinates are supplied', function () {
     ParkingFacility::factory()->create();
 
-    $results = searchParking(new SearchParkingData());
+    $results = searchParking(new SearchParkingData);
 
     expect($results->first()->distanceMeters)->toBeNull();
 });

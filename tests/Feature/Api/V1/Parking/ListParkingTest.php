@@ -161,8 +161,8 @@ describe('filtering', function () {
         $this
             ->getJson(
                 '/api/v1/parking?'
-                . 'filter[availability]=AVAILABLE&'
-                . "filter[provider_id]={$provider->id}",
+                .'filter[availability]=AVAILABLE&'
+                ."filter[provider_id]={$provider->id}",
             )
             ->assertOk()
             ->assertJsonCount(1, 'data')
@@ -219,9 +219,9 @@ describe('filtering', function () {
         $this
             ->getJson(
                 '/api/v1/parking?'
-                . 'latitude=25.5779&'
-                . 'longitude=91.8837&'
-                . 'radius=2000',
+                .'latitude=25.5779&'
+                .'longitude=91.8837&'
+                .'radius=2000',
             )
             ->assertOk()
             ->assertJsonCount(2, 'data')
@@ -376,9 +376,9 @@ describe('sorting', function () {
         $this
             ->getJson(
                 '/api/v1/parking?'
-                . 'latitude=25.5779&'
-                . 'longitude=91.8837&'
-                . 'sort=distance',
+                .'latitude=25.5779&'
+                .'longitude=91.8837&'
+                .'sort=distance',
             )
             ->assertOk()
             ->assertJsonCount(2, 'data')
@@ -414,9 +414,9 @@ describe('sorting', function () {
         $this
             ->getJson(
                 '/api/v1/parking?'
-                . 'latitude=25.5779&'
-                . 'longitude=91.8837&'
-                . 'sort=-distance',
+                .'latitude=25.5779&'
+                .'longitude=91.8837&'
+                .'sort=-distance',
             )
             ->assertOk()
             ->assertJsonCount(2, 'data')
@@ -485,10 +485,10 @@ describe('validation', function () {
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['radius']);
     })->with([
-                'no coordinates' => ['radius=2000'],
-                'only latitude' => ['latitude=25.5779&radius=2000'],
-                'only longitude' => ['longitude=91.8837&radius=2000'],
-            ]);
+        'no coordinates' => ['radius=2000'],
+        'only latitude' => ['latitude=25.5779&radius=2000'],
+        'only longitude' => ['longitude=91.8837&radius=2000'],
+    ]);
 
     it('rejects out-of-range coordinates', function (string $query, string $field) {
         $this
@@ -496,11 +496,11 @@ describe('validation', function () {
             ->assertUnprocessable()
             ->assertJsonValidationErrors([$field]);
     })->with([
-                'latitude below' => ['latitude=-91', 'latitude'],
-                'latitude above' => ['latitude=91', 'latitude'],
-                'longitude below' => ['longitude=-181', 'longitude'],
-                'longitude above' => ['longitude=181', 'longitude'],
-            ]);
+        'latitude below' => ['latitude=-91', 'latitude'],
+        'latitude above' => ['latitude=91', 'latitude'],
+        'longitude below' => ['longitude=-181', 'longitude'],
+        'longitude above' => ['longitude=181', 'longitude'],
+    ]);
 
     it('accepts latitude and longitude boundary values', function () {
         $this
@@ -518,13 +518,13 @@ describe('validation', function () {
             ->assertUnprocessable()
             ->assertJsonValidationErrors([explode('=', $query)[0]]);
     })->with([
-                'page zero' => ['page=0'],
-                'negative page' => ['page=-1'],
-                'non-numeric page' => ['page=abc'],
-                'per page zero' => ['per_page=0'],
-                'per page above max' => ['per_page=101'],
-                'non-numeric per page' => ['per_page=abc'],
-            ]);
+        'page zero' => ['page=0'],
+        'negative page' => ['page=-1'],
+        'non-numeric page' => ['page=abc'],
+        'per page zero' => ['per_page=0'],
+        'per page above max' => ['per_page=101'],
+        'non-numeric per page' => ['per_page=abc'],
+    ]);
 
     it('accepts the maximum per page', function () {
         $this
@@ -538,17 +538,17 @@ describe('validation', function () {
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['radius']);
     })->with([
-                'zero radius' => ['latitude=25.5779&longitude=91.8837&radius=0'],
-                'above max radius' => ['latitude=25.5779&longitude=91.8837&radius=50001'],
-            ]);
+        'zero radius' => ['latitude=25.5779&longitude=91.8837&radius=0'],
+        'above max radius' => ['latitude=25.5779&longitude=91.8837&radius=50001'],
+    ]);
 
     it('accepts the maximum radius', function () {
         $this
             ->getJson(
                 '/api/v1/parking?'
-                . 'latitude=25.5779&'
-                . 'longitude=91.8837&'
-                . 'radius=50000',
+                .'latitude=25.5779&'
+                .'longitude=91.8837&'
+                .'radius=50000',
             )
             ->assertOk();
     });
@@ -566,9 +566,9 @@ describe('validation', function () {
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['filter.provider_id']);
     })->with([
-                'nonexistent provider' => ['999999'],
-                'non-numeric provider' => ['abc'],
-            ]);
+        'nonexistent provider' => ['999999'],
+        'non-numeric provider' => ['abc'],
+    ]);
 
     it('rejects an invalid sort', function () {
         $this

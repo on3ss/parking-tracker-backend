@@ -54,4 +54,3 @@ it('rejects an observation with both parking targets', function () {
         'reported_at' => now(),
     ]);
 })->throws(QueryException::class);
-

@@ -103,12 +103,12 @@ it('preserves the supplied source', function (ParkingSource $source) {
 
     expect($report->source)->toBe($source);
 })->with([
-            ParkingSource::USER,
-            ParkingSource::OPERATOR,
-            ParkingSource::SENSOR,
-            ParkingSource::CAMERA,
-            ParkingSource::SYSTEM,
-        ]);
+    ParkingSource::USER,
+    ParkingSource::OPERATOR,
+    ParkingSource::SENSOR,
+    ParkingSource::CAMERA,
+    ParkingSource::SYSTEM,
+]);
 
 it('persists the exact reported timestamp', function () {
     $facility = ParkingFacility::factory()->create();

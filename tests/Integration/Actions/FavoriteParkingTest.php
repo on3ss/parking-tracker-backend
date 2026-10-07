@@ -5,6 +5,7 @@ use App\Models\Favorite;
 use App\Models\ParkingFacility;
 use App\Models\StreetParking;
 use App\Models\User;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 function favoriteParking(
     int $userId,
@@ -95,10 +96,10 @@ it('keeps facility and street favorites distinct', function () {
 it('fails when the parking does not exist', function () {
     $user = User::factory()->create();
 
-    expect(fn() => favoriteParking(
+    expect(fn () => favoriteParking(
         $user->id,
         'facility:999999',
     ))->toThrow(
-            \Illuminate\Database\Eloquent\ModelNotFoundException::class,
-        );
+        ModelNotFoundException::class,
+    );
 });
