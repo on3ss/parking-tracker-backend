@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Components\Shared\Forms;
+namespace App\Filament\Schemas\Shared\Forms;
 
 use App\Filament\Forms\Components\GeometryPicker;
 use Filament\Schemas\Components\Section;

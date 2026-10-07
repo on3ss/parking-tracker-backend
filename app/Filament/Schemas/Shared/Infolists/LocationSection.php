@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Components\Shared\Infolists;
+namespace App\Filament\Schemas\Shared\Infolists;
 
 use App\Filament\Infolists\Components\GeometryEntry;
 use App\Filament\Support\Grid;
@@ -44,7 +44,7 @@ final class LocationSection
                     ->label(__('Map'))
                     ->zoom(16)
                     ->height(260)
-                    ->hidden(fn (?Model $record): bool => blank($record?->{$statePath}?->coordinates))
+                    ->hidden(fn(?Model $record): bool => blank($record?->{$statePath}?->coordinates))
                     ->columnSpanFull(),
             ]);
     }

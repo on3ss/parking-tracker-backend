@@ -1,44 +1,41 @@
 <?php
 
-namespace App\Filament\Components\ParkingFacilities\Tables;
+namespace App\Filament\Resources\StreetParkings\Schemas\Tables;
 
 use App\Enums\AvailabilityStatus;
-use App\Enums\ParkingFacilityType;
 use App\Enums\ParkingStatus;
+use App\Enums\StreetParkingType;
 use Filament\Tables\Filters\SelectFilter;
 
-final class ParkingFacilityFilters
+final class StreetParkingFilters
 {
     public static function provider(): SelectFilter
     {
-        return SelectFilter::make('provider')
+        return SelectFilter::make('parking_provider_id')
             ->label(__('Provider'))
             ->relationship('provider', 'name')
             ->searchable()
             ->preload();
     }
 
-    public static function type(): SelectFilter
+    public static function parkingType(): SelectFilter
     {
-        return SelectFilter::make('type')
-            ->label(__('Type'))
-            ->options(ParkingFacilityType::class)
-            ->multiple();
+        return SelectFilter::make('parking_type')
+            ->label(__('Parking type'))
+            ->options(StreetParkingType::class);
     }
 
     public static function status(): SelectFilter
     {
         return SelectFilter::make('status')
             ->label(__('Status'))
-            ->options(ParkingStatus::class)
-            ->multiple();
+            ->options(ParkingStatus::class);
     }
 
     public static function availability(): SelectFilter
     {
         return SelectFilter::make('availability_status')
             ->label(__('Availability'))
-            ->options(AvailabilityStatus::class)
-            ->multiple();
+            ->options(AvailabilityStatus::class);
     }
 }

@@ -2,16 +2,16 @@
 
 namespace App\Filament\Resources\ParkingFacilities;
 
-use App\Filament\Components\ParkingFacilities\Forms\ParkingFacilityForm;
-use App\Filament\Components\ParkingFacilities\Infolists\ParkingFacilityInfolist;
-use App\Filament\Components\ParkingFacilities\Tables\ParkingFacilityColumns;
-use App\Filament\Components\ParkingFacilities\Tables\ParkingFacilityFilters;
 use App\Filament\RelationManagers\OccupancyReportsRelationManager;
 use App\Filament\Resources\ParkingFacilities\Pages\CreateParkingFacility;
 use App\Filament\Resources\ParkingFacilities\Pages\EditParkingFacility;
 use App\Filament\Resources\ParkingFacilities\Pages\ListParkingFacilities;
 use App\Filament\Resources\ParkingFacilities\Pages\ViewParkingFacility;
 use App\Filament\Resources\ParkingFacilities\RelationManagers\AreasRelationManager;
+use App\Filament\Resources\ParkingFacilities\Schemas\Forms\ParkingFacilityForm;
+use App\Filament\Resources\ParkingFacilities\Schemas\Infolists\ParkingFacilityInfolist;
+use App\Filament\Resources\ParkingFacilities\Schemas\Tables\ParkingFacilityColumns;
+use App\Filament\Resources\ParkingFacilities\Schemas\Tables\ParkingFacilityFilters;
 use App\Models\ParkingFacility;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;

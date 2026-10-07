@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Filament\Components\StreetParkings\Infolists;
+namespace App\Filament\Resources\StreetParkings\Schemas\Infolists;
 
-use App\Filament\Components\Shared\Infolists\DescriptionSection;
-use App\Filament\Components\Shared\Infolists\GeometrySection;
-use App\Filament\Components\Shared\Infolists\LocationSection;
-use App\Filament\Components\Shared\Infolists\RecordInformationSection;
+use App\Filament\Schemas\Shared\Infolists\DescriptionSection;
+use App\Filament\Schemas\Shared\Infolists\GeometrySection;
+use App\Filament\Schemas\Shared\Infolists\LocationSection;
+use App\Filament\Schemas\Shared\Infolists\RecordInformationSection;
 use App\Filament\Support\Grid;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;

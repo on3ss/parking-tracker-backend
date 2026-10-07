@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Components\ParkingFacilities\Tables;
+namespace App\Filament\Resources\ParkingFacilities\Schemas\Tables;
 
 use Filament\Tables\Columns\TextColumn;
 

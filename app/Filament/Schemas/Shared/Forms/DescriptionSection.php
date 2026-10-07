@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Components\Shared\Forms;
+namespace App\Filament\Schemas\Shared\Forms;
 
 use Filament\Forms\Components\RichEditor;
 use Filament\Schemas\Components\Section;

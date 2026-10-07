@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Components\Shared\Infolists;
+namespace App\Filament\Schemas\Shared\Infolists;
 
 use App\Filament\Infolists\Components\GeometryEntry;
 use Filament\Schemas\Components\Section;

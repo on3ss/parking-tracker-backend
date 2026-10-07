@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Filament\Components\ParkingFacilities\Forms;
+namespace App\Filament\Resources\ParkingFacilities\Schemas\Forms;
 
 use App\Enums\ParkingFacilityType;
 use App\Enums\ParkingStatus;
-use App\Filament\Components\Shared\Forms\DescriptionSection;
-use App\Filament\Components\Shared\Forms\LocationSection;
+use App\Filament\Schemas\Shared\Forms\DescriptionSection;
+use App\Filament\Schemas\Shared\Forms\LocationSection;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\TimePicker;

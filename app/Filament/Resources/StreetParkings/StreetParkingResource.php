@@ -2,15 +2,15 @@
 
 namespace App\Filament\Resources\StreetParkings;
 
-use App\Filament\Components\StreetParkings\Forms\StreetParkingForm;
-use App\Filament\Components\StreetParkings\Infolists\StreetParkingInfolist;
-use App\Filament\Components\StreetParkings\Tables\StreetParkingColumns;
-use App\Filament\Components\StreetParkings\Tables\StreetParkingFilters;
 use App\Filament\RelationManagers\OccupancyReportsRelationManager;
 use App\Filament\Resources\StreetParkings\Pages\CreateStreetParking;
 use App\Filament\Resources\StreetParkings\Pages\EditStreetParking;
 use App\Filament\Resources\StreetParkings\Pages\ListStreetParkings;
 use App\Filament\Resources\StreetParkings\Pages\ViewStreetParking;
+use App\Filament\Resources\StreetParkings\Schemas\Forms\StreetParkingForm;
+use App\Filament\Resources\StreetParkings\Schemas\Infolists\StreetParkingInfolist;
+use App\Filament\Resources\StreetParkings\Schemas\Tables\StreetParkingColumns;
+use App\Filament\Resources\StreetParkings\Schemas\Tables\StreetParkingFilters;
 use App\Models\StreetParking;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;

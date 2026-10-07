@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Filament\Components\StreetParkings\Forms;
+namespace App\Filament\Resources\StreetParkings\Schemas\Forms;
 
 use App\Enums\ParkingStatus;
 use App\Enums\StreetParkingSide;
 use App\Enums\StreetParkingType;
-use App\Filament\Components\Shared\Forms\DescriptionSection;
-use App\Filament\Components\Shared\Forms\GeometrySection;
-use App\Filament\Components\Shared\Forms\LocationSection;
+use App\Filament\Schemas\Shared\Forms\DescriptionSection;
+use App\Filament\Schemas\Shared\Forms\GeometrySection;
+use App\Filament\Schemas\Shared\Forms\LocationSection;
 use App\Filament\Support\Grid;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;

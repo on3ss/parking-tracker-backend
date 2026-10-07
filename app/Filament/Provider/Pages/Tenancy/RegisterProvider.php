@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Pages\Tenancy;
+namespace App\Filament\Provider\Pages\Tenancy;
 
 use App\Models\ParkingProvider;
 use App\Models\ProviderMembership;

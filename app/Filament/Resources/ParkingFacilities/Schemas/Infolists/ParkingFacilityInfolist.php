@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Components\ParkingFacilities\Infolists;
+namespace App\Filament\Resources\ParkingFacilities\Schemas\Infolists;
 
 use App\Filament\Infolists\Components\GeometryEntry;
 use Filament\Infolists\Components\TextEntry;
@@ -70,7 +70,7 @@ final class ParkingFacilityInfolist
                     ->label(__('Map'))
                     ->zoom(16)
                     ->height(250)
-                    ->hidden(fn (?Model $record): bool => blank($record?->location?->coordinates))
+                    ->hidden(fn(?Model $record): bool => blank($record?->location?->coordinates))
                     ->columnSpanFull(),
             ])
             ->columns(2);
@@ -147,7 +147,7 @@ final class ParkingFacilityInfolist
                     ->label(__('Deleted'))
                     ->dateTime()
                     ->placeholder(__('—'))
-                    ->visible(fn ($record): bool => $record->trashed()),
+                    ->visible(fn($record): bool => $record->trashed()),
             ])
             ->columns(3)
             ->collapsible();

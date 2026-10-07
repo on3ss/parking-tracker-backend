@@ -2,8 +2,8 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Pages\Tenancy\EditProviderProfile;
-use App\Filament\Pages\Tenancy\RegisterProvider;
+use App\Filament\Provider\Pages\Tenancy\EditProviderProfile;
+use App\Filament\Provider\Pages\Tenancy\RegisterProvider;
 use App\Filament\Resources\ParkingFacilities\ParkingFacilityResource;
 use App\Filament\Resources\StreetParkings\StreetParkingResource;
 use App\Models\ParkingProvider;
