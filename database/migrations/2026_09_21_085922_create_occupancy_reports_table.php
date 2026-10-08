@@ -67,6 +67,20 @@ return new class extends Migration
                  (parking_facility_id IS NULL AND street_parking_id IS NOT NULL)
              )'
         );
+
+        /*
+         * Postgres has no unsigned integer type, so unsignedInteger() is
+         * a no-op there. Enforce non-negativity explicitly.
+         */
+        DB::statement(
+            'ALTER TABLE occupancy_reports
+             ADD CONSTRAINT occupancy_reports_spaces_non_negative_check
+             CHECK (
+                 (occupied_spaces  IS NULL OR occupied_spaces  >= 0)
+                 AND
+                 (available_spaces IS NULL OR available_spaces >= 0)
+             )'
+        );
     }
 
     /**

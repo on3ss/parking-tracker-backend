@@ -51,7 +51,7 @@ it('updates the provider profile fields exposed by the form', function () {
         ->fillForm([
             'name' => 'Updated Provider Name',
             'slug' => 'should-not-change',
-            'type' => ParkingProviderType::PRIVATE ->value,
+            'type' => ParkingProviderType::PRIVATE->value,
             'is_active' => false,
             'description' => 'Updated provider description.',
         ])

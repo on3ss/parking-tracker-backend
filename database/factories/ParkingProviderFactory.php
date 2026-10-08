@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Enums\ParkingProviderType;
 use App\Models\ParkingProvider;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 class ParkingProviderFactory extends Factory
 {
@@ -16,6 +17,7 @@ class ParkingProviderFactory extends Factory
 
         return [
             'name' => $name,
+            'slug' => Str::slug($name).'-'.fake()->unique()->numberBetween(1, 99999),
 
             'type' => fake()->randomElement(
                 ParkingProviderType::cases()

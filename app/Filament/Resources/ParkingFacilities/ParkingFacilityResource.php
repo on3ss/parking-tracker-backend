@@ -44,7 +44,7 @@ class ParkingFacilityResource extends Resource
             ParkingFacilityForm::information(),
         ];
 
-        if (!static::isProviderPanel()) {
+        if (! static::isProviderPanel()) {
             $components[] = ParkingFacilityForm::provider();
         }
 
@@ -65,7 +65,7 @@ class ParkingFacilityResource extends Resource
             ParkingFacilityInfolist::description(),
         ];
 
-        if (!static::isProviderPanel()) {
+        if (! static::isProviderPanel()) {
             $components[] = ParkingFacilityInfolist::recordInformation();
         }
 
@@ -78,7 +78,7 @@ class ParkingFacilityResource extends Resource
             ParkingFacilityColumns::name(),
         ];
 
-        if (!static::isProviderPanel()) {
+        if (! static::isProviderPanel()) {
             $columns[] = ParkingFacilityColumns::provider();
         }
 
@@ -91,7 +91,7 @@ class ParkingFacilityResource extends Resource
             ParkingFacilityColumns::locality(),
         ];
 
-        if (!static::isProviderPanel()) {
+        if (! static::isProviderPanel()) {
             $columns[] = ParkingFacilityColumns::slug();
         }
 
@@ -101,7 +101,7 @@ class ParkingFacilityResource extends Resource
             ParkingFacilityFilters::availability(),
         ];
 
-        if (!static::isProviderPanel()) {
+        if (! static::isProviderPanel()) {
             array_unshift(
                 $filters,
                 ParkingFacilityFilters::provider(),
@@ -118,7 +118,7 @@ class ParkingFacilityResource extends Resource
             DeleteBulkAction::make(),
         ];
 
-        if (!static::isProviderPanel()) {
+        if (! static::isProviderPanel()) {
             $filters[] = TrashedFilter::make();
             $bulkActions[] = RestoreBulkAction::make();
         }

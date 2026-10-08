@@ -139,7 +139,7 @@ class StreetParkingResource extends Resource
         return [
             StreetParkingColumns::name(),
 
-            ...(!static::isProviderPanel()
+            ...(! static::isProviderPanel()
                 ? [StreetParkingColumns::provider()]
                 : []),
 
@@ -158,7 +158,7 @@ class StreetParkingResource extends Resource
     private static function tableFilters(): array
     {
         return [
-            ...(!static::isProviderPanel()
+            ...(! static::isProviderPanel()
                 ? [StreetParkingFilters::provider()]
                 : []),
 
@@ -166,7 +166,7 @@ class StreetParkingResource extends Resource
             StreetParkingFilters::status(),
             StreetParkingFilters::availability(),
 
-            ...(!static::isProviderPanel()
+            ...(! static::isProviderPanel()
                 ? [TrashedFilter::make()]
                 : []),
         ];
@@ -178,7 +178,7 @@ class StreetParkingResource extends Resource
             BulkActionGroup::make([
                 DeleteBulkAction::make(),
 
-                ...(!static::isProviderPanel()
+                ...(! static::isProviderPanel()
                     ? [RestoreBulkAction::make()]
                     : []),
             ]),

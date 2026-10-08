@@ -69,7 +69,9 @@ class User extends Authenticatable implements HasTenants
      */
     public function getTenants(Panel $panel): Collection
     {
-        return $this->providers()->get();
+        return $this->providers()
+            ->where('is_active', true)
+            ->get();
     }
 
     /**

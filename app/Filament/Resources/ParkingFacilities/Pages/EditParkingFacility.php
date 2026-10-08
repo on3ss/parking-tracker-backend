@@ -18,7 +18,7 @@ class EditParkingFacility extends EditRecord
     {
         $location = $this->record->location;
 
-        if (!$location) {
+        if (! $location) {
             return $data;
         }
 

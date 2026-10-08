@@ -19,14 +19,20 @@ return new class extends Migration
                 ->constrained()
                 ->cascadeOnDelete();
 
-            $table->string('role')->nullable();
+            // Every membership must have a role; default to the least
+            // privileged so an accidentally-missing role never grants
+            // more access than intended.
+            $table->string('role')->default('viewer');
 
             $table->timestamps();
 
-            $table->unique([
-                'parking_provider_id',
-                'user_id',
-            ]);
+            // Composite unique keyed on user_id first so the
+            // canAccessTenant() lookup (where user_id = ?) hits the
+            // index directly instead of scanning.
+            $table->unique(
+                ['user_id', 'parking_provider_id'],
+                'provider_memberships_user_provider_unique',
+            );
         });
     }
 

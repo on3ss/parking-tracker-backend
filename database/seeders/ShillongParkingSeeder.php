@@ -2,380 +2,132 @@
 
 namespace Database\Seeders;
 
-use App\Enums\AvailabilityStatus;
-use App\Enums\ParkingFacilityType;
-use App\Enums\ParkingProviderType;
-use App\Enums\ParkingSource;
-use App\Enums\ParkingStatus;
-use App\Enums\StreetParkingSide;
-use App\Enums\StreetParkingType;
-use App\Enums\VehicleType;
 use App\Models\Location;
 use App\Models\OccupancyReport;
 use App\Models\ParkingArea;
 use App\Models\ParkingFacility;
 use App\Models\ParkingProvider;
+use App\Models\ProviderMembership;
 use App\Models\StreetParking;
-use Clickbar\Magellan\Data\Geometries\LineString;
-use Clickbar\Magellan\Data\Geometries\Point;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class ShillongParkingSeeder extends Seeder
 {
     public function run(): void
     {
-        $municipal = ParkingProvider::updateOrCreate(
-            ['slug' => 'shillong-municipal-parking'],
-            [
-                'name' => 'Shillong Municipal Parking',
-                'type' => ParkingProviderType::MUNICIPAL,
-                'description' => 'Development/demo municipal parking provider.',
-                'is_active' => true,
-            ],
-        );
-
-        $private = ParkingProvider::updateOrCreate(
-            ['slug' => 'shillong-private-parking'],
-            [
-                'name' => 'Shillong Private Parking',
-                'type' => ParkingProviderType::PRIVATE,
-                'description' => 'Development/demo private parking provider.',
-                'is_active' => true,
-            ],
-        );
-
         /*
-         * ---------------------------------------------------------
-         * Police Bazar facility
-         * ---------------------------------------------------------
-         */
-
-        $policeBazarLocation = $this->location(
-            addressLine1: 'Police Bazar',
-            locality: 'Police Bazar',
-            postalCode: '793001',
-            latitude: 25.5779199,
-            longitude: 91.8837004,
-        );
-
-        $policeBazar = ParkingFacility::updateOrCreate(
-            ['slug' => 'demo-police-bazar-parking'],
-            [
-                'parking_provider_id' => $municipal->id,
-                'location_id' => $policeBazarLocation->id,
-
-                'name' => 'Police Bazar Parking',
-                'type' => ParkingFacilityType::PUBLIC,
-                'status' => ParkingStatus::ACTIVE,
-
-                'capacity' => 180,
-
-                'opening_time' => '06:00',
-                'closing_time' => '22:00',
-
-                'available_spaces' => 42,
-                'availability_status' => AvailabilityStatus::AVAILABLE,
-                'availability_updated_at' => now(),
-
-                'description' => 'Demo parking facility for local development.',
-            ],
-        );
-
-        $this->area(
-            facility: $policeBazar,
-            name: 'Ground Floor',
-            code: 'PB-GF',
-            vehicleType: VehicleType::CAR,
-            capacity: 100,
-        );
-
-        $this->area(
-            facility: $policeBazar,
-            name: 'Two Wheeler Area',
-            code: 'PB-2W',
-            vehicleType: VehicleType::MOTORCYCLE,
-            capacity: 80,
-        );
-
-        $this->reportFacility(
-            facility: $policeBazar,
-            source: ParkingSource::SYSTEM,
-            occupied: 138,
-            available: 42,
-        );
-
-        /*
-         * ---------------------------------------------------------
-         * Laitumkhrah facility
-         * ---------------------------------------------------------
-         */
-
-        $laitumkhrahLocation = $this->location(
-            addressLine1: 'Laitumkhrah',
-            locality: 'Laitumkhrah',
-            postalCode: '793003',
-            latitude: 25.5702,
-            longitude: 91.89829,
-        );
-
-        $laitumkhrah = ParkingFacility::updateOrCreate(
-            ['slug' => 'demo-laitumkhrah-parking'],
-            [
-                'parking_provider_id' => $private->id,
-                'location_id' => $laitumkhrahLocation->id,
-
-                'name' => 'Laitumkhrah Parking',
-                'type' => ParkingFacilityType::COMMERCIAL,
-                'status' => ParkingStatus::ACTIVE,
-
-                'capacity' => 90,
-
-                'opening_time' => '07:00',
-                'closing_time' => '21:00',
-
-                'available_spaces' => 8,
-                'availability_status' => AvailabilityStatus::LIMITED,
-                'availability_updated_at' => now(),
-
-                'description' => 'Demo parking facility for local development.',
-            ],
-        );
-
-        $this->area(
-            facility: $laitumkhrah,
-            name: 'Main Parking',
-            code: 'LM-MAIN',
-            vehicleType: VehicleType::CAR,
-            capacity: 60,
-        );
-
-        $this->area(
-            facility: $laitumkhrah,
-            name: 'Two Wheeler Area',
-            code: 'LM-2W',
-            vehicleType: VehicleType::MOTORCYCLE,
-            capacity: 30,
-        );
-
-        $this->reportFacility(
-            facility: $laitumkhrah,
-            source: ParkingSource::SYSTEM,
-            occupied: 82,
-            available: 8,
-        );
-
-        /*
-         * ---------------------------------------------------------
-         * Police Bazar street parking
-         * ---------------------------------------------------------
-         */
-
-        $this->createStreetParking(
-            provider: $municipal,
-            slug: 'demo-police-bazar-road-west',
-            name: 'Police Bazar Road — West Side',
-            roadName: 'Police Bazar Road',
-            side: StreetParkingSide::LEFT,
-            latitude: 25.5768,
-            longitude: 91.8826,
-            capacity: 24,
-            available: 7,
-            availability: AvailabilityStatus::LIMITED,
-        );
-
-        $this->createStreetParking(
-            provider: null,
-            slug: 'demo-police-bazar-road-east',
-            name: 'Police Bazar Road — East Side',
-            roadName: 'Police Bazar Road',
-            side: StreetParkingSide::RIGHT,
-            latitude: 25.5765,
-            longitude: 91.8832,
-            capacity: 18,
-            available: 3,
-            availability: AvailabilityStatus::LIMITED,
-        );
-
-        /*
-         * ---------------------------------------------------------
-         * Laitumkhrah street parking
-         * ---------------------------------------------------------
-         */
-
-        $this->createStreetParking(
-            provider: null,
-            slug: 'demo-laitumkhrah-road',
-            name: 'Laitumkhrah Road Parking',
-            roadName: 'Laitumkhrah Road',
-            side: StreetParkingSide::LEFT,
-            latitude: 25.5707,
-            longitude: 91.8977,
-            capacity: 15,
-            available: 0,
-            availability: AvailabilityStatus::FULL,
-        );
-    }
-
-    private function location(
-        string $addressLine1,
-        string $locality,
-        string $postalCode,
-        float $latitude,
-        float $longitude,
-    ): Location {
-        return Location::updateOrCreate(
-            [
-                'address_line1' => $addressLine1,
-                'locality' => $locality,
-            ],
-            [
-                'address_line2' => null,
-                'administrative_area' => 'Meghalaya',
-                'postal_code' => $postalCode,
-                'country_code' => 'IN',
-
-                'coordinates' => Point::makeGeodetic(
-                    latitude: $latitude,
-                    longitude: $longitude,
-                ),
-            ],
-        );
-    }
-
-    private function area(
-        ParkingFacility $facility,
-        string $name,
-        string $code,
-        VehicleType $vehicleType,
-        int $capacity,
-    ): ParkingArea {
-        return ParkingArea::updateOrCreate(
-            [
-                'parking_facility_id' => $facility->id,
-                'name' => $name,
-            ],
-            [
-                'code' => $code,
-                'vehicle_type' => $vehicleType,
-                'capacity' => $capacity,
-                'is_active' => true,
-            ],
-        );
-    }
-
-    private function reportFacility(
-        ParkingFacility $facility,
-        ParkingSource $source,
-        int $occupied,
-        int $available,
-    ): void {
-        OccupancyReport::create([
-            'parking_facility_id' => $facility->id,
-            'street_parking_id' => null,
-
-            'user_id' => null,
-
-            'source' => $source,
-
-            'occupied_spaces' => $occupied,
-            'available_spaces' => $available,
-
-            'reported_at' => now(),
+        |------------------------------------------------------------------
+        | 1. Known "owner" test account (optional but handy)
+        |------------------------------------------------------------------
+        */
+        $owner = User::factory()->create([
+            'name' => 'Test Owner',
+            'email' => 'owner@example.com',
         ]);
+
+        /*
+        |------------------------------------------------------------------
+        | 2. Providers
+        |------------------------------------------------------------------
+        */
+        $providers = ParkingProvider::factory()->count(8)->create();
+
+        // Attach the test owner to the first provider as owner
+        ProviderMembership::create([
+            'user_id' => $owner->id,
+            'parking_provider_id' => $providers->first()->id,
+            'role' => 'owner',
+        ]);
+
+        /*
+        |------------------------------------------------------------------
+        | 3. Users (25 total) + provider memberships
+        |------------------------------------------------------------------
+        */
+        $users = User::factory()->count(25)->create();
+        $roles = ['owner', 'admin', 'manager', 'viewer'];
+
+        foreach ($users as $user) {
+            // Every user belongs to 1–3 providers
+            $providers->random(rand(1, 3))->each(
+                function (ParkingProvider $provider) use ($user, $roles) {
+                    ProviderMembership::create([
+                        'user_id' => $user->id,
+                        'parking_provider_id' => $provider->id,
+                        'role' => $roles[array_rand($roles)],
+                    ]);
+                }
+            );
+        }
+
+        /*
+        |------------------------------------------------------------------
+        | 4. For each provider: facilities, areas, street parkings, reports
+        |------------------------------------------------------------------
+        */
+        foreach ($providers as $provider) {
+            $this->seedFacilities($provider);
+            $this->seedStreetParkings($provider);
+        }
     }
 
-    private function createStreetParking(
-        ?ParkingProvider $provider,
-        string $slug,
-        string $name,
-        string $roadName,
-        StreetParkingSide $side,
-        float $latitude,
-        float $longitude,
-        int $capacity,
-        int $available,
-        AvailabilityStatus $availability,
-    ): StreetParking {
-        $location = $this->location(
-            addressLine1: $roadName,
-            locality: str_contains($roadName, 'Police')
-            ? 'Police Bazar'
-            : 'Laitumkhrah',
-            postalCode: str_contains($roadName, 'Police')
-            ? '793001'
-            : '793003',
-            latitude: $latitude,
-            longitude: $longitude,
-        );
+    private function seedFacilities(ParkingProvider $provider): void
+    {
+        for ($i = 0, $n = rand(2, 4); $i < $n; $i++) {
+            $location = Location::factory()->create();
 
-        $parking = StreetParking::updateOrCreate(
-            ['slug' => $slug],
-            [
-                'parking_provider_id' => $provider?->id,
+            $factory = ParkingFacility::factory();
+
+            $factory = match ($i % 4) {
+                1 => $factory->available(rand(5, 40)),
+                2 => $factory->limited(rand(1, 5)),
+                3 => $factory->full(),
+                default => $factory,
+            };
+
+            /** @var ParkingFacility $facility */
+            $facility = $factory->create([
+                'parking_provider_id' => $provider->id,
                 'location_id' => $location->id,
+            ]);
 
-                'name' => $name,
-                'road_name' => $roadName,
-                'side' => $side,
+            // Parking areas
+            ParkingArea::factory()
+                ->count(rand(1, 4))
+                ->create(['parking_facility_id' => $facility->id]);
 
-                'parking_type' => StreetParkingType::CURBSIDE,
-                'status' => ParkingStatus::ACTIVE,
-
-                'capacity' => $capacity,
-                'available_spaces' => $available,
-
-                'availability_status' => $availability,
-                'availability_updated_at' => now(),
-
-                'description' => 'Demo street parking for local development.',
-
-                'geometry' => $this->streetGeometry(
-                    latitude: $latitude,
-                    longitude: $longitude,
-                ),
-            ],
-        );
-
-        OccupancyReport::updateOrCreate(
-            [
-                'street_parking_id' => $parking->id,
-                'source' => ParkingSource::SYSTEM,
-            ],
-            [
-                'parking_facility_id' => null,
-                'user_id' => null,
-
-                'occupied_spaces' => $capacity - $available,
-                'available_spaces' => $available,
-
-                'reported_at' => now(),
-            ],
-        );
-
-        return $parking;
+            // Occupancy reports
+            OccupancyReport::factory()
+                ->count(rand(3, 10))
+                ->forFacility($facility)
+                ->create();
+        }
     }
 
-    private function streetGeometry(
-        float $latitude,
-        float $longitude,
-    ): LineString {
-        /*
-         * Rough 40–60m development/demo segment.
-         *
-         * This is deliberately approximate and is not a
-         * surveyed or legal parking boundary.
-         */
-        $delta = 0.00025;
+    private function seedStreetParkings(ParkingProvider $provider): void
+    {
+        for ($i = 0, $n = rand(2, 5); $i < $n; $i++) {
+            $location = Location::factory()->create();
 
-        return LineString::make([
-            Point::makeGeodetic(
-                latitude: $latitude - ($delta / 2),
-                longitude: $longitude - $delta,
-            ),
-            Point::makeGeodetic(
-                latitude: $latitude + ($delta / 2),
-                longitude: $longitude + $delta,
-            ),
-        ]);
+            $factory = StreetParking::factory();
+
+            $factory = match ($i % 3) {
+                1 => $factory->available(rand(1, 10)),
+                2 => $factory->full(),
+                default => $factory,
+            };
+
+            /** @var StreetParking $street */
+            $street = $factory->create([
+                'parking_provider_id' => $provider->id,
+                'location_id' => $location->id,
+            ]);
+
+            OccupancyReport::factory()
+                ->count(rand(2, 8))
+                ->forStreetParking($street)
+                ->create();
+        }
     }
 }

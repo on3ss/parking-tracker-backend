@@ -1,5 +1,6 @@
 <?php
 
+use App\Filament\RelationManagers\OccupancyReportsRelationManager;
 use App\Filament\Resources\StreetParkings\StreetParkingResource;
 use App\Models\StreetParking;
 use Filament\Facades\Filament;
@@ -31,7 +32,7 @@ it('returns the occupancy reports relation manager', function () {
 
     expect($relations)
         ->toContain(
-            \App\Filament\RelationManagers\OccupancyReportsRelationManager::class,
+            OccupancyReportsRelationManager::class,
         );
 });
 

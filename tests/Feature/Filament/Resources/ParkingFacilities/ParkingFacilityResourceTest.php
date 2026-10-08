@@ -1,8 +1,11 @@
 <?php
 
+use App\Filament\RelationManagers\OccupancyReportsRelationManager;
 use App\Filament\Resources\ParkingFacilities\ParkingFacilityResource;
 use App\Models\ParkingFacility;
 use Filament\Facades\Filament;
+use Filament\Schemas\Schema;
+use Illuminate\Database\Eloquent\Builder;
 
 it('uses the parking facility model', function () {
     expect(ParkingFacilityResource::getModel())
@@ -18,7 +21,7 @@ it('includes the provider field in the admin form', function () {
     Filament::setCurrentPanel('admin');
 
     $schema = ParkingFacilityResource::form(
-        app(\Filament\Schemas\Schema::class),
+        app(Schema::class),
     );
 
     expect($schema->getComponents())
@@ -29,7 +32,7 @@ it('excludes the provider field from the provider form', function () {
     Filament::setCurrentPanel('provider');
 
     $schema = ParkingFacilityResource::form(
-        app(\Filament\Schemas\Schema::class),
+        app(Schema::class),
     );
 
     expect($schema->getComponents())
@@ -51,7 +54,7 @@ it('defines the expected resource pages', function () {
 it('includes the occupancy reports relation manager', function () {
     expect(ParkingFacilityResource::getRelations())
         ->toContain(
-            \App\Filament\RelationManagers\OccupancyReportsRelationManager::class,
+            OccupancyReportsRelationManager::class,
         );
 });
 
@@ -96,5 +99,5 @@ it('uses the normal tenant scoped route binding query for the provider panel', f
     $query = ParkingFacilityResource::getRecordRouteBindingEloquentQuery();
 
     expect($query)
-        ->toBeInstanceOf(\Illuminate\Database\Eloquent\Builder::class);
+        ->toBeInstanceOf(Builder::class);
 });

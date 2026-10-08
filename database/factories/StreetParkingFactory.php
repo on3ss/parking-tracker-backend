@@ -12,6 +12,7 @@ use App\Models\StreetParking;
 use Clickbar\Magellan\Data\Geometries\LineString;
 use Clickbar\Magellan\Data\Geometries\Point;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 class StreetParkingFactory extends Factory
 {
@@ -23,14 +24,22 @@ class StreetParkingFactory extends Factory
 
         $latitude = fake()->latitude(8, 35);
         $longitude = fake()->longitude(68, 97);
-
         $delta = 0.00025;
+
+        // Same reference point for both the Location and the LineString.
+        $center = Point::makeGeodetic(
+            latitude: $latitude,
+            longitude: $longitude,
+        );
 
         return [
             'parking_provider_id' => ParkingProvider::factory(),
-            'location_id' => Location::factory(),
+            'location_id' => Location::factory()->state([
+                'coordinates' => $center,
+            ]),
 
             'name' => $name,
+            'slug' => Str::slug($name),
 
             'road_name' => fake()->streetName(),
             'side' => fake()->randomElement(StreetParkingSide::cases()),
@@ -57,13 +66,20 @@ class StreetParkingFactory extends Factory
         ];
     }
 
-    public function available(int $spaces = 5): static
+    public function available(?int $spaces = null): static
     {
-        return $this->state(fn () => [
-            'availability_status' => AvailabilityStatus::AVAILABLE,
-            'available_spaces' => $spaces,
-            'availability_updated_at' => now(),
-        ]);
+        return $this->state(function (array $attrs) use ($spaces) {
+            $capacity = (int) ($attrs['capacity'] ?? 0);
+            $value = $spaces ?? fake()->numberBetween(1, max(1, $capacity));
+            $capacity = max($capacity, $value);
+
+            return [
+                'capacity' => $capacity,
+                'availability_status' => AvailabilityStatus::AVAILABLE,
+                'available_spaces' => $value,
+                'availability_updated_at' => now(),
+            ];
+        });
     }
 
     public function full(): static

@@ -9,6 +9,7 @@ use App\Models\Location;
 use App\Models\ParkingFacility;
 use App\Models\ParkingProvider;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 class ParkingFacilityFactory extends Factory
 {
@@ -23,6 +24,7 @@ class ParkingFacilityFactory extends Factory
             'location_id' => Location::factory(),
 
             'name' => $name,
+            'slug' => Str::slug($name),
 
             'type' => ParkingFacilityType::PUBLIC,
             'status' => ParkingStatus::ACTIVE,
@@ -40,22 +42,36 @@ class ParkingFacilityFactory extends Factory
         ];
     }
 
-    public function available(int $spaces = 20): static
+    public function available(?int $spaces = null): static
     {
-        return $this->state(fn () => [
-            'available_spaces' => $spaces,
-            'availability_status' => AvailabilityStatus::AVAILABLE,
-            'availability_updated_at' => now(),
-        ]);
+        return $this->state(function (array $attrs) use ($spaces) {
+            $capacity = (int) ($attrs['capacity'] ?? 0);
+            $value = $spaces ?? fake()->numberBetween(1, max(1, $capacity));
+            $capacity = max($capacity, $value);
+
+            return [
+                'capacity' => $capacity,
+                'available_spaces' => $value,
+                'availability_status' => AvailabilityStatus::AVAILABLE,
+                'availability_updated_at' => now(),
+            ];
+        });
     }
 
-    public function limited(int $spaces = 5): static
+    public function limited(?int $spaces = null): static
     {
-        return $this->state(fn () => [
-            'available_spaces' => $spaces,
-            'availability_status' => AvailabilityStatus::LIMITED,
-            'availability_updated_at' => now(),
-        ]);
+        return $this->state(function (array $attrs) use ($spaces) {
+            $capacity = (int) ($attrs['capacity'] ?? 0);
+            $value = $spaces ?? fake()->numberBetween(1, max(1, min(5, $capacity)));
+            $capacity = max($capacity, $value);
+
+            return [
+                'capacity' => $capacity,
+                'available_spaces' => $value,
+                'availability_status' => AvailabilityStatus::LIMITED,
+                'availability_updated_at' => now(),
+            ];
+        });
     }
 
     public function full(): static
@@ -73,7 +89,8 @@ class ParkingFacilityFactory extends Factory
             'status' => ParkingStatus::TEMPORARILY_CLOSED,
             'available_spaces' => null,
             'availability_status' => AvailabilityStatus::UNKNOWN,
-            'availability_updated_at' => now(),
+            // UNKNOWN means "never reported", so no timestamp.
+            'availability_updated_at' => null,
         ]);
     }
 }
