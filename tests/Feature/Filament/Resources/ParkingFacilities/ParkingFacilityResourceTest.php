@@ -3,6 +3,9 @@
 use App\Filament\RelationManagers\OccupancyReportsRelationManager;
 use App\Filament\Resources\ParkingFacilities\ParkingFacilityResource;
 use App\Models\ParkingFacility;
+use App\Models\ParkingProvider;
+use App\Models\ProviderMembership;
+use App\Models\User;
 use Filament\Facades\Filament;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Builder;
@@ -100,4 +103,42 @@ it('uses the normal tenant scoped route binding query for the provider panel', f
 
     expect($query)
         ->toBeInstanceOf(Builder::class);
+});
+
+it('only resolves parking facilities belonging to the current provider', function () {
+    $user = User::factory()->create();
+
+    $providerOne = ParkingProvider::factory()->create([
+        'is_active' => true,
+    ]);
+
+    $providerTwo = ParkingProvider::factory()->create([
+        'is_active' => true,
+    ]);
+
+    ProviderMembership::create([
+        'user_id' => $user->id,
+        'parking_provider_id' => $providerOne->id,
+    ]);
+
+    $facilityOne = ParkingFacility::factory()->create([
+        'parking_provider_id' => $providerOne->id,
+    ]);
+
+    $facilityTwo = ParkingFacility::factory()->create([
+        'parking_provider_id' => $providerTwo->id,
+    ]);
+
+    $this->actingAs($user);
+
+    Filament::setCurrentPanel('provider');
+    Filament::setTenant($providerOne);
+
+    $query = ParkingFacilityResource::getRecordRouteBindingEloquentQuery();
+
+    expect($query->whereKey($facilityOne)->exists())
+        ->toBeTrue();
+
+    expect($query->whereKey($facilityTwo)->exists())
+        ->toBeFalse();
 });

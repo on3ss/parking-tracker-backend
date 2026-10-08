@@ -33,6 +33,8 @@ class ParkingFacilityResource extends Resource
 {
     protected static ?string $model = ParkingFacility::class;
 
+    protected static ?string $tenantOwnershipRelationshipName = 'provider';
+
     protected static string|BackedEnum|null $navigationIcon =
         Heroicon::OutlinedSquare3Stack3d;
 

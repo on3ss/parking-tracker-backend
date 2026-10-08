@@ -33,6 +33,8 @@ class StreetParkingResource extends Resource
 {
     protected static ?string $model = StreetParking::class;
 
+    protected static ?string $tenantOwnershipRelationshipName = 'provider';
+
     protected static string|BackedEnum|null $navigationIcon =
         Heroicon::OutlinedMapPin;
 
