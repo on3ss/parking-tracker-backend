@@ -1474,15 +1474,15 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"type\": \"street\",
+    \"type\": \"facility\",
     \"filter\": {
-        \"availability\": \"UNKNOWN\",
+        \"availability\": \"LIMITED\",
         \"provider_id\": 16
     },
     \"latitude\": -89,
     \"longitude\": -180,
     \"radius\": 16,
-    \"sort\": \"-available_spaces\",
+    \"sort\": \"-name\",
     \"page\": 27,
     \"per_page\": 15
 }"
@@ -1500,15 +1500,15 @@ const headers = {
 };
 
 let body = {
-    "type": "street",
+    "type": "facility",
     "filter": {
-        "availability": "UNKNOWN",
+        "availability": "LIMITED",
         "provider_id": 16
     },
     "latitude": -89,
     "longitude": -180,
     "radius": 16,
-    "sort": "-available_spaces",
+    "sort": "-name",
     "page": 27,
     "per_page": 15
 };
@@ -1623,10 +1623,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="type"                data-endpoint="GETapi-v1-parking"
-               value="street"
+               value="facility"
                data-component="body">
     <br>
-<p>Example: <code>street</code></p>
+<p>Example: <code>facility</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>facility</code></li> <li><code>street</code></li></ul>
         </div>
@@ -1647,10 +1647,10 @@ Must be one of:
  &nbsp;
                 <input type="text" style="display: none"
                               name="filter.availability"                data-endpoint="GETapi-v1-parking"
-               value="UNKNOWN"
+               value="LIMITED"
                data-component="body">
     <br>
-<p>Example: <code>UNKNOWN</code></p>
+<p>Example: <code>LIMITED</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>UNKNOWN</code></li> <li><code>AVAILABLE</code></li> <li><code>LIMITED</code></li> <li><code>FULL</code></li></ul>
                     </div>
@@ -1711,10 +1711,10 @@ Must be one of:
  &nbsp;
                 <input type="text" style="display: none"
                               name="sort"                data-endpoint="GETapi-v1-parking"
-               value="-available_spaces"
+               value="-name"
                data-component="body">
     <br>
-<p>Example: <code>-available_spaces</code></p>
+<p>Example: <code>-name</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>distance</code></li> <li><code>-distance</code></li> <li><code>name</code></li> <li><code>-name</code></li> <li><code>capacity</code></li> <li><code>-capacity</code></li> <li><code>available_spaces</code></li> <li><code>-available_spaces</code></li></ul>
         </div>

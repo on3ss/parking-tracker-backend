@@ -544,7 +544,7 @@ endpoints:
         name: type
         description: ''
         required: false
-        example: street
+        example: facility
         type: string
         enumValues:
           - facility
@@ -568,7 +568,7 @@ endpoints:
         name: filter.availability
         description: ''
         required: false
-        example: UNKNOWN
+        example: LIMITED
         type: string
         enumValues:
           - UNKNOWN
@@ -627,7 +627,7 @@ endpoints:
         name: sort
         description: ''
         required: false
-        example: '-available_spaces'
+        example: '-name'
         type: string
         enumValues:
           - distance
@@ -664,14 +664,14 @@ endpoints:
         nullable: false
         deprecated: false
     cleanBodyParameters:
-      type: street
+      type: facility
       filter:
-        availability: UNKNOWN
+        availability: LIMITED
         provider_id: 16
       latitude: -89
       longitude: -180
       radius: 16
-      sort: '-available_spaces'
+      sort: '-name'
       page: 27
       per_page: 15
     fileParameters: []
