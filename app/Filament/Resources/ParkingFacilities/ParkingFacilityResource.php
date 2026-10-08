@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\ParkingFacilities;
 
 use App\Filament\RelationManagers\OccupancyReportsRelationManager;
+use App\Filament\Resources\BaseResource;
 use App\Filament\Resources\ParkingFacilities\Pages\CreateParkingFacility;
 use App\Filament\Resources\ParkingFacilities\Pages\EditParkingFacility;
 use App\Filament\Resources\ParkingFacilities\Pages\ListParkingFacilities;
@@ -20,8 +21,6 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
-use Filament\Facades\Filament;
-use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Filters\TrashedFilter;
@@ -29,7 +28,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class ParkingFacilityResource extends Resource
+class ParkingFacilityResource extends BaseResource
 {
     protected static ?string $model = ParkingFacility::class;
 
@@ -42,96 +41,43 @@ class ParkingFacilityResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        $components = [
+        return $schema->components([
             ParkingFacilityForm::information(),
-        ];
 
-        if (! static::isProviderPanel()) {
-            $components[] = ParkingFacilityForm::provider();
-        }
+            ...static::providerFormComponents(),
 
-        $components[] = ParkingFacilityForm::operatingHours();
-        $components[] = ParkingFacilityForm::location();
-        $components[] = ParkingFacilityForm::description();
-
-        return $schema->components($components);
+            ParkingFacilityForm::operatingHours(),
+            ParkingFacilityForm::location(),
+            ParkingFacilityForm::description(),
+        ]);
     }
 
     public static function infolist(Schema $schema): Schema
     {
-        $components = [
+        return $schema->components([
             ParkingFacilityInfolist::information(),
             ParkingFacilityInfolist::location(),
             ParkingFacilityInfolist::operatingHours(),
             ParkingFacilityInfolist::availability(),
             ParkingFacilityInfolist::description(),
-        ];
 
-        if (! static::isProviderPanel()) {
-            $components[] = ParkingFacilityInfolist::recordInformation();
-        }
-
-        return $schema->components($components);
+            ...static::recordInformationComponents(),
+        ]);
     }
 
     public static function table(Table $table): Table
     {
-        $columns = [
-            ParkingFacilityColumns::name(),
-        ];
-
-        if (! static::isProviderPanel()) {
-            $columns[] = ParkingFacilityColumns::provider();
-        }
-
-        $columns = [
-            ...$columns,
-            ParkingFacilityColumns::type(),
-            ParkingFacilityColumns::status(),
-            ParkingFacilityColumns::capacity(),
-            ...ParkingFacilityColumns::availability(),
-            ParkingFacilityColumns::locality(),
-        ];
-
-        if (! static::isProviderPanel()) {
-            $columns[] = ParkingFacilityColumns::slug();
-        }
-
-        $filters = [
-            ParkingFacilityFilters::type(),
-            ParkingFacilityFilters::status(),
-            ParkingFacilityFilters::availability(),
-        ];
-
-        if (! static::isProviderPanel()) {
-            array_unshift(
-                $filters,
-                ParkingFacilityFilters::provider(),
-            );
-        }
-
-        $actions = [
-            ViewAction::make(),
-            EditAction::make(),
-            DeleteAction::make(),
-        ];
-
-        $bulkActions = [
-            DeleteBulkAction::make(),
-        ];
-
-        if (! static::isProviderPanel()) {
-            $filters[] = TrashedFilter::make();
-            $bulkActions[] = RestoreBulkAction::make();
-        }
-
         return $table
             ->defaultSort('name')
-            ->columns($columns)
-            ->filters($filters)
-            ->recordActions($actions)
+            ->columns(static::tableColumns())
+            ->filters(static::tableFilters())
+            ->recordActions([
+                ViewAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
+            ])
             ->toolbarActions([
-                BulkActionGroup::make($bulkActions),
+                BulkActionGroup::make(static::bulkActions()),
             ]);
     }
 
@@ -155,18 +101,90 @@ class ParkingFacilityResource extends Resource
 
     public static function getRecordRouteBindingEloquentQuery(): Builder
     {
-        if (static::isProviderPanel()) {
-            return parent::getRecordRouteBindingEloquentQuery();
-        }
+        $query = parent::getRecordRouteBindingEloquentQuery();
 
-        return parent::getRecordRouteBindingEloquentQuery()
-            ->withoutGlobalScopes([
+        if (static::isGlobalContext()) {
+            $query->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
+        }
+
+        return $query;
     }
 
-    private static function isProviderPanel(): bool
+    private static function providerFormComponents(): array
     {
-        return Filament::getCurrentPanel()?->getId() === 'provider';
+        return static::isGlobalContext()
+            ? [ParkingFacilityForm::provider()]
+            : [];
+    }
+
+    private static function recordInformationComponents(): array
+    {
+        return static::isGlobalContext()
+            ? [ParkingFacilityInfolist::recordInformation()]
+            : [];
+    }
+
+    private static function tableColumns(): array
+    {
+        return [
+            ParkingFacilityColumns::name(),
+
+            ...static::globalColumns(),
+
+            ParkingFacilityColumns::type(),
+            ParkingFacilityColumns::status(),
+            ParkingFacilityColumns::capacity(),
+            ...ParkingFacilityColumns::availability(),
+            ParkingFacilityColumns::locality(),
+        ];
+    }
+
+    private static function globalColumns(): array
+    {
+        return static::isGlobalContext()
+            ? [
+                ParkingFacilityColumns::provider(),
+                ParkingFacilityColumns::slug(),
+            ]
+            : [];
+    }
+
+    private static function tableFilters(): array
+    {
+        return [
+            ...static::globalFilters(),
+
+            ParkingFacilityFilters::type(),
+            ParkingFacilityFilters::status(),
+            ParkingFacilityFilters::availability(),
+        ];
+    }
+
+    private static function globalFilters(): array
+    {
+        return static::isGlobalContext()
+            ? [
+                ParkingFacilityFilters::provider(),
+                TrashedFilter::make(),
+            ]
+            : [];
+    }
+
+    private static function bulkActions(): array
+    {
+        return [
+            DeleteBulkAction::make(),
+
+            ...static::globalBulkActions(),
+        ];
+    }
+
+    private static function globalBulkActions(): array
+    {
+        return static::isGlobalContext()
+            ? [RestoreBulkAction::make()]
+            : [];
     }
 }

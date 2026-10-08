@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\StreetParkings;
 
 use App\Filament\RelationManagers\OccupancyReportsRelationManager;
+use App\Filament\Resources\BaseResource;
 use App\Filament\Resources\StreetParkings\Pages\CreateStreetParking;
 use App\Filament\Resources\StreetParkings\Pages\EditStreetParking;
 use App\Filament\Resources\StreetParkings\Pages\ListStreetParkings;
@@ -19,8 +20,6 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
-use Filament\Facades\Filament;
-use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Filters\TrashedFilter;
@@ -29,7 +28,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use UnitEnum;
 
-class StreetParkingResource extends Resource
+class StreetParkingResource extends BaseResource
 {
     protected static ?string $model = StreetParking::class;
 
@@ -85,7 +84,9 @@ class StreetParkingResource extends Resource
                 EditAction::make(),
                 DeleteAction::make(),
             ])
-            ->toolbarActions(static::toolbarActions());
+            ->toolbarActions([
+                BulkActionGroup::make(static::bulkActions()),
+            ]);
     }
 
     public static function getRelations(): array
@@ -107,33 +108,29 @@ class StreetParkingResource extends Resource
 
     public static function getRecordRouteBindingEloquentQuery(): Builder
     {
-        return parent::getRecordRouteBindingEloquentQuery()
-            ->withoutGlobalScopes([
+        $query = parent::getRecordRouteBindingEloquentQuery();
+
+        if (static::isGlobalContext()) {
+            $query->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
-    }
+        }
 
-    private static function isProviderPanel(): bool
-    {
-        return Filament::getCurrentPanel()?->getId() === 'provider';
+        return $query;
     }
 
     private static function providerFormComponents(): array
     {
-        return static::isProviderPanel()
-            ? []
-            : [
-                StreetParkingForm::provider(),
-            ];
+        return static::isGlobalContext()
+            ? [StreetParkingForm::provider()]
+            : [];
     }
 
     private static function recordInformationComponents(): array
     {
-        return static::isProviderPanel()
-            ? []
-            : [
-                StreetParkingInfolist::recordInformation(),
-            ];
+        return static::isGlobalContext()
+            ? [StreetParkingInfolist::recordInformation()]
+            : [];
     }
 
     private static function tableColumns(): array
@@ -141,9 +138,7 @@ class StreetParkingResource extends Resource
         return [
             StreetParkingColumns::name(),
 
-            ...(! static::isProviderPanel()
-                ? [StreetParkingColumns::provider()]
-                : []),
+            ...static::globalColumns(),
 
             StreetParkingColumns::roadName(),
             StreetParkingColumns::side(),
@@ -157,33 +152,47 @@ class StreetParkingResource extends Resource
         ];
     }
 
+    private static function globalColumns(): array
+    {
+        return static::isGlobalContext()
+            ? [StreetParkingColumns::provider()]
+            : [];
+    }
+
     private static function tableFilters(): array
     {
         return [
-            ...(! static::isProviderPanel()
-                ? [StreetParkingFilters::provider()]
-                : []),
+            ...static::globalFilters(),
 
             StreetParkingFilters::parkingType(),
             StreetParkingFilters::status(),
             StreetParkingFilters::availability(),
-
-            ...(! static::isProviderPanel()
-                ? [TrashedFilter::make()]
-                : []),
         ];
     }
 
-    private static function toolbarActions(): array
+    private static function globalFilters(): array
+    {
+        return static::isGlobalContext()
+            ? [
+                StreetParkingFilters::provider(),
+                TrashedFilter::make(),
+            ]
+            : [];
+    }
+
+    private static function bulkActions(): array
     {
         return [
-            BulkActionGroup::make([
-                DeleteBulkAction::make(),
+            DeleteBulkAction::make(),
 
-                ...(! static::isProviderPanel()
-                    ? [RestoreBulkAction::make()]
-                    : []),
-            ]),
+            ...static::globalBulkActions(),
         ];
+    }
+
+    private static function globalBulkActions(): array
+    {
+        return static::isGlobalContext()
+            ? [RestoreBulkAction::make()]
+            : [];
     }
 }
