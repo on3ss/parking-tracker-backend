@@ -22,7 +22,10 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable implements HasTenants
 {
     /** @use HasFactory<UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens;
+
+    use HasFactory;
+    use Notifiable;
 
     /**
      * Get the attributes that should be cast.

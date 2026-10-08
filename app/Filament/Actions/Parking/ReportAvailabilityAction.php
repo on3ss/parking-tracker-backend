@@ -70,7 +70,8 @@ final class ReportAvailabilityAction
                     userId: auth()->id(),
                 );
 
-                ($result->accepted
+                (
+                    $result->accepted
                 ? Notification::make()->success()
                     ->title(__('Availability reported'))
                     ->body(__('The current parking availability has been updated.'))

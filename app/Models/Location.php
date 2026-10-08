@@ -14,7 +14,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Location extends Model
 {
     /** @use HasFactory<LocationFactory> */
-    use HasFactory, SoftDeletes;
+    use HasFactory;
+
+    use SoftDeletes;
 
     protected function casts(): array
     {

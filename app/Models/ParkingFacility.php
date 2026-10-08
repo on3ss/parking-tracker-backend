@@ -35,7 +35,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class ParkingFacility extends Model
 {
     /** @use HasFactory<ParkingFacilitiesFactory> */
-    use HasFactory, HasSlug, SoftDeletes;
+    use HasFactory;
+
+    use HasSlug;
+    use SoftDeletes;
 
     protected function casts(): array
     {

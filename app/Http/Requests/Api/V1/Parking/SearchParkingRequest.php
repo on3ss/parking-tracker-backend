@@ -128,31 +128,23 @@ final class SearchParkingRequest extends FormRequest
 
         return new SearchParkingData(
             type: $this->input('type'),
-
             availability: isset($filter['availability'])
             ? AvailabilityStatus::from($filter['availability'])
             : null,
-
             providerId: isset($filter['provider_id'])
             ? (int) $filter['provider_id']
             : null,
-
             latitude: $this->input('latitude') !== null
             ? (float) $this->input('latitude')
             : null,
-
             longitude: $this->input('longitude') !== null
             ? (float) $this->input('longitude')
             : null,
-
             radiusMeters: $this->input('radius') !== null
             ? (int) $this->input('radius')
             : null,
-
             sort: $this->input('sort'),
-
             perPage: (int) $this->input('per_page', 20),
-
             page: (int) $this->input('page', 1),
         );
     }
