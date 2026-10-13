@@ -17,6 +17,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use UnitEnum;
 
 class ParkingProviderResource extends Resource
 {
@@ -24,6 +25,8 @@ class ParkingProviderResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon =
         Heroicon::OutlinedBuildingOffice2;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Parking';
 
     protected static ?string $recordTitleAttribute = 'name';
 

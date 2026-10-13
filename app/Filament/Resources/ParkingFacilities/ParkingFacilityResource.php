@@ -27,6 +27,7 @@ use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use UnitEnum;
 
 class ParkingFacilityResource extends BaseResource
 {
@@ -36,6 +37,8 @@ class ParkingFacilityResource extends BaseResource
 
     protected static string|BackedEnum|null $navigationIcon =
         Heroicon::OutlinedSquare3Stack3d;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Parking';
 
     protected static ?string $recordTitleAttribute = 'name';
 
