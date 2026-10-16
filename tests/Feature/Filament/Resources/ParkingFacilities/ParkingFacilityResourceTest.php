@@ -83,11 +83,27 @@ it('includes soft deleted records in the admin route binding query', function ()
 });
 
 it('excludes soft deleted records from the provider route binding query', function () {
-    Filament::setCurrentPanel('provider');
+    $user = User::factory()->create();
 
-    $facility = ParkingFacility::factory()->create();
+    $provider = ParkingProvider::factory()->create([
+        'is_active' => true,
+    ]);
+
+    ProviderMembership::create([
+        'user_id' => $user->id,
+        'parking_provider_id' => $provider->id,
+    ]);
+
+    $facility = ParkingFacility::factory()->create([
+        'parking_provider_id' => $provider->id,
+    ]);
 
     $facility->delete();
+
+    $this->actingAs($user);
+
+    Filament::setCurrentPanel('provider');
+    Filament::setTenant($provider);
 
     expect(
         ParkingFacilityResource::getRecordRouteBindingEloquentQuery()
