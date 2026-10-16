@@ -105,7 +105,8 @@ Route::prefix('v1')->group(function () {
         Route::post(
             'parking/{parking}/availability',
             ReportParkingAvailabilityController::class,
-        );
+        )
+            ->middleware('throttle:10,1');
     });
 
     /**
