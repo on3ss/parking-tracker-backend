@@ -6,6 +6,7 @@ use App\Filament\Provider\Pages\Tenancy\EditProviderProfile;
 use App\Filament\Provider\Pages\Tenancy\RegisterProvider;
 use App\Filament\Resources\ParkingFacilities\ParkingFacilityResource;
 use App\Filament\Resources\StreetParkings\StreetParkingResource;
+use App\Http\Middleware\SyncSpatiePermissionsWithFilamentTenants;
 use App\Models\ParkingProvider;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -32,6 +33,9 @@ class ProviderPanelProvider extends PanelProvider
             ->path('provider')
             ->login()
             ->tenant(ParkingProvider::class, ownershipRelationship: 'provider')
+            ->tenantMiddleware([
+                SyncSpatiePermissionsWithFilamentTenants::class
+            ], isPersistent: true)
             ->tenantRegistration(RegisterProvider::class)
             ->tenantProfile(EditProviderProfile::class)
             ->colors([
@@ -39,7 +43,7 @@ class ProviderPanelProvider extends PanelProvider
             ])
             ->renderHook(
                 'panels::head.start',
-                fn (): string => Vite::withEntryPoints([
+                fn(): string => Vite::withEntryPoints([
                     'resources/js/filament/geometry-map.js',
                 ])->toHtml(),
             )
