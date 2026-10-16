@@ -30,7 +30,7 @@ final class AvailabilityHistoryRequest extends FormRequest
         ];
     }
 
-    public function data(
+    public function toData(
         $parkingIdentifier = null,
         $default = null
     ): GetParkingAvailabilityHistoryData {

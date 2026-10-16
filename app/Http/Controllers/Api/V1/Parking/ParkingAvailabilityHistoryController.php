@@ -17,7 +17,7 @@ final class ParkingAvailabilityHistoryController extends Controller
     ): AnonymousResourceCollection {
         return OccupancyReportResource::collection(
             $getParkingAvailabilityHistory->execute(
-                $request->data($parking),
+                $request->toData($parking),
             ),
         );
     }

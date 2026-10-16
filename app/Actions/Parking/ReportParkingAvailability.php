@@ -61,7 +61,6 @@ final class ReportParkingAvailability
         });
     }
 
-
     private function validateAvailability(
         ParkingFacility|StreetParking $parking,
         int $availableSpaces,
@@ -101,17 +100,11 @@ final class ReportParkingAvailability
             );
         }
 
-
-        if (
-            $occupiedSpaces !== null
-            && $occupiedSpaces + $availableSpaces > $capacity
-        ) {
+        if ($occupiedSpaces + $availableSpaces > $capacity) {
             throw new InvalidParkingAvailability(
                 field: 'available_spaces',
                 message: 'Occupied and available spaces cannot exceed parking capacity.',
             );
         }
-
     }
-
 }

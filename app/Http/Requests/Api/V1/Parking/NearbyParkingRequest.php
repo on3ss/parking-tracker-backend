@@ -43,7 +43,7 @@ final class NearbyParkingRequest extends FormRequest
         ];
     }
 
-    public function data($key = null, $default = null): SearchParkingData
+    public function toData(): SearchParkingData
     {
         return new SearchParkingData(
             latitude: (float) $this->input('latitude'),
@@ -54,4 +54,5 @@ final class NearbyParkingRequest extends FormRequest
             page: 1,
         );
     }
+
 }

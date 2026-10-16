@@ -13,17 +13,17 @@ final class NearbyParkingController extends Controller
         NearbyParkingRequest $request,
         SearchParking $searchParking,
     ) {
-        $results = $searchParking->execute($request->data());
+        $results = $searchParking->execute($request->toData());
 
         return ParkingResource::collection(
             collect($results->items()),
         )->additional([
-            'meta' => [
-                'current_page' => $results->currentPage(),
-                'per_page' => $results->perPage(),
-                'total' => $results->total(),
-                'last_page' => $results->lastPage(),
-            ],
-        ]);
+                    'meta' => [
+                        'current_page' => $results->currentPage(),
+                        'per_page' => $results->perPage(),
+                        'total' => $results->total(),
+                        'last_page' => $results->lastPage(),
+                    ],
+                ]);
     }
 }
