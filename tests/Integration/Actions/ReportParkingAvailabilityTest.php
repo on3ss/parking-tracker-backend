@@ -103,7 +103,8 @@ it('preserves explicitly supplied occupied spaces', function () {
         occupiedSpaces: 6,
     );
 
-    expect($result->report->occupied_spaces)->toBe(6);
+    expect($result->report->occupied_spaces)->toBe(6)
+        ->and($result->report->available_spaces)->toBe(3);
 });
 
 it('allows occupied and available spaces to exactly equal capacity', function () {

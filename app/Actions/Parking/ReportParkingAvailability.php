@@ -16,7 +16,8 @@ final class ReportParkingAvailability
         private ResolveParkingIdentifier $resolveParkingIdentifier,
         private RecordOccupancyObservation $recordOccupancyObservation,
         private ApplyOccupancyToParking $applyOccupancyToParking,
-    ) {}
+    ) {
+    }
 
     public function execute(
         ReportParkingAvailabilityData $data,
@@ -60,57 +61,57 @@ final class ReportParkingAvailability
         });
     }
 
+
     private function validateAvailability(
         ParkingFacility|StreetParking $parking,
         int $availableSpaces,
         ?int $occupiedSpaces,
     ): void {
-        if ($parking->capacity === null) {
+        $capacity = $parking->capacity;
+
+        if ($capacity === null) {
             throw new InvalidParkingAvailability(
                 field: 'available_spaces',
                 message: 'Parking capacity must be set before availability can be reported.',
             );
         }
 
-        if ($availableSpaces < 0) {
+        if ($capacity < 0) {
             throw new InvalidParkingAvailability(
-                field: 'available_spaces',
-                message: 'Available spaces cannot be negative.',
+                field: 'capacity',
+                message: 'Parking capacity cannot be negative.',
             );
         }
 
-        if ($occupiedSpaces !== null && $occupiedSpaces < 0) {
+        if ($availableSpaces < 0 || $availableSpaces > $capacity) {
+            throw new InvalidParkingAvailability(
+                field: 'available_spaces',
+                message: 'Available spaces must be between zero and capacity.',
+            );
+        }
+
+        if ($occupiedSpaces === null) {
+            return;
+        }
+
+        if ($occupiedSpaces < 0 || $occupiedSpaces > $capacity) {
             throw new InvalidParkingAvailability(
                 field: 'occupied_spaces',
-                message: 'Occupied spaces cannot be negative.',
+                message: 'Occupied spaces must be between zero and capacity.',
             );
         }
 
-        if ($availableSpaces > $parking->capacity) {
-            throw new InvalidParkingAvailability(
-                field: 'available_spaces',
-                message: 'Available spaces cannot exceed parking capacity.',
-            );
-        }
 
         if (
             $occupiedSpaces !== null
-            && $occupiedSpaces > $parking->capacity
-        ) {
-            throw new InvalidParkingAvailability(
-                field: 'occupied_spaces',
-                message: 'Occupied spaces cannot exceed parking capacity.',
-            );
-        }
-
-        if (
-            $occupiedSpaces !== null
-            && $occupiedSpaces + $availableSpaces > $parking->capacity
+            && $occupiedSpaces + $availableSpaces > $capacity
         ) {
             throw new InvalidParkingAvailability(
                 field: 'available_spaces',
                 message: 'Occupied and available spaces cannot exceed parking capacity.',
             );
         }
+
     }
+
 }
