@@ -54,5 +54,4 @@ final class NearbyParkingRequest extends FormRequest
             page: 1,
         );
     }
-
 }

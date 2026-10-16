@@ -34,7 +34,7 @@ class ProviderPanelProvider extends PanelProvider
             ->login()
             ->tenant(ParkingProvider::class, ownershipRelationship: 'provider')
             ->tenantMiddleware([
-                SyncSpatiePermissionsWithFilamentTenants::class
+                SyncSpatiePermissionsWithFilamentTenants::class,
             ], isPersistent: true)
             ->tenantRegistration(RegisterProvider::class)
             ->tenantProfile(EditProviderProfile::class)
@@ -43,7 +43,7 @@ class ProviderPanelProvider extends PanelProvider
             ])
             ->renderHook(
                 'panels::head.start',
-                fn(): string => Vite::withEntryPoints([
+                fn (): string => Vite::withEntryPoints([
                     'resources/js/filament/geometry-map.js',
                 ])->toHtml(),
             )

@@ -3,8 +3,8 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-return new class extends Migration {
-
+return new class extends Migration
+{
     public function up(): void
     {
         DB::unprepared(<<<'SQL'
@@ -37,5 +37,4 @@ return new class extends Migration {
         DROP FUNCTION IF EXISTS prevent_occupancy_report_mutation();
     SQL);
     }
-
 };

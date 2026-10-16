@@ -50,7 +50,7 @@ class RegisterProvider extends RegisterTenant
 
             $this->withTeam(
                 $provider->id,
-                fn() => $user->syncRoles([Role::Owner->value]),
+                fn () => $user->syncRoles([Role::Owner->value]),
             );
 
             return $provider;

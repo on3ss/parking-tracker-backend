@@ -29,7 +29,7 @@ class TeamRoleProvisioner
             $now = now();
 
             Permission::query()->insert(array_map(
-                static fn(string $name): array => [
+                static fn (string $name): array => [
                     'name' => $name,
                     'guard_name' => self::GUARD,
                     'created_at' => $now,

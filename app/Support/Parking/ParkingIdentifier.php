@@ -8,11 +8,10 @@ use InvalidArgumentException;
 
 final class ParkingIdentifier
 {
-
     public static function for(
         ParkingFacility|StreetParking $parking,
     ): string {
-        return self::type($parking) . ':' . $parking->id;
+        return self::type($parking).':'.$parking->id;
     }
 
     public static function type(

@@ -16,9 +16,10 @@ class SyncSpatiePermissionsWithFilamentTenants
      */
     public function handle(Request $request, Closure $next)
     {
-        if (!empty(auth()->user()) && Filament::getTenant()) {
+        if (! empty(auth()->user()) && Filament::getTenant()) {
             setPermissionsTeamId(Filament::getTenant()->getKey());
         }
+
         return $next($request);
     }
 }

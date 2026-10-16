@@ -43,24 +43,24 @@ enum Permission: string
     {
         return array_values(array_filter(
             self::cases(),
-            static fn(self $p) => str_ends_with($p->value, '.view'),
+            static fn (self $p) => str_ends_with($p->value, '.view'),
         ));
     }
 
     /** Every permission belonging to a resource, e.g. `Permission::for('facility')`. */
     public static function for(string $resource): array
     {
-        $prefix = $resource . '.';
+        $prefix = $resource.'.';
 
         return array_values(array_filter(
             self::cases(),
-            static fn(self $p) => str_starts_with($p->value, $prefix),
+            static fn (self $p) => str_starts_with($p->value, $prefix),
         ));
     }
 
     /** @return string[] */
     public static function values(): array
     {
-        return array_map(static fn(self $p) => $p->value, self::cases());
+        return array_map(static fn (self $p) => $p->value, self::cases());
     }
 }

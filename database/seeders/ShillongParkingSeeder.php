@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Support\Rbac\Concerns\InteractsWithTeams;
 use App\Support\Rbac\Role as RoleEnum;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class ShillongParkingSeeder extends Seeder
@@ -58,7 +59,7 @@ class ShillongParkingSeeder extends Seeder
     }
 
     /**
-     * @param  \Illuminate\Support\Collection<int, ParkingProvider>  $providers
+     * @param  Collection<int, ParkingProvider>  $providers
      */
     private function seedUsersAndMemberships($providers): void
     {
@@ -106,7 +107,7 @@ class ShillongParkingSeeder extends Seeder
 
         $this->withTeam(
             $provider->id,
-            fn() => $user->syncRoles([$role->value]),
+            fn () => $user->syncRoles([$role->value]),
         );
     }
 

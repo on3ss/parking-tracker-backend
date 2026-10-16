@@ -11,6 +11,7 @@ trait InteractsWithTeams
      * restoring the previous context afterwards.
      *
      * @template TReturn
+     *
      * @param  Closure(): TReturn  $callback
      * @return TReturn
      */
