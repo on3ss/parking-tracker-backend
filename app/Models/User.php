@@ -16,6 +16,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
@@ -24,8 +25,7 @@ class User extends Authenticatable implements HasTenants
     /** @use HasFactory<UserFactory> */
     use HasApiTokens;
 
-    use HasFactory;
-    use Notifiable;
+    use HasFactory, Notifiable, HasRoles;
 
     /**
      * Get the attributes that should be cast.
@@ -82,11 +82,11 @@ class User extends Authenticatable implements HasTenants
      */
     public function canAccessTenant(Model $tenant): bool
     {
-        if (! $tenant instanceof ParkingProvider) {
+        if (!$tenant instanceof ParkingProvider) {
             return false;
         }
 
-        if (! $tenant->is_active) {
+        if (!$tenant->is_active) {
             return false;
         }
 
