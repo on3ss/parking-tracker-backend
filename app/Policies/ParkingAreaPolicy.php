@@ -11,7 +11,8 @@ final class ParkingAreaPolicy
 {
     public function __construct(
         private readonly ProviderAuthorization $authorization,
-    ) {}
+    ) {
+    }
 
     public function viewAny(User $user): bool
     {
@@ -70,10 +71,20 @@ final class ParkingAreaPolicy
         return $this->delete($user, $area);
     }
 
+
     private function providerId(ParkingArea $area): int|string|null
     {
+        if ($area->relationLoaded('parkingFacility')) {
+            $facility = $area->getRelation('parkingFacility');
+
+            if ($facility !== null) {
+                return $facility->parking_provider_id;
+            }
+        }
+
         return $area->parkingFacility()
             ->withTrashed()
             ->value('parking_provider_id');
     }
+
 }

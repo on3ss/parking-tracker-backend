@@ -21,12 +21,12 @@ class OccupancyReportsTable
                 TextColumn::make('parking_name')
                     ->label(__('Parking'))
                     ->state(
-                        fn ($record): string => $record->parkingFacility?->name
+                        fn($record): string => $record->parkingFacility?->name
                             ?? $record->streetParking?->name
                             ?? '—',
                     )
                     ->description(
-                        fn ($record): string => $record->parkingFacility
+                        fn($record): string => $record->parkingFacility
                             ? __('Facility')
                             : __('Street Parking'),
                     )
@@ -36,11 +36,11 @@ class OccupancyReportsTable
                                 $query
                                     ->whereHas(
                                         'parkingFacility',
-                                        fn (Builder $query) => $query->where('name', 'ilike', "%{$search}%"),
+                                        fn(Builder $query) => $query->where('name', 'ilike', "%{$search}%"),
                                     )
                                     ->orWhereHas(
                                         'streetParking',
-                                        fn (Builder $query) => $query->where('name', 'ilike', "%{$search}%"),
+                                        fn(Builder $query) => $query->where('name', 'ilike', "%{$search}%"),
                                     );
                             });
                         },
@@ -74,7 +74,7 @@ class OccupancyReportsTable
                     ->dateTime()
                     ->sortable()
                     ->description(
-                        fn ($record): string => $record->reported_at?->diffForHumans() ?? '—',
+                        fn($record): string => $record->reported_at?->diffForHumans() ?? '—',
                     ),
 
                 TextColumn::make('id')
@@ -89,7 +89,13 @@ class OccupancyReportsTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-
+            ->modifyQueryUsing(
+                fn(Builder $query): Builder => $query->with([
+                    'parkingFacility' => fn(Builder $query) => $query->withTrashed(),
+                    'streetParking' => fn(Builder $query) => $query->withTrashed(),
+                    'user',
+                ]),
+            )
             ->filters([
                 SelectFilter::make('source')
                     ->label(__('Source'))
@@ -111,13 +117,13 @@ class OccupancyReportsTable
                 Filter::make('has_user')
                     ->label(__('User Reported'))
                     ->query(
-                        fn (Builder $query): Builder => $query->whereNotNull('user_id'),
+                        fn(Builder $query): Builder => $query->whereNotNull('user_id'),
                     ),
 
                 Filter::make('system_report')
                     ->label(__('System Report'))
                     ->query(
-                        fn (Builder $query): Builder => $query->whereNull('user_id'),
+                        fn(Builder $query): Builder => $query->whereNull('user_id'),
                     ),
             ])
 

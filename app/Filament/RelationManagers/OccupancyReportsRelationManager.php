@@ -6,6 +6,7 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class OccupancyReportsRelationManager extends RelationManager
 {
@@ -47,6 +48,13 @@ class OccupancyReportsRelationManager extends RelationManager
                     ->dateTime()
                     ->sortable(),
             ])
+            ->modifyQueryUsing(
+                fn(Builder $query) => $query->with([
+                    'parkingFacility' => fn($query) => $query->withTrashed(),
+                    'streetParking' => fn($query) => $query->withTrashed(),
+                    'user',
+                ]),
+            )
             ->recordActions([]);
     }
 }

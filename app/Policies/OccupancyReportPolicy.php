@@ -62,16 +62,33 @@ final class OccupancyReportPolicy
             );
     }
 
+
     private function providerId(
         OccupancyReport $report,
     ): int|string|null {
         if ($report->parking_facility_id !== null) {
+            if ($report->relationLoaded('parkingFacility')) {
+                $facility = $report->getRelation('parkingFacility');
+
+                if ($facility !== null) {
+                    return $facility->parking_provider_id;
+                }
+            }
+
             return $report->parkingFacility()
                 ->withTrashed()
                 ->value('parking_provider_id');
         }
 
         if ($report->street_parking_id !== null) {
+            if ($report->relationLoaded('streetParking')) {
+                $streetParking = $report->getRelation('streetParking');
+
+                if ($streetParking !== null) {
+                    return $streetParking->parking_provider_id;
+                }
+            }
+
             return $report->streetParking()
                 ->withTrashed()
                 ->value('parking_provider_id');
@@ -79,4 +96,5 @@ final class OccupancyReportPolicy
 
         return null;
     }
+
 }

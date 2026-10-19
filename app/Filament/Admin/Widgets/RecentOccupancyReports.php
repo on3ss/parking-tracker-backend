@@ -24,8 +24,8 @@ class RecentOccupancyReports extends TableWidget
             ->query(
                 OccupancyReport::query()
                     ->with([
-                        'parkingFacility',
-                        'streetParking',
+                        'parkingFacility' => fn($query) => $query->withTrashed(),
+                        'streetParking' => fn($query) => $query->withTrashed(),
                         'user',
                     ])
                     ->latest('reported_at'),
