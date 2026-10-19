@@ -10,8 +10,10 @@ use App\Models\ParkingProvider;
 use App\Models\ProviderMembership;
 use App\Models\StreetParking;
 use App\Models\User;
+use App\Services\Rbac\ProviderMembershipService;
 use App\Support\Rbac\Concerns\InteractsWithTeams;
 use App\Support\Rbac\Role as RoleEnum;
+use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -57,33 +59,22 @@ class ShillongParkingSeeder extends Seeder
         $this->attachUserToProvider($owner, $provider, RoleEnum::Owner);
     }
 
+
     /**
-     * @param  Collection<int, ParkingProvider>  $providers
+     * @param Collection<int, ParkingProvider> $providers
      */
-    private function seedUsersAndMemberships($providers): void
+    private function seedUsersAndMemberships(Collection $providers): void
     {
         $users = User::factory()->count(25)->create();
         $roles = RoleEnum::cases();
-
-        // Group (user, role) pairs by provider so we only flip the team
-        // context once per provider instead of once per assignment.
-        $byProvider = [];
+        $membershipService = app(ProviderMembershipService::class);
 
         foreach ($users as $user) {
             foreach ($providers->random(rand(1, 3)) as $provider) {
-                $byProvider[$provider->id][] = [
-                    'user' => $user,
-                    'role' => $roles[array_rand($roles)],
-                ];
-            }
-        }
+                $role = $roles[array_rand($roles)];
 
-        foreach ($byProvider as $providerId => $assignments) {
-            $this->withTeam($providerId, function () use ($assignments): void {
-                foreach ($assignments as ['user' => $user, 'role' => $role]) {
-                    $user->syncRoles([$role->value]);
-                }
-            });
+                $membershipService->assign($user, $provider, $role);
+            }
         }
     }
 
@@ -96,17 +87,10 @@ class ShillongParkingSeeder extends Seeder
         ParkingProvider $provider,
         RoleEnum $role,
     ): void {
-        ProviderMembership::query()->updateOrCreate(
-            [
-                'user_id' => $user->id,
-                'parking_provider_id' => $provider->id,
-            ],
-            ['role' => $role->value],
-        );
-
-        $this->withTeam(
-            $provider->id,
-            fn() => $user->syncRoles([$role->value]),
+        app(ProviderMembershipService::class)->assign(
+            $user,
+            $provider,
+            $role,
         );
     }
 

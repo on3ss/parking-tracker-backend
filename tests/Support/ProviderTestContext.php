@@ -5,6 +5,7 @@ namespace Tests\Support;
 use App\Models\ParkingProvider;
 use App\Models\ProviderMembership;
 use App\Models\User;
+use App\Services\Rbac\ProviderMembershipService;
 use App\Services\Rbac\TeamRoleProvisioner;
 use App\Support\Rbac\Role;
 use Filament\Facades\Filament;
@@ -43,11 +44,9 @@ final class ProviderTestContext
 
         $provisioner->provisionProvider($provider->id);
 
-        ProviderMembership::create([
-            'user_id' => $user->id,
-            'parking_provider_id' => $provider->id,
-            'role' => $role->value,
-        ]);
+        $membershipService = app(ProviderMembershipService::class);
+
+        $membershipService->assign($user, $provider, $role);
 
         $previousTeamId = getPermissionsTeamId();
 
