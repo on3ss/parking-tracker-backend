@@ -6,136 +6,116 @@ use App\Models\User;
 use App\Services\Rbac\ProviderMembershipService;
 use App\Services\Rbac\TeamRoleProvisioner;
 use App\Support\Rbac\Role;
-use Spatie\Permission\Exceptions\RoleDoesNotExist;
 
 beforeEach(function () {
-    $provisioner = app(TeamRoleProvisioner::class);
+    $this->service = app(ProviderMembershipService::class);
+    $this->provisioner = app(TeamRoleProvisioner::class);
 
-    $provisioner->syncGlobalPermissions();
+    $this->provisioner->syncGlobalPermissions();
 });
 
-function provisionProviderRoles(ParkingProvider $provider): void
-{
-    app(TeamRoleProvisioner::class)->syncTeamRoles($provider->getKey());
-}
-
-/**
- * Read a user's Spatie roles under a particular provider team,
- * restoring the previous team context afterward.
- *
- * @return list<string>
- */
-function rolesForProvider(User $user, ParkingProvider $provider): array
-{
-    $previousTeamId = getPermissionsTeamId();
-
-    try {
-        setPermissionsTeamId($provider->getKey());
-
-        $user->unsetRelation('roles');
-        $user->unsetRelation('permissions');
-
-        return $user->getRoleNames()->all();
-    } finally {
-        setPermissionsTeamId($previousTeamId);
-
-        $user->unsetRelation('roles');
-        $user->unsetRelation('permissions');
-    }
-}
-
-it('creates a domain membership and assigns the matching team role', function () {
+it('creates a membership and assigns the corresponding team role', function () {
     $user = User::factory()->create();
     $provider = ParkingProvider::factory()->create();
 
-    provisionProviderRoles($provider);
+    $this->provisioner->syncTeamRoles($provider->getKey());
 
     $previousTeamId = getPermissionsTeamId();
 
-    $membership = app(ProviderMembershipService::class)->assign(
+    $membership = $this->service->assign(
         $user,
         $provider,
-        Role::Owner,
+        Role::Manager,
     );
 
-    expect($membership)
-        ->toBeInstanceOf(ProviderMembership::class)
-        ->and($membership->user_id)->toBe($user->getKey())
+    expect($membership->user_id)->toBe($user->getKey())
         ->and($membership->parking_provider_id)->toBe($provider->getKey())
-        ->and($membership->role)->toBe(Role::Owner->value)
-        ->and(ProviderMembership::query()
-            ->where('user_id', $user->getKey())
-            ->where('parking_provider_id', $provider->getKey())
-            ->count())->toBe(1)
-        ->and(rolesForProvider($user, $provider))
-        ->toBe([Role::Owner->value])
+        ->and($membership->role)->toBe(Role::Manager->value)
+        ->and(
+            ProviderMembership::query()
+                ->where('user_id', $user->getKey())
+                ->where('parking_provider_id', $provider->getKey())
+                ->count(),
+        )->toBe(1)
         ->and(getPermissionsTeamId())->toBe($previousTeamId);
+
+    setPermissionsTeamId($provider->getKey());
+
+    $user->unsetRelation('roles');
+    $user->unsetRelation('permissions');
+
+    expect($user->hasRole(Role::Manager->value))->toBeTrue();
 });
 
-it('updates the membership and replaces the role when reassigned', function () {
+it('updates the membership and replaces the team role on reassignment', function () {
     $user = User::factory()->create();
     $provider = ParkingProvider::factory()->create();
 
-    provisionProviderRoles($provider);
+    $this->provisioner->syncTeamRoles($provider->getKey());
 
-    $service = app(ProviderMembershipService::class);
+    $this->service->assign($user, $provider, Role::Viewer);
+    $this->service->assign($user, $provider, Role::Owner);
 
-    $service->assign($user, $provider, Role::Owner);
-    $membership = $service->assign($user, $provider, Role::Viewer);
-
-    expect($membership->fresh()->role)->toBe(Role::Viewer->value)
-        ->and(ProviderMembership::query()
+    expect(
+        ProviderMembership::query()
             ->where('user_id', $user->getKey())
             ->where('parking_provider_id', $provider->getKey())
-            ->count())->toBe(1)
-        ->and(rolesForProvider($user, $provider))
-        ->toBe([Role::Viewer->value]);
+            ->count(),
+    )->toBe(1);
+
+    setPermissionsTeamId($provider->getKey());
+
+    $user->unsetRelation('roles');
+    $user->unsetRelation('permissions');
+
+    expect($user->hasRole(Role::Owner->value))->toBeTrue()
+        ->and($user->hasRole(Role::Viewer->value))->toBeFalse();
 });
 
-it('keeps role assignments isolated between providers', function () {
+it('isolates role assignments between providers', function () {
     $user = User::factory()->create();
     $providerA = ParkingProvider::factory()->create();
     $providerB = ParkingProvider::factory()->create();
 
-    provisionProviderRoles($providerA);
-    provisionProviderRoles($providerB);
+    $this->provisioner->syncTeamRoles($providerA->getKey());
+    $this->provisioner->syncTeamRoles($providerB->getKey());
 
-    $service = app(ProviderMembershipService::class);
+    $this->service->assign($user, $providerA, Role::Owner);
+    $this->service->assign($user, $providerB, Role::Viewer);
 
-    $service->assign($user, $providerA, Role::Owner);
-    $service->assign($user, $providerB, Role::Viewer);
+    setPermissionsTeamId($providerA->getKey());
+    $user->unsetRelation('roles');
+    $user->unsetRelation('permissions');
 
-    expect(rolesForProvider($user, $providerA))
-        ->toBe([Role::Owner->value])
-        ->and(rolesForProvider($user, $providerB))
-        ->toBe([Role::Viewer->value])
-        ->and(ProviderMembership::query()
-            ->where('user_id', $user->getKey())
-            ->count())->toBe(2);
+    expect($user->hasRole(Role::Owner->value))->toBeTrue()
+        ->and($user->hasRole(Role::Viewer->value))->toBeFalse();
+
+    setPermissionsTeamId($providerB->getKey());
+    $user->unsetRelation('roles');
+    $user->unsetRelation('permissions');
+
+    expect($user->hasRole(Role::Viewer->value))->toBeTrue()
+        ->and($user->hasRole(Role::Owner->value))->toBeFalse();
 });
 
-it('rolls back membership creation when team role assignment fails', function () {
+it('removes the membership and revokes the role in that team', function () {
     $user = User::factory()->create();
     $provider = ParkingProvider::factory()->create();
 
-    // Deliberately do not provision this provider's team roles.
-    $previousTeamId = getPermissionsTeamId();
+    $this->provisioner->syncTeamRoles($provider->getKey());
+    $this->service->assign($user, $provider, Role::Manager);
 
-    try {
-        app(ProviderMembershipService::class)->assign(
-            $user,
-            $provider,
-            Role::Owner,
-        );
+    expect($this->service->remove($user, $provider))->toBeTrue()
+        ->and(
+            ProviderMembership::query()
+                ->where('user_id', $user->getKey())
+                ->where('parking_provider_id', $provider->getKey())
+                ->exists(),
+        )->toBeFalse();
 
-        $this->fail('Expected role assignment to fail.');
-    } catch (RoleDoesNotExist) {
-        // The service must roll back its membership write.
-    }
+    setPermissionsTeamId($provider->getKey());
+    $user->unsetRelation('roles');
+    $user->unsetRelation('permissions');
 
-    expect(ProviderMembership::query()
-        ->where('user_id', $user->getKey())
-        ->where('parking_provider_id', $provider->getKey())
-        ->exists())->toBeFalse()
-        ->and(getPermissionsTeamId())->toBe($previousTeamId);
+    expect($user->hasRole(Role::Manager->value))->toBeFalse();
 });

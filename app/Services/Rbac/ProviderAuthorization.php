@@ -7,6 +7,10 @@ use App\Support\Rbac\Permission;
 
 final class ProviderAuthorization
 {
+    public function __construct(private ProviderMembershipLookup $membershipLookup)
+    {
+    }
+
     public function allowsCurrent(
         User $user,
         Permission $permission,
@@ -37,9 +41,7 @@ final class ProviderAuthorization
         }
 
         if (
-            ! $user->providerMemberships()
-                ->where('parking_provider_id', $providerId)
-                ->exists()
+            !$this->membershipLookup->exists($user, $providerId)
         ) {
             return false;
         }

@@ -3,6 +3,7 @@
 namespace App\Filament\Provider\Pages\Tenancy;
 
 use App\Models\ParkingProvider;
+use App\Models\User;
 use App\Services\Rbac\ProviderMembershipService;
 use App\Services\Rbac\TeamRoleProvisioner;
 use App\Support\Rbac\Concerns\InteractsWithTeams;
@@ -39,23 +40,19 @@ class RegisterProvider extends RegisterTenant
     protected function handleRegistration(array $data): ParkingProvider
     {
         return DB::transaction(function () use ($data): ParkingProvider {
+            /** @var User $user */
             $user = auth()->user();
-            $provisioner = app(TeamRoleProvisioner::class);
 
             $provider = ParkingProvider::create($data);
 
-            // Idempotent — safe even if the seeder already ran at deploy time.
-            $provisioner->provisionProvider($provider->id);
+            $provisioner = app(TeamRoleProvisioner::class);
+            $provisioner->syncGlobalPermissions();
+            $provisioner->syncTeamRoles($provider->getKey());
 
             app(ProviderMembershipService::class)->assign(
                 $user,
                 $provider,
                 Role::Owner,
-            );
-
-            $this->withTeam(
-                $provider->id,
-                fn () => $user->syncRoles([Role::Owner->value]),
             );
 
             return $provider;
