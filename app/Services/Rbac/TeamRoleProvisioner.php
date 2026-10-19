@@ -2,6 +2,7 @@
 
 namespace App\Services\Rbac;
 
+use App\Support\Rbac\Concerns\InteractsWithTeams;
 use App\Support\Rbac\Permission as PermissionEnum;
 use App\Support\Rbac\Role as RoleEnum;
 use Spatie\Permission\Models\Permission;
@@ -10,6 +11,8 @@ use Spatie\Permission\PermissionRegistrar;
 
 class TeamRoleProvisioner
 {
+    use InteractsWithTeams;
+
     public const GUARD = 'web';
 
     /**
@@ -29,7 +32,7 @@ class TeamRoleProvisioner
             $now = now();
 
             Permission::query()->insert(array_map(
-                static fn (string $name): array => [
+                static fn(string $name): array => [
                     'name' => $name,
                     'guard_name' => self::GUARD,
                     'created_at' => $now,
@@ -48,10 +51,7 @@ class TeamRoleProvisioner
      */
     public function syncTeamRoles(int|string $teamId): void
     {
-        $previous = getPermissionsTeamId();
-        setPermissionsTeamId($teamId);
-
-        try {
+        $this->withTeam($teamId, function () use ($teamId): void {
             foreach (RoleEnum::cases() as $roleEnum) {
                 /** @var Role $role */
                 $role = Role::query()->firstOrCreate([
@@ -62,8 +62,6 @@ class TeamRoleProvisioner
 
                 $role->syncPermissions($roleEnum->permissionNames());
             }
-        } finally {
-            setPermissionsTeamId($previous);
-        }
+        });
     }
 }

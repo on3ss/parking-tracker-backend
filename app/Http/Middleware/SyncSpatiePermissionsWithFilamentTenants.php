@@ -7,19 +7,30 @@ use Filament\Facades\Filament;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class SyncSpatiePermissionsWithFilamentTenants
+final class SyncSpatiePermissionsWithFilamentTenants
 {
     /**
-     * Handle an incoming request.
-     *
-     * @param  Closure(Request): (Response)  $next
+     * @param Closure(Request): Response $next
      */
-    public function handle(Request $request, Closure $next)
-    {
-        if (! empty(auth()->user()) && Filament::getTenant()) {
-            setPermissionsTeamId(Filament::getTenant()->getKey());
-        }
+    public function handle(
+        Request $request,
+        Closure $next,
+    ): Response {
+        $previousTeamId = getPermissionsTeamId();
 
-        return $next($request);
+        try {
+            $user = $request->user();
+            $tenant = Filament::getTenant();
+
+            setPermissionsTeamId(
+                $user !== null && $tenant !== null
+                ? $tenant->getKey()
+                : null,
+            );
+
+            return $next($request);
+        } finally {
+            setPermissionsTeamId($previousTeamId);
+        }
     }
 }
