@@ -13,7 +13,8 @@ final class OccupancyReportPolicy
     public function __construct(
         private readonly ProviderAuthorization $providerAuthorization,
         private readonly PlatformAuthorization $platformAuthorization,
-    ) {}
+    ) {
+    }
 
     public function viewAny(User $user): bool
     {
@@ -43,6 +44,9 @@ final class OccupancyReportPolicy
             );
     }
 
+    /**
+     * Occupancy reports are immutable.
+     */
     public function update(User $user, OccupancyReport $report): bool
     {
         return false;
