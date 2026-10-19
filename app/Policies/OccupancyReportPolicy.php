@@ -2,52 +2,62 @@
 
 namespace App\Policies;
 
-use App\Filament\Resources\ParkingFacilities\ParkingFacilityResource;
 use App\Models\OccupancyReport;
-use App\Models\ParkingFacility;
 use App\Models\User;
+use App\Services\Rbac\PlatformAuthorization;
 use App\Services\Rbac\ProviderAuthorization;
 use App\Support\Rbac\Permission;
 
 final class OccupancyReportPolicy
 {
     public function __construct(
-        private readonly ProviderAuthorization $authorization,
-    ) {}
+        private readonly ProviderAuthorization $providerAuthorization,
+        private readonly PlatformAuthorization $platformAuthorization,
+    ) {
+    }
 
     public function viewAny(User $user): bool
     {
-        return $this->isGlobal()
-            ? $this->isGlobalAdmin($user)
-            : $this->authorization->allowsCurrent($user, Permission::FacilityView);
+        return $this->platformAuthorization->isAdmin($user)
+            || $this->providerAuthorization->allowsCurrent(
+                $user,
+                Permission::OccupancyReportView,
+            );
     }
 
-    public function view(User $user, ParkingFacility $facility): bool
+    public function view(User $user, OccupancyReport $report): bool
     {
-        return $this->isGlobal()
-            ? $this->isGlobalAdmin($user)
-            : $this->authorization->allows($user, $facility->parking_provider_id, Permission::FacilityView);
+        return $this->platformAuthorization->isAdmin($user)
+            || $this->providerAuthorization->allows(
+                $user,
+                $this->providerId($report),
+                Permission::OccupancyReportView,
+            );
     }
 
     public function create(User $user): bool
     {
-        return $this->isGlobal()
-            ? $this->isGlobalAdmin($user)
-            : $this->authorization->allowsCurrent($user, Permission::FacilityCreate);
+        return $this->platformAuthorization->isAdmin($user)
+            || $this->providerAuthorization->allowsCurrent(
+                $user,
+                Permission::OccupancyReportCreate,
+            );
     }
 
     public function update(User $user, OccupancyReport $report): bool
     {
+        // Occupancy reports are immutable.
         return false;
     }
 
     public function delete(User $user, OccupancyReport $report): bool
     {
-        return $this->authorization->allows(
-            $user,
-            $this->providerId($report),
-            Permission::OccupancyReportDelete,
-        );
+        return $this->platformAuthorization->isAdmin($user)
+            || $this->providerAuthorization->allows(
+                $user,
+                $this->providerId($report),
+                Permission::OccupancyReportDelete,
+            );
     }
 
     private function providerId(
@@ -66,15 +76,5 @@ final class OccupancyReportPolicy
         }
 
         return null;
-    }
-
-    private function isGlobal(): bool
-    {
-        return ParkingFacilityResource::isGlobalContext();
-    }
-
-    private function isGlobalAdmin(User $user): bool
-    {
-        return (bool) $user->is_admin; // ← whatever §3 grep finds
     }
 }
