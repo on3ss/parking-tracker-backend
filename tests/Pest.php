@@ -1,6 +1,8 @@
 <?php
 
+use App\Services\Rbac\TeamRoleProvisioner;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
 
 /*
@@ -44,7 +46,16 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
-{
-    // ..
-}
+beforeEach(function () {
+    setPermissionsTeamId(null);
+
+    app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+    app(TeamRoleProvisioner::class)->syncGlobalPermissions();
+})->in('Feature', 'Integration');
+
+afterEach(function () {
+    setPermissionsTeamId(null);
+
+    app(PermissionRegistrar::class)->forgetCachedPermissions();
+})->in('Feature', 'Integration');

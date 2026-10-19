@@ -4,21 +4,19 @@ use App\Enums\ParkingSource;
 use App\Filament\Resources\ParkingFacilities\Pages\ViewParkingFacility;
 use App\Models\OccupancyReport;
 use App\Models\ParkingFacility;
-use App\Models\ParkingProvider;
-use App\Models\ProviderMembership;
-use App\Models\User;
-use Filament\Facades\Filament;
+use App\Support\Rbac\Role;
 use Livewire\Livewire;
+use Tests\Support\ProviderTestContext;
 
-it('reports availability from the admin parking facility action', function () {
-    $user = User::factory()->create();
+it('reports availability from the parking facility action', function () {
+    $context = ProviderTestContext::create(Role::Manager)
+        ->actingAsUser();
 
     $facility = ParkingFacility::factory()->create([
+        'parking_provider_id' => $context->provider->id,
         'capacity' => 10,
         'available_spaces' => 10,
     ]);
-
-    $this->actingAs($user);
 
     Livewire::test(ViewParkingFacility::class, [
         'record' => $facility->getRouteKey(),
@@ -34,22 +32,21 @@ it('reports availability from the admin parking facility action', function () {
         ->and($facility->availability_source)->toBe(ParkingSource::OPERATOR)
         ->and($facility->availability_report_id)->not->toBeNull();
 
-    expect(
-        OccupancyReport::query()
-            ->where('id', $facility->availability_report_id)
-            ->exists()
-    )->toBeTrue();
+    $report = OccupancyReport::query()
+        ->find($facility->availability_report_id);
+
+    expect($report)->not->toBeNull();
 });
 
 it('pre-fills the current availability', function () {
+    $context = ProviderTestContext::create(Role::Manager)
+        ->actingAsUser();
+
     $facility = ParkingFacility::factory()->create([
+        'parking_provider_id' => $context->provider->id,
         'capacity' => 10,
         'available_spaces' => 6,
     ]);
-
-    $user = User::factory()->create();
-
-    $this->actingAs($user);
 
     Livewire::test(ViewParkingFacility::class, [
         'record' => $facility->getRouteKey(),
@@ -61,13 +58,13 @@ it('pre-fills the current availability', function () {
 });
 
 it('disables the action when capacity is not set', function () {
+    $context = ProviderTestContext::create(Role::Manager)
+        ->actingAsUser();
+
     $facility = ParkingFacility::factory()->create([
+        'parking_provider_id' => $context->provider->id,
         'capacity' => null,
     ]);
-
-    $user = User::factory()->create();
-
-    $this->actingAs($user);
 
     Livewire::test(ViewParkingFacility::class, [
         'record' => $facility->getRouteKey(),
@@ -75,27 +72,15 @@ it('disables the action when capacity is not set', function () {
         ->assertActionDisabled('reportAvailability');
 });
 
-it('allows a provider to report availability for its own parking facility', function () {
-    $user = User::factory()->create();
-
-    $provider = ParkingProvider::factory()->create([
-        'is_active' => true,
-    ]);
-
-    ProviderMembership::create([
-        'user_id' => $user->id,
-        'parking_provider_id' => $provider->id,
-    ]);
+it('allows a provider member to report availability for its own facility', function () {
+    $context = ProviderTestContext::create(Role::Manager)
+        ->actingAsUser();
 
     $facility = ParkingFacility::factory()->create([
-        'parking_provider_id' => $provider->id,
+        'parking_provider_id' => $context->provider->id,
         'capacity' => 10,
         'available_spaces' => 8,
     ]);
-
-    $this->actingAs($user);
-
-    Filament::setTenant($provider);
 
     Livewire::test(ViewParkingFacility::class, [
         'record' => $facility->getRouteKey(),
