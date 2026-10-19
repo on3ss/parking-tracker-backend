@@ -45,8 +45,7 @@ class RegisterProvider extends RegisterTenant
             $provider = ParkingProvider::create($data);
 
             // Idempotent — safe even if the seeder already ran at deploy time.
-            $provisioner->syncGlobalPermissions();
-            $provisioner->syncTeamRoles($provider->id);
+            $provisioner->provisionProvider($provider->id);
 
             ProviderMembership::create([
                 'parking_provider_id' => $provider->id,
@@ -56,7 +55,7 @@ class RegisterProvider extends RegisterTenant
 
             $this->withTeam(
                 $provider->id,
-                fn () => $user->syncRoles([Role::Owner->value]),
+                fn() => $user->syncRoles([Role::Owner->value]),
             );
 
             return $provider;

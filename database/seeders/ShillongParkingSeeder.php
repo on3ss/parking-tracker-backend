@@ -28,9 +28,8 @@ class ShillongParkingSeeder extends Seeder
             $providers = ParkingProvider::factory()->count(8)->create();
 
             // Roles are per-team: create them for every provider up-front.
-            foreach ($providers as $provider) {
-                RolesAndPermissionsSeeder::syncTeamRoles($provider->id);
-            }
+            app(\App\Services\Rbac\TeamRoleProvisioner::class)
+                ->provisionProviders($providers->modelKeys());
 
             $this->seedTestOwner($providers->first());
             $this->seedUsersAndMemberships($providers);
@@ -107,7 +106,7 @@ class ShillongParkingSeeder extends Seeder
 
         $this->withTeam(
             $provider->id,
-            fn () => $user->syncRoles([$role->value]),
+            fn() => $user->syncRoles([$role->value]),
         );
     }
 

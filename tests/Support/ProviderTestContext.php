@@ -41,8 +41,7 @@ final class ProviderTestContext
 
         $provisioner = app(TeamRoleProvisioner::class);
 
-        $provisioner->syncGlobalPermissions();
-        $provisioner->syncTeamRoles($provider->id);
+        $provisioner->provisionProvider($provider->id);
 
         ProviderMembership::create([
             'user_id' => $user->id,

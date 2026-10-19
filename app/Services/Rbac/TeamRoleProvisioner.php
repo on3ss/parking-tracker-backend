@@ -64,4 +64,42 @@ class TeamRoleProvisioner
             }
         });
     }
+
+
+    /**
+     * Provision all RBAC configuration required by a provider.
+     *
+     * Global permissions are synchronized once, then each provider's
+     * team-scoped roles and grants are synchronized.
+     *
+     * @param iterable<int|string> $providerIds
+     */
+    public function provisionProviders(iterable $providerIds): void
+    {
+        $providerIds = is_array($providerIds)
+            ? array_values(array_unique($providerIds))
+            : iterator_to_array(
+                (function () use ($providerIds) {
+                    foreach ($providerIds as $providerId) {
+                        yield (string) $providerId => $providerId;
+                    }
+                })(),
+                false,
+            );
+
+        $this->syncGlobalPermissions();
+
+        foreach ($providerIds as $providerId) {
+            $this->syncTeamRoles($providerId);
+        }
+    }
+
+    /**
+     * Provision a single provider.
+     */
+    public function provisionProvider(int|string $providerId): void
+    {
+        $this->provisionProviders([$providerId]);
+    }
+
 }
