@@ -123,7 +123,7 @@ it('is idempotent when provisioning the same provider twice', function () {
     $provisioner->syncTeamRoles($provider->id);
 
     $firstSnapshot = collect(RoleEnum::cases())
-        ->mapWithKeys(fn(RoleEnum $role) => [
+        ->mapWithKeys(fn (RoleEnum $role) => [
             $role->value => teamRolePermissionNames(
                 teamRole($provider->id, $role),
             ),
@@ -133,7 +133,7 @@ it('is idempotent when provisioning the same provider twice', function () {
     $provisioner->syncTeamRoles($provider->id);
 
     $secondSnapshot = collect(RoleEnum::cases())
-        ->mapWithKeys(fn(RoleEnum $role) => [
+        ->mapWithKeys(fn (RoleEnum $role) => [
             $role->value => teamRolePermissionNames(
                 teamRole($provider->id, $role),
             ),

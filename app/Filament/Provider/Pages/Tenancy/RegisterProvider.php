@@ -3,7 +3,6 @@
 namespace App\Filament\Provider\Pages\Tenancy;
 
 use App\Models\ParkingProvider;
-use App\Models\ProviderMembership;
 use App\Services\Rbac\ProviderMembershipService;
 use App\Services\Rbac\TeamRoleProvisioner;
 use App\Support\Rbac\Concerns\InteractsWithTeams;
@@ -56,7 +55,7 @@ class RegisterProvider extends RegisterTenant
 
             $this->withTeam(
                 $provider->id,
-                fn() => $user->syncRoles([Role::Owner->value]),
+                fn () => $user->syncRoles([Role::Owner->value]),
             );
 
             return $provider;

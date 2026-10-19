@@ -7,13 +7,12 @@ use App\Models\OccupancyReport;
 use App\Models\ParkingArea;
 use App\Models\ParkingFacility;
 use App\Models\ParkingProvider;
-use App\Models\ProviderMembership;
 use App\Models\StreetParking;
 use App\Models\User;
 use App\Services\Rbac\ProviderMembershipService;
+use App\Services\Rbac\TeamRoleProvisioner;
 use App\Support\Rbac\Concerns\InteractsWithTeams;
 use App\Support\Rbac\Role as RoleEnum;
-use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -30,7 +29,7 @@ class ShillongParkingSeeder extends Seeder
             $providers = ParkingProvider::factory()->count(8)->create();
 
             // Roles are per-team: create them for every provider up-front.
-            app(\App\Services\Rbac\TeamRoleProvisioner::class)
+            app(TeamRoleProvisioner::class)
                 ->provisionProviders($providers->modelKeys());
 
             $this->seedTestOwner($providers->first());
@@ -59,9 +58,8 @@ class ShillongParkingSeeder extends Seeder
         $this->attachUserToProvider($owner, $provider, RoleEnum::Owner);
     }
 
-
     /**
-     * @param Collection<int, ParkingProvider> $providers
+     * @param  Collection<int, ParkingProvider>  $providers
      */
     private function seedUsersAndMemberships(Collection $providers): void
     {

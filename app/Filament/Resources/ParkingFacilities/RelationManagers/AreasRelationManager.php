@@ -120,7 +120,7 @@ class AreasRelationManager extends RelationManager
                             ->dateTime()
                             ->placeholder(__('—'))
                             ->visible(
-                                fn(ParkingArea $record): bool => $record->trashed()
+                                fn (ParkingArea $record): bool => $record->trashed()
                             ),
                     ])
                     ->columns(3)
@@ -181,7 +181,7 @@ class AreasRelationManager extends RelationManager
             ->headerActions([
                 CreateAction::make()
                     ->authorize(
-                        fn(): bool => $this->allowsAreaOperation(
+                        fn (): bool => $this->allowsAreaOperation(
                             Permission::AreaCreate,
                         ),
                     ),
@@ -189,7 +189,7 @@ class AreasRelationManager extends RelationManager
             ->recordActions([
                 ViewAction::make()
                     ->authorize(
-                        fn(ParkingArea $record): bool => $this->allowsAreaOperation(
+                        fn (ParkingArea $record): bool => $this->allowsAreaOperation(
                             Permission::AreaView,
                             $record,
                         ),
@@ -197,7 +197,7 @@ class AreasRelationManager extends RelationManager
 
                 EditAction::make()
                     ->authorize(
-                        fn(ParkingArea $record): bool => $this->allowsAreaOperation(
+                        fn (ParkingArea $record): bool => $this->allowsAreaOperation(
                             Permission::AreaUpdate,
                             $record,
                         ),
@@ -205,7 +205,7 @@ class AreasRelationManager extends RelationManager
 
                 DeleteAction::make()
                     ->authorize(
-                        fn(ParkingArea $record): bool => $this->allowsAreaOperation(
+                        fn (ParkingArea $record): bool => $this->allowsAreaOperation(
                             Permission::AreaDelete,
                             $record,
                         ),
@@ -213,7 +213,7 @@ class AreasRelationManager extends RelationManager
 
                 RestoreAction::make()
                     ->authorize(
-                        fn(ParkingArea $record): bool => $this->allowsAreaOperation(
+                        fn (ParkingArea $record): bool => $this->allowsAreaOperation(
                             Permission::AreaDelete,
                             $record,
                         ),
@@ -223,21 +223,21 @@ class AreasRelationManager extends RelationManager
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
                         ->authorize(
-                            fn(): bool => $this->allowsAreaOperation(
+                            fn (): bool => $this->allowsAreaOperation(
                                 Permission::AreaDelete,
                             ),
                         ),
 
                     RestoreBulkAction::make()
                         ->authorize(
-                            fn(): bool => $this->allowsAreaOperation(
+                            fn (): bool => $this->allowsAreaOperation(
                                 Permission::AreaDelete,
                             ),
                         ),
                 ]),
             ])
             ->modifyQueryUsing(
-                fn(Builder $query) => $query->withoutGlobalScopes([
+                fn (Builder $query) => $query->withoutGlobalScopes([
                     SoftDeletingScope::class,
                 ])
             );
@@ -251,8 +251,8 @@ class AreasRelationManager extends RelationManager
         $facility = $this->getOwnerRecord();
 
         if (
-            !$user instanceof User
-            || !$facility instanceof ParkingFacility
+            ! $user instanceof User
+            || ! $facility instanceof ParkingFacility
         ) {
             return false;
         }

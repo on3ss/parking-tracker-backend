@@ -32,7 +32,7 @@ class TeamRoleProvisioner
             $now = now();
 
             Permission::query()->insert(array_map(
-                static fn(string $name): array => [
+                static fn (string $name): array => [
                     'name' => $name,
                     'guard_name' => self::GUARD,
                     'created_at' => $now,
@@ -65,14 +65,13 @@ class TeamRoleProvisioner
         });
     }
 
-
     /**
      * Provision all RBAC configuration required by a provider.
      *
      * Global permissions are synchronized once, then each provider's
      * team-scoped roles and grants are synchronized.
      *
-     * @param iterable<int|string> $providerIds
+     * @param  iterable<int|string>  $providerIds
      */
     public function provisionProviders(iterable $providerIds): void
     {
@@ -101,5 +100,4 @@ class TeamRoleProvisioner
     {
         $this->provisionProviders([$providerId]);
     }
-
 }

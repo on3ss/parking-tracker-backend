@@ -13,7 +13,6 @@ use App\Services\Rbac\ProviderAuthorization;
 use App\Support\Parking\ParkingIdentifier;
 use App\Support\Rbac\Permission;
 use Filament\Actions\Action;
-use Filament\Facades\Filament;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 
@@ -30,7 +29,7 @@ final class ReportAvailabilityAction
                 function (ParkingFacility|StreetParking $record): bool {
                     $user = auth()->user();
 
-                    if (!$user instanceof User) {
+                    if (! $user instanceof User) {
                         return false;
                     }
 
@@ -53,10 +52,10 @@ final class ReportAvailabilityAction
                     ->integer()
                     ->minValue(0)
                     ->maxValue(
-                        fn(ParkingFacility|StreetParking $record): ?int => $record->capacity
+                        fn (ParkingFacility|StreetParking $record): ?int => $record->capacity
                     )
                     ->helperText(
-                        fn(ParkingFacility|StreetParking $record): ?string => $record->capacity === null
+                        fn (ParkingFacility|StreetParking $record): ?string => $record->capacity === null
                             ? __('Set parking capacity before reporting availability.')
                             : null
                     )
@@ -64,11 +63,11 @@ final class ReportAvailabilityAction
             ])
 
             ->disabled(
-                fn(ParkingFacility|StreetParking $record): bool => $record->capacity === null
+                fn (ParkingFacility|StreetParking $record): bool => $record->capacity === null
             )
 
             ->fillForm(
-                fn(ParkingFacility|StreetParking $record): array => [
+                fn (ParkingFacility|StreetParking $record): array => [
                     'available_spaces' => $record->available_spaces,
                 ],
             )

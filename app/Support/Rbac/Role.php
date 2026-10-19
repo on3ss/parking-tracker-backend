@@ -111,7 +111,7 @@ enum Role: string
     public function permissionNames(): array
     {
         return array_map(
-            static fn(Permission $permission): string => $permission->value,
+            static fn (Permission $permission): string => $permission->value,
             $this->permissions(),
         );
     }
@@ -120,7 +120,7 @@ enum Role: string
     public static function values(): array
     {
         return array_map(
-            static fn(self $role): string => $role->value,
+            static fn (self $role): string => $role->value,
             self::cases(),
         );
     }

@@ -8,7 +8,6 @@ use App\Models\User;
 use App\Support\Rbac\Concerns\InteractsWithTeams;
 use App\Support\Rbac\Role;
 use Illuminate\Support\Facades\DB;
-use InvalidArgumentException;
 
 final class ProviderMembershipService
 {

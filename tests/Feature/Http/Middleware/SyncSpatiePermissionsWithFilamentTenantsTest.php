@@ -1,15 +1,17 @@
 <?php
 
+use App\Http\Middleware\SyncSpatiePermissionsWithFilamentTenants;
+use Illuminate\Http\Request;
 use RuntimeException;
 
 it('restores the previous team when downstream execution throws', function () {
     setPermissionsTeamId(123);
 
     $middleware = app(
-        \App\Http\Middleware\SyncSpatiePermissionsWithFilamentTenants::class,
+        SyncSpatiePermissionsWithFilamentTenants::class,
     );
 
-    $request = \Illuminate\Http\Request::create('/test');
+    $request = Request::create('/test');
 
     try {
         $middleware->handle(

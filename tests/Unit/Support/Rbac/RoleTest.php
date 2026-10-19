@@ -30,7 +30,7 @@ it('only grants explicitly declared permissions', function () {
     foreach (Role::cases() as $role) {
         expect($role->permissionNames())
             ->toBe(array_map(
-                static fn(Permission $permission): string => $permission->value,
+                static fn (Permission $permission): string => $permission->value,
                 $role->permissions(),
             ));
     }
