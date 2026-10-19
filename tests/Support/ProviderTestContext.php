@@ -50,9 +50,21 @@ final class ProviderTestContext
             'role' => $role->value,
         ]);
 
-        setPermissionsTeamId($provider->id);
+        $previousTeamId = getPermissionsTeamId();
 
-        $user->assignRole($role->value);
+        try {
+            setPermissionsTeamId($provider->id);
+
+            $user->unsetRelation('roles');
+            $user->unsetRelation('permissions');
+
+            $user->assignRole($role->value);
+        } finally {
+            setPermissionsTeamId($previousTeamId);
+
+            $user->unsetRelation('roles');
+            $user->unsetRelation('permissions');
+        }
 
         return new self($user, $provider, $role);
     }
@@ -63,7 +75,7 @@ final class ProviderTestContext
 
         Filament::setTenant($this->provider);
 
-        return $this;
+        return $this->useTeamContext();
     }
 
     public function useTeamContext(): self

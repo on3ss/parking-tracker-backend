@@ -4,19 +4,25 @@ namespace App\Policies;
 
 use App\Models\ParkingFacility;
 use App\Models\User;
+use App\Services\Rbac\PlatformAuthorization;
 use App\Services\Rbac\ProviderAuthorization;
 use App\Support\Rbac\Permission;
 
 final class ParkingFacilityPolicy
 {
     public function __construct(
-        private readonly ProviderAuthorization $authorization,
+        private readonly ProviderAuthorization $providerAuthorization,
+        private readonly PlatformAuthorization $platformAuthorization,
     ) {
     }
 
     public function viewAny(User $user): bool
     {
-        return $this->authorization->allowsCurrent(
+        if ($this->platformAuthorization->isAdmin($user)) {
+            return true;
+        }
+
+        return $this->providerAuthorization->allowsCurrent(
             $user,
             Permission::FacilityView,
         );
@@ -24,7 +30,11 @@ final class ParkingFacilityPolicy
 
     public function view(User $user, ParkingFacility $facility): bool
     {
-        return $this->authorization->allows(
+        if ($this->platformAuthorization->isAdmin($user)) {
+            return true;
+        }
+
+        return $this->providerAuthorization->allows(
             $user,
             $facility->parking_provider_id,
             Permission::FacilityView,
@@ -33,7 +43,11 @@ final class ParkingFacilityPolicy
 
     public function create(User $user): bool
     {
-        return $this->authorization->allowsCurrent(
+        if ($this->platformAuthorization->isAdmin($user)) {
+            return true;
+        }
+
+        return $this->providerAuthorization->allowsCurrent(
             $user,
             Permission::FacilityCreate,
         );
@@ -41,7 +55,11 @@ final class ParkingFacilityPolicy
 
     public function update(User $user, ParkingFacility $facility): bool
     {
-        return $this->authorization->allows(
+        if ($this->platformAuthorization->isAdmin($user)) {
+            return true;
+        }
+
+        return $this->providerAuthorization->allows(
             $user,
             $facility->parking_provider_id,
             Permission::FacilityUpdate,
@@ -50,7 +68,11 @@ final class ParkingFacilityPolicy
 
     public function delete(User $user, ParkingFacility $facility): bool
     {
-        return $this->authorization->allows(
+        if ($this->platformAuthorization->isAdmin($user)) {
+            return true;
+        }
+
+        return $this->providerAuthorization->allows(
             $user,
             $facility->parking_provider_id,
             Permission::FacilityDelete,
@@ -59,11 +81,7 @@ final class ParkingFacilityPolicy
 
     public function restore(User $user, ParkingFacility $facility): bool
     {
-        return $this->authorization->allows(
-            $user,
-            $facility->parking_provider_id,
-            Permission::FacilityDelete,
-        );
+        return $this->delete($user, $facility);
     }
 
     public function forceDelete(User $user, ParkingFacility $facility): bool
