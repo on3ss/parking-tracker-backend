@@ -9,53 +9,109 @@ enum Role: string
     case Manager = 'manager';
     case Viewer = 'viewer';
 
-    /** @return Permission[] */
-    public function permissions(): array
-    {
-        return match ($this) {
-            // Full control of the team.
-            self::Owner => Permission::cases(),
-
-            // Everything except removing members.
-            self::Admin => self::without(Permission::MembershipRemove),
-
-            // Operational: read everything + write operational records.
-            self::Manager => [
-                ...Permission::views(),
-                Permission::FacilityCreate,
-                Permission::FacilityUpdate,
-                Permission::AreaCreate,
-                Permission::AreaUpdate,
-                Permission::StreetParkingCreate,
-                Permission::StreetParkingUpdate,
-                Permission::OccupancyReportCreate,
-                Permission::OccupancyReportUpdate,
-            ],
-
-            // Read-only.
-            self::Viewer => Permission::views(),
-        };
-    }
-
     /**
-     * All permissions except the given ones, compared by enum identity
-     * (not by string casting).
+     * Explicit provider-role permissions.
+     *
+     * New permissions must be deliberately assigned to each role.
      *
      * @return Permission[]
      */
-    private static function without(Permission ...$excluded): array
+    public function permissions(): array
     {
-        return array_values(array_filter(
-            Permission::cases(),
-            static fn (Permission $p): bool => ! in_array($p, $excluded, true),
-        ));
+        return match ($this) {
+            self::Owner => [
+                Permission::FacilityView,
+                Permission::FacilityCreate,
+                Permission::FacilityUpdate,
+                Permission::FacilityDelete,
+
+                Permission::AreaView,
+                Permission::AreaCreate,
+                Permission::AreaUpdate,
+                Permission::AreaDelete,
+
+                Permission::StreetParkingView,
+                Permission::StreetParkingCreate,
+                Permission::StreetParkingUpdate,
+                Permission::StreetParkingDelete,
+
+                Permission::OccupancyReportView,
+                Permission::OccupancyReportCreate,
+                Permission::OccupancyReportDelete,
+
+                Permission::ProviderView,
+                Permission::ProviderUpdate,
+
+                Permission::MembershipView,
+                Permission::MembershipInvite,
+                Permission::MembershipUpdate,
+                Permission::MembershipRemove,
+            ],
+
+            self::Admin => [
+                Permission::FacilityView,
+                Permission::FacilityCreate,
+                Permission::FacilityUpdate,
+                Permission::FacilityDelete,
+
+                Permission::AreaView,
+                Permission::AreaCreate,
+                Permission::AreaUpdate,
+                Permission::AreaDelete,
+
+                Permission::StreetParkingView,
+                Permission::StreetParkingCreate,
+                Permission::StreetParkingUpdate,
+                Permission::StreetParkingDelete,
+
+                Permission::OccupancyReportView,
+                Permission::OccupancyReportCreate,
+                Permission::OccupancyReportDelete,
+
+                Permission::ProviderView,
+                Permission::ProviderUpdate,
+
+                Permission::MembershipView,
+                Permission::MembershipInvite,
+                Permission::MembershipUpdate,
+            ],
+
+            self::Manager => [
+                Permission::FacilityView,
+                Permission::FacilityCreate,
+                Permission::FacilityUpdate,
+
+                Permission::AreaView,
+                Permission::AreaCreate,
+                Permission::AreaUpdate,
+
+                Permission::StreetParkingView,
+                Permission::StreetParkingCreate,
+                Permission::StreetParkingUpdate,
+
+                Permission::OccupancyReportView,
+                Permission::OccupancyReportCreate,
+
+                Permission::ProviderView,
+                Permission::MembershipView,
+            ],
+
+            self::Viewer => [
+                Permission::FacilityView,
+                Permission::AreaView,
+                Permission::StreetParkingView,
+                Permission::OccupancyReportView,
+                Permission::ProviderView,
+                Permission::MembershipView,
+            ],
+        };
     }
 
     /** @return string[] */
     public function permissionNames(): array
     {
         return array_map(
-            static fn (Permission $p): string => $p->value,
+            static fn(Permission $permission): string => $permission->value,
             $this->permissions(),
         );
     }
@@ -64,7 +120,7 @@ enum Role: string
     public static function values(): array
     {
         return array_map(
-            static fn (self $r): string => $r->value,
+            static fn(self $role): string => $role->value,
             self::cases(),
         );
     }
