@@ -46,7 +46,6 @@ final class OccupancyReportPolicy
 
     public function update(User $user, OccupancyReport $report): bool
     {
-        // Occupancy reports are immutable.
         return false;
     }
 

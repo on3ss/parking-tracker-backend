@@ -7,7 +7,11 @@ use App\Data\Parking\ReportParkingAvailabilityData;
 use App\Enums\ParkingSource;
 use App\Models\ParkingFacility;
 use App\Models\StreetParking;
+use App\Models\User;
+use App\Services\Rbac\PlatformAuthorization;
+use App\Services\Rbac\ProviderAuthorization;
 use App\Support\Parking\ParkingIdentifier;
+use App\Support\Rbac\Permission;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\TextInput;
@@ -15,7 +19,7 @@ use Filament\Notifications\Notification;
 
 final class ReportAvailabilityAction
 {
-    public static function make(bool $tenantScoped = false): Action
+    public static function make(): Action
     {
         return Action::make('reportAvailability')
             ->label(__('Report availability'))
@@ -23,11 +27,23 @@ final class ReportAvailabilityAction
             ->color('primary')
 
             ->authorize(
-                fn (ParkingFacility|StreetParking $record): bool => ! $tenantScoped
-                    || (
-                        Filament::getTenant() !== null
-                        && $record->parking_provider_id === Filament::getTenant()->getKey()
-                    ),
+                function (ParkingFacility|StreetParking $record): bool {
+                    $user = auth()->user();
+
+                    if (!$user instanceof User) {
+                        return false;
+                    }
+
+                    if (app(PlatformAuthorization::class)->isAdmin($user)) {
+                        return true;
+                    }
+
+                    return app(ProviderAuthorization::class)->allows(
+                        $user,
+                        $record->parking_provider_id,
+                        Permission::OccupancyReportCreate,
+                    );
+                },
             )
 
             ->schema([
@@ -37,10 +53,10 @@ final class ReportAvailabilityAction
                     ->integer()
                     ->minValue(0)
                     ->maxValue(
-                        fn (ParkingFacility|StreetParking $record): ?int => $record->capacity
+                        fn(ParkingFacility|StreetParking $record): ?int => $record->capacity
                     )
                     ->helperText(
-                        fn (ParkingFacility|StreetParking $record): ?string => $record->capacity === null
+                        fn(ParkingFacility|StreetParking $record): ?string => $record->capacity === null
                             ? __('Set parking capacity before reporting availability.')
                             : null
                     )
@@ -48,11 +64,11 @@ final class ReportAvailabilityAction
             ])
 
             ->disabled(
-                fn (ParkingFacility|StreetParking $record): bool => $record->capacity === null
+                fn(ParkingFacility|StreetParking $record): bool => $record->capacity === null
             )
 
             ->fillForm(
-                fn (ParkingFacility|StreetParking $record): array => [
+                fn(ParkingFacility|StreetParking $record): array => [
                     'available_spaces' => $record->available_spaces,
                 ],
             )

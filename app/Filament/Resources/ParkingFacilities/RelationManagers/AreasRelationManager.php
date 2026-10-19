@@ -4,6 +4,11 @@ namespace App\Filament\Resources\ParkingFacilities\RelationManagers;
 
 use App\Enums\VehicleType;
 use App\Models\ParkingArea;
+use App\Models\ParkingFacility;
+use App\Models\User;
+use App\Services\Rbac\PlatformAuthorization;
+use App\Services\Rbac\ProviderAuthorization;
+use App\Support\Rbac\Permission;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -115,7 +120,7 @@ class AreasRelationManager extends RelationManager
                             ->dateTime()
                             ->placeholder(__('—'))
                             ->visible(
-                                fn (ParkingArea $record): bool => $record->trashed()
+                                fn(ParkingArea $record): bool => $record->trashed()
                             ),
                     ])
                     ->columns(3)
@@ -174,24 +179,102 @@ class AreasRelationManager extends RelationManager
                 TrashedFilter::make(),
             ])
             ->headerActions([
-                CreateAction::make(),
+                CreateAction::make()
+                    ->authorize(
+                        fn(): bool => $this->allowsAreaOperation(
+                            Permission::AreaCreate,
+                        ),
+                    ),
             ])
             ->recordActions([
-                ViewAction::make(),
-                EditAction::make(),
-                DeleteAction::make(),
-                RestoreAction::make(),
+                ViewAction::make()
+                    ->authorize(
+                        fn(ParkingArea $record): bool => $this->allowsAreaOperation(
+                            Permission::AreaView,
+                            $record,
+                        ),
+                    ),
+
+                EditAction::make()
+                    ->authorize(
+                        fn(ParkingArea $record): bool => $this->allowsAreaOperation(
+                            Permission::AreaUpdate,
+                            $record,
+                        ),
+                    ),
+
+                DeleteAction::make()
+                    ->authorize(
+                        fn(ParkingArea $record): bool => $this->allowsAreaOperation(
+                            Permission::AreaDelete,
+                            $record,
+                        ),
+                    ),
+
+                RestoreAction::make()
+                    ->authorize(
+                        fn(ParkingArea $record): bool => $this->allowsAreaOperation(
+                            Permission::AreaDelete,
+                            $record,
+                        ),
+                    ),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                    RestoreBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->authorize(
+                            fn(): bool => $this->allowsAreaOperation(
+                                Permission::AreaDelete,
+                            ),
+                        ),
+
+                    RestoreBulkAction::make()
+                        ->authorize(
+                            fn(): bool => $this->allowsAreaOperation(
+                                Permission::AreaDelete,
+                            ),
+                        ),
                 ]),
             ])
             ->modifyQueryUsing(
-                fn (Builder $query) => $query->withoutGlobalScopes([
+                fn(Builder $query) => $query->withoutGlobalScopes([
                     SoftDeletingScope::class,
                 ])
             );
+    }
+
+    private function allowsAreaOperation(
+        Permission $permission,
+        ?ParkingArea $area = null,
+    ): bool {
+        $user = auth()->user();
+        $facility = $this->getOwnerRecord();
+
+        if (
+            !$user instanceof User
+            || !$facility instanceof ParkingFacility
+        ) {
+            return false;
+        }
+
+        // Ensure record actions cannot target an area belonging
+        // to a different facility.
+        if (
+            $area !== null
+            && (string) $area->parking_facility_id
+            !== (string) $facility->getKey()
+        ) {
+            return false;
+        }
+
+        if (app(PlatformAuthorization::class)->isAdmin($user)) {
+            return true;
+        }
+
+        return app(ProviderAuthorization::class)->allows(
+            $user,
+            $facility->parking_provider_id,
+            $permission,
+        );
     }
 }
