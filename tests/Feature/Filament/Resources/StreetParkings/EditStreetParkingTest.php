@@ -5,15 +5,20 @@ use App\Enums\StreetParkingSide;
 use App\Enums\StreetParkingType;
 use App\Filament\Resources\StreetParkings\Pages\EditStreetParking;
 use App\Models\Location;
-use App\Models\ParkingProvider;
 use App\Models\StreetParking;
 use App\Support\Geo\GeoJson;
 use Clickbar\Magellan\Data\Geometries\LineString;
 use Clickbar\Magellan\Data\Geometries\Point;
+use Filament\Facades\Filament;
 use Livewire\Livewire;
+use Tests\Support\ProviderTestContext;
+
+beforeEach(function (): void {
+    Filament::setCurrentPanel('provider');
+});
 
 it('fills the form with the existing street parking geometry and location', function () {
-    $provider = ParkingProvider::factory()->create();
+    $context = ProviderTestContext::create()->actingAsUser();
 
     $location = Location::factory()->create([
         'address_line1' => 'Police Bazaar',
@@ -28,25 +33,20 @@ it('fills the form with the existing street parking geometry and location', func
     ]);
 
     $geometry = LineString::make([
-        Point::makeGeodetic(
-            latitude: 25.5780,
-            longitude: 91.8925,
-        ),
-        Point::makeGeodetic(
-            latitude: 25.5790,
-            longitude: 91.8940,
-        ),
+        Point::makeGeodetic(latitude: 25.5780, longitude: 91.8925),
+        Point::makeGeodetic(latitude: 25.5790, longitude: 91.8940),
     ]);
 
     $parking = StreetParking::factory()->create([
-        'parking_provider_id' => $provider->id,
-        'location_id' => $location->id,
+        'parking_provider_id' => $context->provider->getKey(),
+        'location_id' => $location->getKey(),
         'geometry' => $geometry,
     ]);
 
     Livewire::test(EditStreetParking::class, [
         'record' => $parking->getRouteKey(),
     ])
+        ->assertSuccessful()
         ->assertFormSet([
             'geometry' => [
                 'type' => 'LineString',
@@ -65,8 +65,8 @@ it('fills the form with the existing street parking geometry and location', func
         ]);
 });
 
-it('updates street parking through the update action', function () {
-    $provider = ParkingProvider::factory()->create();
+it('updates street parking and its existing location', function () {
+    $context = ProviderTestContext::create()->actingAsUser();
 
     $location = Location::factory()->create([
         'address_line1' => 'Old Address',
@@ -79,8 +79,8 @@ it('updates street parking through the update action', function () {
     ]);
 
     $parking = StreetParking::factory()->create([
-        'parking_provider_id' => $provider->id,
-        'location_id' => $location->id,
+        'parking_provider_id' => $context->provider->getKey(),
+        'location_id' => $location->getKey(),
         'name' => 'Old Street Parking',
         'road_name' => 'Old Road',
         'capacity' => 20,
@@ -91,7 +91,6 @@ it('updates street parking through the update action', function () {
     ])
         ->fillForm([
             'name' => 'Updated Street Parking',
-            'parking_provider_id' => $provider->id,
             'road_name' => 'Updated Road',
             'side' => StreetParkingSide::LEFT->value,
             'parking_type' => StreetParkingType::CURBSIDE->value,
@@ -124,7 +123,8 @@ it('updates street parking through the update action', function () {
     expect($parking->name)->toBe('Updated Street Parking')
         ->and($parking->road_name)->toBe('Updated Road')
         ->and($parking->capacity)->toBe(30)
-        ->and($parking->location_id)->toBe($location->id)
+        ->and($parking->parking_provider_id)->toBe($context->provider->getKey())
+        ->and($parking->location_id)->toBe($location->getKey())
         ->and($location->address_line1)->toBe('New Address')
         ->and($location->address_line2)->toBe('Building 2')
         ->and($location->locality)->toBe('Shillong')
@@ -144,7 +144,7 @@ it('updates street parking through the update action', function () {
 });
 
 it('updates the existing location instead of creating another location', function () {
-    $provider = ParkingProvider::factory()->create();
+    $context = ProviderTestContext::create()->actingAsUser();
 
     $location = Location::factory()->create([
         'coordinates' => Point::makeGeodetic(
@@ -154,8 +154,8 @@ it('updates the existing location instead of creating another location', functio
     ]);
 
     $parking = StreetParking::factory()->create([
-        'parking_provider_id' => $provider->id,
-        'location_id' => $location->id,
+        'parking_provider_id' => $context->provider->getKey(),
+        'location_id' => $location->getKey(),
     ]);
 
     $locationCount = Location::query()->count();
@@ -165,7 +165,6 @@ it('updates the existing location instead of creating another location', functio
     ])
         ->fillForm([
             'name' => $parking->name,
-            'parking_provider_id' => $provider->id,
             'road_name' => $parking->road_name,
             'side' => $parking->side->value,
             'parking_type' => $parking->parking_type->value,
@@ -186,8 +185,8 @@ it('updates the existing location instead of creating another location', functio
         ->call('save')
         ->assertHasNoFormErrors();
 
-    expect(Location::query()->count())
-        ->toBe($locationCount)
-        ->and($parking->fresh()->location_id)
-        ->toBe($location->id);
+    expect(Location::query()->count())->toBe($locationCount)
+        ->and($parking->fresh()->location_id)->toBe($location->getKey())
+        ->and($parking->fresh()->parking_provider_id)
+        ->toBe($context->provider->getKey());
 });

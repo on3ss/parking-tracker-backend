@@ -10,16 +10,25 @@ use App\Models\User;
 use App\Support\Geo\GeoJson;
 use Filament\Facades\Filament;
 use Livewire\Livewire;
+use Tests\Support\PlatformAdminTestHelper;
+use Tests\Support\ProviderTestContext;
 
 it('creates street parking using the selected provider in the admin panel', function () {
-    Filament::setCurrentPanel('admin');
+    Filament::setCurrentPanel(Filament::getPanel('admin'));
+
+    $user = User::factory()->create();
+
+    app(PlatformAdminTestHelper::class)->grant($user);
+
+    $this->actingAs($user);
 
     $provider = ParkingProvider::factory()->create();
 
     Livewire::test(CreateStreetParking::class)
+        ->assertSuccessful()
         ->fillForm([
             'name' => 'Police Bazaar Street Parking',
-            'parking_provider_id' => $provider->id,
+            'parking_provider_id' => $provider->getKey(),
             'road_name' => 'Police Bazaar Road',
             'side' => StreetParkingSide::LEFT->value,
             'parking_type' => StreetParkingType::CURBSIDE->value,
@@ -49,30 +58,21 @@ it('creates street parking using the selected provider in the admin panel', func
         ->where('name', 'Police Bazaar Street Parking')
         ->firstOrFail();
 
-    expect($parking->parking_provider_id)->toBe($provider->id)
-        ->and($parking->location_id)->not->toBeNull();
-
-    expect(GeoJson::from($parking->geometry))->toBe([
-        'type' => 'LineString',
-        'coordinates' => [
-            [91.8930, 25.5785],
-            [91.8936, 25.5790],
-        ],
-    ]);
+    expect($parking->parking_provider_id)->toBe($provider->getKey())
+        ->and($parking->location_id)->not->toBeNull()
+        ->and(GeoJson::from($parking->geometry))->toBe([
+                'type' => 'LineString',
+                'coordinates' => [
+                    [91.8930, 25.5785],
+                    [91.8936, 25.5790],
+                ],
+            ]);
 });
 
 it('creates street parking for the current provider tenant', function () {
     Filament::setCurrentPanel('provider');
 
-    $user = User::factory()->create();
-
-    $provider = ParkingProvider::factory()->create([
-        'is_active' => true,
-    ]);
-
-    $this->actingAs($user);
-
-    Filament::setTenant($provider);
+    $context = ProviderTestContext::create()->actingAsUser();
 
     Livewire::test(CreateStreetParking::class)
         ->fillForm([
@@ -106,25 +106,18 @@ it('creates street parking for the current provider tenant', function () {
         ->where('name', 'Police Bazaar Street Parking')
         ->firstOrFail();
 
-    expect($parking->parking_provider_id)->toBe($provider->id);
+    expect($parking->parking_provider_id)
+        ->toBe($context->provider->getKey());
 });
 
 it('always assigns the current tenant as the provider', function () {
     Filament::setCurrentPanel('provider');
 
-    $user = User::factory()->create();
-
-    $provider = ParkingProvider::factory()->create([
-        'is_active' => true,
-    ]);
+    $context = ProviderTestContext::create()->actingAsUser();
 
     $otherProvider = ParkingProvider::factory()->create([
         'is_active' => true,
     ]);
-
-    $this->actingAs($user);
-
-    Filament::setTenant($provider);
 
     Livewire::test(CreateStreetParking::class)
         ->fillForm([
@@ -134,14 +127,11 @@ it('always assigns the current tenant as the provider', function () {
             'parking_type' => StreetParkingType::CURBSIDE->value,
             'status' => ParkingStatus::ACTIVE->value,
             'capacity' => 10,
-
-            'parking_provider_id' => $otherProvider->id,
-
+            'parking_provider_id' => $otherProvider->getKey(),
             'location' => [
                 'latitude' => 25.5788,
                 'longitude' => 91.8933,
             ],
-
             'geometry' => [
                 'type' => 'LineString',
                 'coordinates' => [
@@ -158,22 +148,14 @@ it('always assigns the current tenant as the provider', function () {
         ->firstOrFail();
 
     expect($parking->parking_provider_id)
-        ->toBe($provider->id)
-        ->not->toBe($otherProvider->id);
+        ->toBe($context->provider->getKey())
+        ->not->toBe($otherProvider->getKey());
 });
 
 it('defaults the location country to India', function () {
     Filament::setCurrentPanel('provider');
 
-    $user = User::factory()->create();
-
-    $provider = ParkingProvider::factory()->create([
-        'is_active' => true,
-    ]);
-
-    $this->actingAs($user);
-
-    Filament::setTenant($provider);
+    ProviderTestContext::create()->actingAsUser();
 
     Livewire::test(CreateStreetParking::class)
         ->fillForm([

@@ -4,19 +4,25 @@ namespace App\Policies;
 
 use App\Models\StreetParking;
 use App\Models\User;
+use App\Services\Rbac\PlatformAuthorization;
 use App\Services\Rbac\ProviderAuthorization;
 use App\Support\Rbac\Permission;
 
 final class StreetParkingPolicy
 {
     public function __construct(
-        private readonly ProviderAuthorization $authorization,
+        private readonly ProviderAuthorization $providerAuthorization,
+        private readonly PlatformAuthorization $platformAuthorization,
     ) {
     }
 
     public function viewAny(User $user): bool
     {
-        return $this->authorization->allowsCurrent(
+        if ($this->platformAuthorization->isAdmin($user)) {
+            return true;
+        }
+
+        return $this->providerAuthorization->allowsCurrent(
             $user,
             Permission::StreetParkingView,
         );
@@ -24,7 +30,11 @@ final class StreetParkingPolicy
 
     public function view(User $user, StreetParking $streetParking): bool
     {
-        return $this->authorization->allows(
+        if ($this->platformAuthorization->isAdmin($user)) {
+            return true;
+        }
+
+        return $this->providerAuthorization->allows(
             $user,
             $streetParking->parking_provider_id,
             Permission::StreetParkingView,
@@ -33,7 +43,11 @@ final class StreetParkingPolicy
 
     public function create(User $user): bool
     {
-        return $this->authorization->allowsCurrent(
+        if ($this->platformAuthorization->isAdmin($user)) {
+            return true;
+        }
+
+        return $this->providerAuthorization->allowsCurrent(
             $user,
             Permission::StreetParkingCreate,
         );
@@ -41,7 +55,11 @@ final class StreetParkingPolicy
 
     public function update(User $user, StreetParking $streetParking): bool
     {
-        return $this->authorization->allows(
+        if ($this->platformAuthorization->isAdmin($user)) {
+            return true;
+        }
+
+        return $this->providerAuthorization->allows(
             $user,
             $streetParking->parking_provider_id,
             Permission::StreetParkingUpdate,
@@ -50,7 +68,11 @@ final class StreetParkingPolicy
 
     public function delete(User $user, StreetParking $streetParking): bool
     {
-        return $this->authorization->allows(
+        if ($this->platformAuthorization->isAdmin($user)) {
+            return true;
+        }
+
+        return $this->providerAuthorization->allows(
             $user,
             $streetParking->parking_provider_id,
             Permission::StreetParkingDelete,
@@ -59,11 +81,7 @@ final class StreetParkingPolicy
 
     public function restore(User $user, StreetParking $streetParking): bool
     {
-        return $this->authorization->allows(
-            $user,
-            $streetParking->parking_provider_id,
-            Permission::StreetParkingDelete,
-        );
+        return $this->delete($user, $streetParking);
     }
 
     public function forceDelete(User $user, StreetParking $streetParking): bool

@@ -4,26 +4,32 @@ namespace App\Policies;
 
 use App\Models\ParkingProvider;
 use App\Models\User;
+use App\Services\Rbac\PlatformAuthorization;
 use App\Services\Rbac\ProviderAuthorization;
 use App\Support\Rbac\Permission;
 
 final class ParkingProviderPolicy
 {
     public function __construct(
-        private readonly ProviderAuthorization $authorization,
+        private readonly ProviderAuthorization $providerAuthorization,
+        private readonly PlatformAuthorization $platformAuthorization,
     ) {
     }
 
     public function viewAny(User $user): bool
     {
-        return false;
+        return $this->platformAuthorization->isAdmin($user);
     }
 
     public function view(
         User $user,
         ParkingProvider $provider,
     ): bool {
-        return $this->authorization->allows(
+        if ($this->platformAuthorization->isAdmin($user)) {
+            return true;
+        }
+
+        return $this->providerAuthorization->allows(
             $user,
             $provider->getKey(),
             Permission::ProviderView,
@@ -32,6 +38,7 @@ final class ParkingProviderPolicy
 
     public function create(User $user): bool
     {
+        // Provider creation must go through the registration workflow.
         return false;
     }
 
@@ -39,7 +46,11 @@ final class ParkingProviderPolicy
         User $user,
         ParkingProvider $provider,
     ): bool {
-        return $this->authorization->allows(
+        if ($this->platformAuthorization->isAdmin($user)) {
+            return true;
+        }
+
+        return $this->providerAuthorization->allows(
             $user,
             $provider->getKey(),
             Permission::ProviderUpdate,
@@ -50,6 +61,7 @@ final class ParkingProviderPolicy
         User $user,
         ParkingProvider $provider,
     ): bool {
+        // Keep deletion disabled until a dedicated workflow is defined.
         return false;
     }
 }
