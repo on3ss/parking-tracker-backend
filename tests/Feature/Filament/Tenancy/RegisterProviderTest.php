@@ -6,7 +6,6 @@ use App\Models\ProviderMembership;
 use App\Models\User;
 use App\Support\Rbac\Role;
 use Filament\Facades\Filament;
-use Illuminate\Support\Facades\Gate;
 use Livewire\Livewire;
 
 beforeEach(function () {

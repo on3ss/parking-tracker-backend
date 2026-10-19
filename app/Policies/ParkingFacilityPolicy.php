@@ -13,8 +13,7 @@ final class ParkingFacilityPolicy
     public function __construct(
         private readonly ProviderAuthorization $providerAuthorization,
         private readonly PlatformAuthorization $platformAuthorization,
-    ) {
-    }
+    ) {}
 
     public function viewAny(User $user): bool
     {

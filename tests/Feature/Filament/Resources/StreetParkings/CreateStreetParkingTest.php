@@ -61,12 +61,12 @@ it('creates street parking using the selected provider in the admin panel', func
     expect($parking->parking_provider_id)->toBe($provider->getKey())
         ->and($parking->location_id)->not->toBeNull()
         ->and(GeoJson::from($parking->geometry))->toBe([
-                'type' => 'LineString',
-                'coordinates' => [
-                    [91.8930, 25.5785],
-                    [91.8936, 25.5790],
-                ],
-            ]);
+            'type' => 'LineString',
+            'coordinates' => [
+                [91.8930, 25.5785],
+                [91.8936, 25.5790],
+            ],
+        ]);
 });
 
 it('creates street parking for the current provider tenant', function () {

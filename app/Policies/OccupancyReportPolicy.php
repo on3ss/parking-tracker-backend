@@ -13,8 +13,7 @@ final class OccupancyReportPolicy
 {
     public function __construct(
         private readonly ProviderAuthorization $authorization,
-    ) {
-    }
+    ) {}
 
     public function viewAny(User $user): bool
     {

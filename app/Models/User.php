@@ -3,9 +3,6 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use App\Models\Favorite;
-use App\Models\ParkingProvider;
-use App\Models\ProviderMembership;
 use App\Services\Rbac\PlatformAuthorization;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
@@ -96,11 +93,11 @@ class User extends Authenticatable implements FilamentUser, HasTenants
      */
     public function canAccessTenant(Model $tenant): bool
     {
-        if (!$tenant instanceof ParkingProvider) {
+        if (! $tenant instanceof ParkingProvider) {
             return false;
         }
 
-        if (!$tenant->is_active) {
+        if (! $tenant->is_active) {
             return false;
         }
 

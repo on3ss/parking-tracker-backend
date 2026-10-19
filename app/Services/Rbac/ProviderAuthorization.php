@@ -37,7 +37,7 @@ final class ProviderAuthorization
         }
 
         if (
-            !$user->providerMemberships()
+            ! $user->providerMemberships()
                 ->where('parking_provider_id', $providerId)
                 ->exists()
         ) {

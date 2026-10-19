@@ -14,6 +14,6 @@ abstract class BaseResource extends Resource
 
     public static function isGlobalContext(): bool
     {
-        return !static::hasTenant();
+        return ! static::hasTenant();
     }
 }

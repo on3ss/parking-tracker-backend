@@ -12,9 +12,9 @@ use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Support\ProviderTestContext;
 
-$validFacilityForm = static fn(array $overrides = []): array => array_replace_recursive([
+$validFacilityForm = static fn (array $overrides = []): array => array_replace_recursive([
     'name' => 'Police Bazaar Parking',
-    'type' => ParkingFacilityType::PUBLIC ->value,
+    'type' => ParkingFacilityType::PUBLIC->value,
     'status' => ParkingStatus::ACTIVE->value,
     'capacity' => 100,
     'location' => [

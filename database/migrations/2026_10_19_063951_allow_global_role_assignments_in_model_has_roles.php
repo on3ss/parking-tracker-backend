@@ -3,7 +3,8 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         $table = 'model_has_roles';
@@ -25,7 +26,7 @@ return new class extends Migration {
         DB::statement(sprintf(
             'ALTER TABLE public.%s DROP CONSTRAINT %s',
             $table,
-            '"' . str_replace('"', '""', $primaryKey->conname) . '"',
+            '"'.str_replace('"', '""', $primaryKey->conname).'"',
         ));
 
         // The team ID can now be NULL for global role assignments.
@@ -76,7 +77,7 @@ return new class extends Migration {
         if ($hasGlobalAssignments) {
             throw new RuntimeException(
                 'Cannot roll back: model_has_roles contains global role assignments. '
-                . 'Reassign or remove them before rolling back.'
+                .'Reassign or remove them before rolling back.'
             );
         }
 
