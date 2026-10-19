@@ -35,6 +35,7 @@ final class ProviderMembershipService
                 ['role' => $role->value],
             );
 
+
             $this->withTeam(
                 $provider->getKey(),
                 function () use ($user, $role): void {
@@ -42,13 +43,22 @@ final class ProviderMembershipService
                     $user->unsetRelation('permissions');
 
                     try {
-                        $user->syncRoles([$role->value]);
+                        $currentRoles = $user->getRoleNames()->all();
+                        $expectedRoles = [$role->value];
+
+                        sort($currentRoles);
+                        sort($expectedRoles);
+
+                        if ($currentRoles !== $expectedRoles) {
+                            $user->syncRoles($expectedRoles);
+                        }
                     } finally {
                         $user->unsetRelation('roles');
                         $user->unsetRelation('permissions');
                     }
                 },
             );
+
 
             $this->membershipLookup->forget($user);
 
@@ -76,7 +86,9 @@ final class ProviderMembershipService
                     $user->unsetRelation('permissions');
 
                     try {
-                        $user->syncRoles([]);
+                        if ($user->getRoleNames()->isNotEmpty()) {
+                            $user->syncRoles([]);
+                        }
                     } finally {
                         $user->unsetRelation('roles');
                         $user->unsetRelation('permissions');

@@ -42,9 +42,8 @@ class RegisterProvider extends RegisterTenant
 
             $provider = ParkingProvider::create($data);
 
-            $provisioner = app(TeamRoleProvisioner::class);
-            $provisioner->syncGlobalPermissions();
-            $provisioner->syncTeamRoles($provider->getKey());
+            app(TeamRoleProvisioner::class)
+                ->syncTeamRoles($provider->getKey());
 
             app(ProviderMembershipService::class)->assign(
                 $user,

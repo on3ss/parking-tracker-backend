@@ -2,6 +2,7 @@
 
 use App\Services\Rbac\TeamRoleProvisioner;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\TestCase;
 
@@ -52,6 +53,13 @@ beforeEach(function () {
     app(PermissionRegistrar::class)->forgetCachedPermissions();
 
     app(TeamRoleProvisioner::class)->syncGlobalPermissions();
+
+    expect(
+        Permission::query()
+            ->where('name', 'area.create')
+            ->where('guard_name', 'web')
+            ->exists()
+    )->toBeTrue();
 })->in('Feature', 'Integration');
 
 afterEach(function () {

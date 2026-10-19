@@ -4,6 +4,7 @@ use App\Models\ParkingProvider;
 use App\Services\Rbac\TeamRoleProvisioner;
 use App\Support\Rbac\Permission as PermissionEnum;
 use App\Support\Rbac\Role as RoleEnum;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role as SpatieRole;
 
@@ -123,7 +124,7 @@ it('is idempotent when provisioning the same provider twice', function () {
     $provisioner->syncTeamRoles($provider->id);
 
     $firstSnapshot = collect(RoleEnum::cases())
-        ->mapWithKeys(fn (RoleEnum $role) => [
+        ->mapWithKeys(fn(RoleEnum $role) => [
             $role->value => teamRolePermissionNames(
                 teamRole($provider->id, $role),
             ),
@@ -133,7 +134,7 @@ it('is idempotent when provisioning the same provider twice', function () {
     $provisioner->syncTeamRoles($provider->id);
 
     $secondSnapshot = collect(RoleEnum::cases())
-        ->mapWithKeys(fn (RoleEnum $role) => [
+        ->mapWithKeys(fn(RoleEnum $role) => [
             $role->value => teamRolePermissionNames(
                 teamRole($provider->id, $role),
             ),
@@ -141,4 +142,37 @@ it('is idempotent when provisioning the same provider twice', function () {
         ->all();
 
     expect($secondSnapshot)->toBe($firstSnapshot);
+});
+
+
+it('does not rewrite role permissions when provisioning is unchanged', function () {
+    $provider = ParkingProvider::factory()->create();
+    $provisioner = app(TeamRoleProvisioner::class);
+
+    $provisioner->syncGlobalPermissions();
+    $provisioner->syncTeamRoles($provider->id);
+
+    $connection = DB::connection();
+
+    $connection->enableQueryLog();
+    $connection->flushQueryLog();
+
+    $provisioner->syncTeamRoles($provider->id);
+
+    $queries = $connection->getQueryLog();
+
+    $connection->disableQueryLog();
+
+    $pivotWrites = collect($queries)
+        ->pluck('query')
+        ->filter(
+            fn(string $sql): bool =>
+                str_contains(strtolower($sql), 'role_has_permissions')
+                && preg_match(
+                    '/^\s*(insert|update|delete)\b/i',
+                    $sql,
+                ) === 1
+        );
+
+    expect($pivotWrites)->toBeEmpty();
 });

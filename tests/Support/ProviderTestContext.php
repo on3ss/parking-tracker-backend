@@ -42,7 +42,7 @@ final class ProviderTestContext
         ]);
 
         app(TeamRoleProvisioner::class)
-            ->provisionProvider($provider->getKey());
+            ->syncTeamRoles($provider->getKey());
 
         app(ProviderMembershipService::class)
             ->assign($user, $provider, $role);

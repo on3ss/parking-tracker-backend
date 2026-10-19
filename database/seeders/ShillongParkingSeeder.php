@@ -21,8 +21,6 @@ class ShillongParkingSeeder extends Seeder
     public function run(): void
     {
         DB::transaction(function (): void {
-            $this->call(RolesAndPermissionsSeeder::class);
-
             $providers = ParkingProvider::factory()->count(8)->create();
 
             // Roles are per-team: create them for every provider up-front.
