@@ -10,6 +10,7 @@ use App\Support\Rbac\PlatformRole;
 use App\Support\Rbac\Role;
 use Mockery;
 use Spatie\Permission\Models\Role as SpatieRole;
+use Spatie\Permission\PermissionRegistrar;
 use Tests\Support\ProviderTestContext;
 
 beforeEach(function () {
@@ -49,12 +50,13 @@ it('allows a provider member with view permission to view reports', function () 
         ->and($this->policy->view($context->user, $report))->toBeTrue();
 });
 
-it('denies report viewing without the required provider permission', function () {
+it('allows a viewer to view reports but not create them', function () {
     $context = ProviderTestContext::create(Role::Viewer)->useTeamContext();
     $report = facilityReportFor($context);
 
     expect($this->policy->viewAny($context->user))->toBeTrue()
-        ->and($this->policy->view($context->user, $report))->toBeTrue();
+        ->and($this->policy->view($context->user, $report))->toBeTrue()
+        ->and($this->policy->create($context->user))->toBeFalse();
 });
 
 it('denies viewing a report belonging to another provider', function () {
@@ -169,7 +171,7 @@ it('denies viewing and deleting a report with no resolvable parent', function ()
         ->and($this->policy->delete($context->user, $report))->toBeFalse();
 });
 
-it('allows a platform admin to view reports without provider membership', function () {
+it('allows a platform admin to access reports without provider membership but never update them', function () {
     app(TeamRoleProvisioner::class)->syncGlobalPermissions();
 
     $user = User::factory()->create();
@@ -185,10 +187,60 @@ it('allows a platform admin to view reports without provider membership', functi
     $context = ProviderTestContext::create(Role::Owner);
     $report = facilityReportFor($context);
 
+    // The admin has no provider membership or active provider context.
     setPermissionsTeamId(null);
 
     expect($this->policy->viewAny($user))->toBeTrue()
         ->and($this->policy->view($user, $report))->toBeTrue()
         ->and($this->policy->create($user))->toBeTrue()
-        ->and($this->policy->delete($user, $report))->toBeTrue();
+        ->and($this->policy->delete($user, $report))->toBeTrue()
+        // Occupancy reports are immutable, including for platform admins.
+        ->and($this->policy->update($user, $report))->toBeFalse();
+});
+
+it('denies report viewing when a member lacks the report-view permission', function () {
+    $context = ProviderTestContext::create(Role::Viewer)->useTeamContext();
+    $report = facilityReportFor($context);
+
+    $teamKey = config('permission.column_names.team_foreign_key');
+
+    $role = SpatieRole::query()
+        ->where('name', Role::Viewer->value)
+        ->where($teamKey, $context->provider->getKey())
+        ->firstOrFail();
+
+    $role->revokePermissionTo('occupancy_report.view');
+
+    app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+    $context->user->unsetRelation('roles');
+    $context->user->unsetRelation('permissions');
+
+    expect($this->policy->viewAny($context->user))->toBeFalse()
+        ->and($this->policy->view($context->user, $report))->toBeFalse();
+});
+
+it('denies report access to a user who is not a member of the report provider', function () {
+    $owner = ProviderTestContext::create(Role::Owner);
+    $report = facilityReportFor($owner);
+
+    $outsider = User::factory()->create();
+
+    setPermissionsTeamId($owner->provider->getKey());
+
+    expect($this->policy->viewAny($outsider))->toBeFalse()
+        ->and($this->policy->view($outsider, $report))->toBeFalse()
+        ->and($this->policy->delete($outsider, $report))->toBeFalse();
+});
+
+it('denies record access when the active team conflicts with the report provider', function () {
+    $activeContext = ProviderTestContext::create(Role::Manager)->useTeamContext();
+    $reportOwner = ProviderTestContext::create(Role::Owner);
+    $report = facilityReportFor($reportOwner);
+
+    // The user is a member of the report's provider, but the current team differs.
+    setPermissionsTeamId($activeContext->provider->getKey());
+
+    expect($this->policy->view($reportOwner->user, $report))->toBeFalse()
+        ->and($this->policy->delete($reportOwner->user, $report))->toBeFalse();
 });
