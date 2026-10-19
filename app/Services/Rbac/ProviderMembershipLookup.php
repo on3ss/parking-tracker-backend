@@ -7,52 +7,67 @@ use Illuminate\Support\Facades\DB;
 
 final class ProviderMembershipLookup
 {
-    /** @var array<string, bool> */
-    private array $results = [];
+    /** @var array<string, list<int|string>> */
+    private array $providerIds = [];
+
+    /**
+     * Return provider IDs for which this user has a membership.
+     *
+     * Results are request-scoped through the container binding.
+     * Do not cache uncommitted transaction state.
+     *
+     * @return list<int|string>
+     */
+    public function providerIds(User $user): array
+    {
+        if (DB::transactionLevel() > 0) {
+            return $this->queryProviderIds($user);
+        }
+
+        $key = $this->key($user);
+
+        return $this->providerIds[$key] ??=
+            $this->queryProviderIds($user);
+    }
 
     public function exists(
         User $user,
         int|string $providerId,
     ): bool {
-        /*
-         * Don't cache results inside transactions. A transaction may roll
-         * back after a lookup, leaving request-scoped state inconsistent
-         * with the database.
-         */
-        if (DB::transactionLevel() > 0) {
-            return $this->queryExists($user, $providerId);
+        foreach ($this->providerIds($user) as $id) {
+            if ((string) $id === (string) $providerId) {
+                return true;
+            }
         }
 
-        $key = $this->key($user, $providerId);
-
-        return $this->results[$key] ??=
-            $this->queryExists($user, $providerId);
+        return false;
     }
 
-    public function forget(
-        User $user,
-        int|string $providerId,
-    ): void {
-        unset($this->results[$this->key($user, $providerId)]);
+    public function hasAny(User $user): bool
+    {
+        return $this->providerIds($user) !== [];
     }
 
-    private function queryExists(
-        User $user,
-        int|string $providerId,
-    ): bool {
-        return $user
-            ->providerMemberships()
-            ->where('parking_provider_id', $providerId)
-            ->exists();
+    /**
+     * Invalidate all membership data for this user.
+     */
+    public function forget(User $user): void
+    {
+        unset($this->providerIds[$this->key($user)]);
     }
 
-    private function key(
-        User $user,
-        int|string $providerId,
-    ): string {
-        return serialize([
-            $user->getKey(),
-            (string) $providerId,
-        ]);
+    /**
+     * @return list<int|string>
+     */
+    private function queryProviderIds(User $user): array
+    {
+        return $user->providerMemberships()
+            ->pluck('parking_provider_id')
+            ->all();
+    }
+
+    private function key(User $user): string
+    {
+        return (string) $user->getKey();
     }
 }

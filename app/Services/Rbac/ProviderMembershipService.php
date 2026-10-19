@@ -50,10 +50,7 @@ final class ProviderMembershipService
                 },
             );
 
-            $this->membershipLookup->forget(
-                $user,
-                $provider->getKey(),
-            );
+            $this->membershipLookup->forget($user);
 
             return $membership;
         });
@@ -89,10 +86,7 @@ final class ProviderMembershipService
 
             $membership?->delete();
 
-            $this->membershipLookup->forget(
-                $user,
-                $provider->getKey(),
-            );
+            $this->membershipLookup->forget($user);
 
             return $membership !== null;
         });

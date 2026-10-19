@@ -3,7 +3,11 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Favorite;
+use App\Models\ParkingProvider;
+use App\Models\ProviderMembership;
 use App\Services\Rbac\PlatformAuthorization;
+use App\Services\Rbac\ProviderMembershipLookup;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasTenants;
@@ -68,11 +72,16 @@ class User extends Authenticatable implements FilamentUser, HasTenants
             ->withTimestamps();
     }
 
+
     public function canAccessPanel(Panel $panel): bool
     {
         return match ($panel->getId()) {
-            'admin' => app(PlatformAuthorization::class)->isAdmin($this),
-            'provider' => $this->providerMemberships()->exists(),
+            'admin' => app(PlatformAuthorization::class)
+                ->isAdmin($this),
+
+            'provider' => app(ProviderMembershipLookup::class)
+                ->hasAny($this),
+
             default => false,
         };
     }
@@ -83,7 +92,15 @@ class User extends Authenticatable implements FilamentUser, HasTenants
      */
     public function getTenants(Panel $panel): Collection
     {
-        return $this->providers()
+        $providerIds = app(ProviderMembershipLookup::class)
+            ->providerIds($this);
+
+        if ($providerIds === []) {
+            return collect();
+        }
+
+        return ParkingProvider::query()
+            ->whereKey($providerIds)
             ->where('is_active', true)
             ->get();
     }
@@ -93,16 +110,16 @@ class User extends Authenticatable implements FilamentUser, HasTenants
      */
     public function canAccessTenant(Model $tenant): bool
     {
-        if (! $tenant instanceof ParkingProvider) {
+        if (!$tenant instanceof ParkingProvider) {
             return false;
         }
 
-        if (! $tenant->is_active) {
+        if (!$tenant->is_active) {
             return false;
         }
 
-        return $this->providerMemberships()
-            ->where('parking_provider_id', $tenant->getKey())
-            ->exists();
+        return app(ProviderMembershipLookup::class)
+            ->exists($this, $tenant->getKey());
     }
+
 }
