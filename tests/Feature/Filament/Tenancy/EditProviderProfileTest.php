@@ -2,29 +2,29 @@
 
 use App\Enums\ParkingProviderType;
 use App\Filament\Provider\Pages\Tenancy\EditProviderProfile;
-use App\Models\ParkingProvider;
-use App\Models\User;
+use App\Support\Rbac\Role;
 use Filament\Facades\Filament;
 use Livewire\Livewire;
+use Tests\Support\ProviderTestContext;
+
+beforeEach(function () {
+    Filament::setCurrentPanel('provider');
+});
 
 it('loads the current provider profile', function () {
-    $user = User::factory()->create();
-
-    $provider = ParkingProvider::factory()->create([
-        'name' => 'Shillong Municipal Parking',
-        'type' => ParkingProviderType::MUNICIPAL,
-        'description' => 'Municipal parking facilities in Shillong.',
-        'is_active' => true,
-    ]);
-
-    $this->actingAs($user);
-
-    Filament::setTenant($provider);
+    $context = ProviderTestContext::create(
+        role: Role::Owner,
+        providerAttributes: [
+            'name' => 'Shillong Municipal Parking',
+            'type' => ParkingProviderType::MUNICIPAL,
+            'description' => 'Municipal parking facilities in Shillong.',
+        ],
+    )->actingAsUser();
 
     Livewire::test(EditProviderProfile::class)
         ->assertSchemaStateSet([
             'name' => 'Shillong Municipal Parking',
-            'slug' => $provider->slug,
+            'slug' => $context->provider->slug,
             'type' => ParkingProviderType::MUNICIPAL,
             'is_active' => true,
             'description' => '<p>Municipal parking facilities in Shillong.</p>',
@@ -32,26 +32,23 @@ it('loads the current provider profile', function () {
 });
 
 it('updates the provider profile fields exposed by the form', function () {
-    $user = User::factory()->create();
+    $context = ProviderTestContext::create(
+        role: Role::Owner,
+        providerAttributes: [
+            'name' => 'Old Provider Name',
+            'type' => ParkingProviderType::MUNICIPAL,
+            'description' => 'Old description.',
+        ],
+    )->actingAsUser();
 
-    $provider = ParkingProvider::factory()->create([
-        'name' => 'Old Provider Name',
-        'type' => ParkingProviderType::MUNICIPAL,
-        'description' => 'Old description.',
-        'is_active' => true,
-    ]);
-
+    $provider = $context->provider;
     $originalSlug = $provider->slug;
-
-    $this->actingAs($user);
-
-    Filament::setTenant($provider);
 
     Livewire::test(EditProviderProfile::class)
         ->fillForm([
             'name' => 'Updated Provider Name',
             'slug' => 'should-not-change',
-            'type' => ParkingProviderType::PRIVATE->value,
+            'type' => ParkingProviderType::PRIVATE ->value,
             'is_active' => false,
             'description' => 'Updated provider description.',
         ])
@@ -68,17 +65,15 @@ it('updates the provider profile fields exposed by the form', function () {
 });
 
 it('does not allow the slug to be edited through the profile form', function () {
-    $user = User::factory()->create();
+    $context = ProviderTestContext::create(
+        role: Role::Owner,
+        providerAttributes: [
+            'name' => 'Shillong Parking',
+        ],
+    )->actingAsUser();
 
-    $provider = ParkingProvider::factory()->create([
-        'name' => 'Shillong Parking',
-    ]);
-
+    $provider = $context->provider;
     $originalSlug = $provider->slug;
-
-    $this->actingAs($user);
-
-    Filament::setTenant($provider);
 
     Livewire::test(EditProviderProfile::class)
         ->fillForm([
@@ -92,4 +87,10 @@ it('does not allow the slug to be edited through the profile form', function () 
         ->assertHasNoFormErrors();
 
     expect($provider->fresh()->slug)->toBe($originalSlug);
+});
+
+it('denies the profile page to roles without provider update permission', function () {
+    ProviderTestContext::create(role: Role::Manager)->actingAsUser();
+
+    Livewire::test(EditProviderProfile::class)->assertNotFound();
 });

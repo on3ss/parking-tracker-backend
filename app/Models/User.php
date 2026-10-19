@@ -3,7 +3,12 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Favorite;
+use App\Models\ParkingProvider;
+use App\Models\ProviderMembership;
+use App\Services\Rbac\PlatformAuthorization;
 use Database\Factories\UserFactory;
+use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasTenants;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -20,7 +25,7 @@ use Spatie\Permission\Traits\HasRoles;
 
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable implements HasTenants
+class User extends Authenticatable implements FilamentUser, HasTenants
 {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens;
@@ -66,6 +71,15 @@ class User extends Authenticatable implements HasTenants
             ->withTimestamps();
     }
 
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return match ($panel->getId()) {
+            'admin' => app(PlatformAuthorization::class)->isAdmin($this),
+            'provider' => $this->providerMemberships()->exists(),
+            default => false,
+        };
+    }
+
     /**
      * Providers available to the authenticated user
      * in the Filament Provider Panel.
@@ -82,11 +96,11 @@ class User extends Authenticatable implements HasTenants
      */
     public function canAccessTenant(Model $tenant): bool
     {
-        if (! $tenant instanceof ParkingProvider) {
+        if (!$tenant instanceof ParkingProvider) {
             return false;
         }
 
-        if (! $tenant->is_active) {
+        if (!$tenant->is_active) {
             return false;
         }
 
