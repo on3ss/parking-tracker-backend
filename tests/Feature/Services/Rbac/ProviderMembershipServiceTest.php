@@ -121,7 +121,6 @@ it('removes the membership and revokes the role in that team', function () {
     expect($user->hasRole(Role::Manager->value))->toBeFalse();
 });
 
-
 it('invalidates membership lookup after assignment and removal', function () {
     $user = User::factory()->create();
     $provider = ParkingProvider::factory()->create();

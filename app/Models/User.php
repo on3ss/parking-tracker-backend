@@ -3,9 +3,6 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use App\Models\Favorite;
-use App\Models\ParkingProvider;
-use App\Models\ProviderMembership;
 use App\Services\Rbac\PlatformAuthorization;
 use App\Services\Rbac\ProviderMembershipLookup;
 use Database\Factories\UserFactory;
@@ -72,7 +69,6 @@ class User extends Authenticatable implements FilamentUser, HasTenants
             ->withTimestamps();
     }
 
-
     public function canAccessPanel(Panel $panel): bool
     {
         return match ($panel->getId()) {
@@ -110,16 +106,15 @@ class User extends Authenticatable implements FilamentUser, HasTenants
      */
     public function canAccessTenant(Model $tenant): bool
     {
-        if (!$tenant instanceof ParkingProvider) {
+        if (! $tenant instanceof ParkingProvider) {
             return false;
         }
 
-        if (!$tenant->is_active) {
+        if (! $tenant->is_active) {
             return false;
         }
 
         return app(ProviderMembershipLookup::class)
             ->exists($this, $tenant->getKey());
     }
-
 }

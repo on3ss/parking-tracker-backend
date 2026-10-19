@@ -15,8 +15,7 @@ final class ProviderMembershipService
 
     public function __construct(
         private readonly ProviderMembershipLookup $membershipLookup,
-    ) {
-    }
+    ) {}
 
     /**
      * The provider's Spatie team roles must already be provisioned.
@@ -26,7 +25,7 @@ final class ProviderMembershipService
         ParkingProvider $provider,
         Role $role,
     ): ProviderMembership {
-        return DB::transaction(function () use ($user, $provider, $role, ): ProviderMembership {
+        return DB::transaction(function () use ($user, $provider, $role): ProviderMembership {
             $membership = ProviderMembership::query()->updateOrCreate(
                 [
                     'user_id' => $user->getKey(),
@@ -34,7 +33,6 @@ final class ProviderMembershipService
                 ],
                 ['role' => $role->value],
             );
-
 
             $this->withTeam(
                 $provider->getKey(),
@@ -59,7 +57,6 @@ final class ProviderMembershipService
                 },
             );
 
-
             $this->membershipLookup->forget($user);
 
             return $membership;
@@ -73,7 +70,7 @@ final class ProviderMembershipService
         User $user,
         ParkingProvider $provider,
     ): bool {
-        return DB::transaction(function () use ($user, $provider, ): bool {
+        return DB::transaction(function () use ($user, $provider): bool {
             $membership = ProviderMembership::query()
                 ->where('user_id', $user->getKey())
                 ->where('parking_provider_id', $provider->getKey())

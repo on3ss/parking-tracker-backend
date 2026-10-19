@@ -49,9 +49,9 @@ class OccupancyReportsRelationManager extends RelationManager
                     ->sortable(),
             ])
             ->modifyQueryUsing(
-                fn(Builder $query) => $query->with([
-                    'parkingFacility' => fn($query) => $query->withTrashed(),
-                    'streetParking' => fn($query) => $query->withTrashed(),
+                fn (Builder $query) => $query->with([
+                    'parkingFacility' => fn ($query) => $query->withTrashed(),
+                    'streetParking' => fn ($query) => $query->withTrashed(),
                     'user',
                 ]),
             )

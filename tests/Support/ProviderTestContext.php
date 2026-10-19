@@ -28,7 +28,6 @@ final class ProviderTestContext
         $this->role = $role;
     }
 
-
     public static function create(
         Role $role = Role::Manager,
         ?User $user = null,
@@ -49,7 +48,6 @@ final class ProviderTestContext
 
         return new self($user, $provider, $role);
     }
-
 
     public function actingAsUser(): self
     {

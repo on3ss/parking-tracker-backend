@@ -14,7 +14,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->scoped(
             ProviderMembershipLookup::class,
-            fn() => new ProviderMembershipLookup(),
+            fn () => new ProviderMembershipLookup,
         );
     }
 

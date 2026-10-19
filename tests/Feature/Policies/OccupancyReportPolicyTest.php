@@ -8,6 +8,7 @@ use App\Policies\OccupancyReportPolicy;
 use App\Services\Rbac\TeamRoleProvisioner;
 use App\Support\Rbac\PlatformRole;
 use App\Support\Rbac\Role;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Mockery;
 use Spatie\Permission\Models\Role as SpatieRole;
 use Spatie\Permission\PermissionRegistrar;
@@ -151,7 +152,7 @@ it('denies viewing and deleting a report with no resolvable parent', function ()
         ->andReturn(null);
 
     $relationship = Mockery::mock(
-        \Illuminate\Database\Eloquent\Relations\BelongsTo::class,
+        BelongsTo::class,
     );
 
     $relationship->shouldReceive('withTrashed')

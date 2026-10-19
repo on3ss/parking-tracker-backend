@@ -22,8 +22,8 @@ class RecentOccupancyReports extends TableWidget
 
         $query = OccupancyReport::query()
             ->with([
-                'parkingFacility' => fn($query) => $query->withTrashed(),
-                'streetParking' => fn($query) => $query->withTrashed(),
+                'parkingFacility' => fn ($query) => $query->withTrashed(),
+                'streetParking' => fn ($query) => $query->withTrashed(),
                 'user',
             ])
             ->when(
@@ -33,14 +33,14 @@ class RecentOccupancyReports extends TableWidget
                         $query
                             ->whereHas(
                                 'parkingFacility',
-                                fn($query) => $query->where(
+                                fn ($query) => $query->where(
                                     'parking_provider_id',
                                     $provider->getKey(),
                                 ),
                             )
                             ->orWhereHas(
                                 'streetParking',
-                                fn($query) => $query->where(
+                                fn ($query) => $query->where(
                                     'parking_provider_id',
                                     $provider->getKey(),
                                 ),
@@ -58,7 +58,7 @@ class RecentOccupancyReports extends TableWidget
                 TextColumn::make('parking_name')
                     ->label(__('Parking'))
                     ->state(
-                        fn(OccupancyReport $record): string => $record->parkingFacility?->name
+                        fn (OccupancyReport $record): string => $record->parkingFacility?->name
                             ?? $record->streetParking?->name
                             ?? '—',
                     ),

@@ -15,7 +15,6 @@ class TeamRoleProvisioner
 
     public const GUARD = 'web';
 
-
     /**
      * Ensure every configured permission exists globally.
      * Idempotent; invalidate Spatie's cache only when permissions are added.
@@ -35,7 +34,7 @@ class TeamRoleProvisioner
             $now = now();
 
             Permission::query()->insert(array_map(
-                static fn(string $name): array => [
+                static fn (string $name): array => [
                     'name' => $name,
                     'guard_name' => self::GUARD,
                     'created_at' => $now,
@@ -91,8 +90,8 @@ class TeamRoleProvisioner
                 if ($missing !== []) {
                     throw new \RuntimeException(
                         'Missing permissions while provisioning role '
-                        . $roleEnum->value . ': '
-                        . implode(', ', $missing),
+                        .$roleEnum->value.': '
+                        .implode(', ', $missing),
                     );
                 }
 
@@ -112,7 +111,6 @@ class TeamRoleProvisioner
             }
         });
     }
-
 
     /**
      * Provision all RBAC configuration required by a provider.

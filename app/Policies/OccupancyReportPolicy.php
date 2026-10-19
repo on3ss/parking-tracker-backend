@@ -13,8 +13,7 @@ final class OccupancyReportPolicy
     public function __construct(
         private readonly ProviderAuthorization $providerAuthorization,
         private readonly PlatformAuthorization $platformAuthorization,
-    ) {
-    }
+    ) {}
 
     public function viewAny(User $user): bool
     {
@@ -62,7 +61,6 @@ final class OccupancyReportPolicy
             );
     }
 
-
     private function providerId(
         OccupancyReport $report,
     ): int|string|null {
@@ -96,5 +94,4 @@ final class OccupancyReportPolicy
 
         return null;
     }
-
 }

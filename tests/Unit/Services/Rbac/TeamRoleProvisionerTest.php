@@ -124,7 +124,7 @@ it('is idempotent when provisioning the same provider twice', function () {
     $provisioner->syncTeamRoles($provider->id);
 
     $firstSnapshot = collect(RoleEnum::cases())
-        ->mapWithKeys(fn(RoleEnum $role) => [
+        ->mapWithKeys(fn (RoleEnum $role) => [
             $role->value => teamRolePermissionNames(
                 teamRole($provider->id, $role),
             ),
@@ -134,7 +134,7 @@ it('is idempotent when provisioning the same provider twice', function () {
     $provisioner->syncTeamRoles($provider->id);
 
     $secondSnapshot = collect(RoleEnum::cases())
-        ->mapWithKeys(fn(RoleEnum $role) => [
+        ->mapWithKeys(fn (RoleEnum $role) => [
             $role->value => teamRolePermissionNames(
                 teamRole($provider->id, $role),
             ),
@@ -143,7 +143,6 @@ it('is idempotent when provisioning the same provider twice', function () {
 
     expect($secondSnapshot)->toBe($firstSnapshot);
 });
-
 
 it('does not rewrite role permissions when provisioning is unchanged', function () {
     $provider = ParkingProvider::factory()->create();
@@ -166,8 +165,7 @@ it('does not rewrite role permissions when provisioning is unchanged', function 
     $pivotWrites = collect($queries)
         ->pluck('query')
         ->filter(
-            fn(string $sql): bool =>
-                str_contains(strtolower($sql), 'role_has_permissions')
+            fn (string $sql): bool => str_contains(strtolower($sql), 'role_has_permissions')
                 && preg_match(
                     '/^\s*(insert|update|delete)\b/i',
                     $sql,
