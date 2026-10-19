@@ -3,6 +3,7 @@
 use App\Models\ParkingProvider;
 use App\Models\ProviderMembership;
 use App\Models\User;
+use App\Services\Rbac\ProviderMembershipLookup;
 use App\Services\Rbac\ProviderMembershipService;
 use App\Services\Rbac\TeamRoleProvisioner;
 use App\Support\Rbac\Role;
@@ -118,4 +119,30 @@ it('removes the membership and revokes the role in that team', function () {
     $user->unsetRelation('permissions');
 
     expect($user->hasRole(Role::Manager->value))->toBeFalse();
+});
+
+
+it('invalidates membership lookup after assignment and removal', function () {
+    $user = User::factory()->create();
+    $provider = ParkingProvider::factory()->create();
+
+    $this->provisioner->syncTeamRoles($provider->getKey());
+
+    $lookup = app(ProviderMembershipLookup::class);
+
+    expect(
+        $lookup->exists($user, $provider->getKey()),
+    )->toBeFalse();
+
+    $this->service->assign($user, $provider, Role::Manager);
+
+    expect(
+        $lookup->exists($user, $provider->getKey()),
+    )->toBeTrue();
+
+    $this->service->remove($user, $provider);
+
+    expect(
+        $lookup->exists($user, $provider->getKey()),
+    )->toBeFalse();
 });

@@ -28,6 +28,7 @@ final class ProviderTestContext
         $this->role = $role;
     }
 
+
     public static function create(
         Role $role = Role::Manager,
         ?User $user = null,
@@ -40,32 +41,15 @@ final class ProviderTestContext
             'is_active' => true,
         ]);
 
-        $provisioner = app(TeamRoleProvisioner::class);
+        app(TeamRoleProvisioner::class)
+            ->provisionProvider($provider->getKey());
 
-        $provisioner->provisionProvider($provider->id);
-
-        $membershipService = app(ProviderMembershipService::class);
-
-        $membershipService->assign($user, $provider, $role);
-
-        $previousTeamId = getPermissionsTeamId();
-
-        try {
-            setPermissionsTeamId($provider->id);
-
-            $user->unsetRelation('roles');
-            $user->unsetRelation('permissions');
-
-            $user->assignRole($role->value);
-        } finally {
-            setPermissionsTeamId($previousTeamId);
-
-            $user->unsetRelation('roles');
-            $user->unsetRelation('permissions');
-        }
+        app(ProviderMembershipService::class)
+            ->assign($user, $provider, $role);
 
         return new self($user, $provider, $role);
     }
+
 
     public function actingAsUser(): self
     {

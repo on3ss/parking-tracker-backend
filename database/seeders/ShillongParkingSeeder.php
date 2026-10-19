@@ -11,7 +11,6 @@ use App\Models\StreetParking;
 use App\Models\User;
 use App\Services\Rbac\ProviderMembershipService;
 use App\Services\Rbac\TeamRoleProvisioner;
-use App\Support\Rbac\Concerns\InteractsWithTeams;
 use App\Support\Rbac\Role as RoleEnum;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
@@ -19,8 +18,6 @@ use Illuminate\Support\Facades\DB;
 
 class ShillongParkingSeeder extends Seeder
 {
-    use InteractsWithTeams;
-
     public function run(): void
     {
         DB::transaction(function (): void {

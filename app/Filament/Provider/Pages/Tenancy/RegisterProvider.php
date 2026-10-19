@@ -6,7 +6,6 @@ use App\Models\ParkingProvider;
 use App\Models\User;
 use App\Services\Rbac\ProviderMembershipService;
 use App\Services\Rbac\TeamRoleProvisioner;
-use App\Support\Rbac\Concerns\InteractsWithTeams;
 use App\Support\Rbac\Role;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\TextInput;
@@ -16,8 +15,6 @@ use Illuminate\Support\Facades\DB;
 
 class RegisterProvider extends RegisterTenant
 {
-    use InteractsWithTeams;
-
     public static function canView(): bool
     {
         return Filament::auth()->check();
