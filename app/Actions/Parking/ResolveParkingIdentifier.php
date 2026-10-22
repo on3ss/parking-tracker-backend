@@ -4,17 +4,30 @@ namespace App\Actions\Parking;
 
 use App\Models\ParkingFacility;
 use App\Models\StreetParking;
+use App\Support\Parking\ParkingIdentifierParser;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use InvalidArgumentException;
 
 final class ResolveParkingIdentifier
 {
+    public function __construct(
+        private ParkingIdentifierParser $identifierParser,
+    ) {
+    }
+
     public function execute(
         string $identifier,
         bool $lockForUpdate = false,
     ): ParkingFacility|StreetParking {
-        [$type, $id] = $this->parse($identifier);
+        try {
+            $parsed = $this->identifierParser->parse($identifier);
+        } catch (InvalidArgumentException) {
+            throw (new ModelNotFoundException)->setModel(
+                ParkingFacility::class,
+            );
+        }
 
-        $query = match ($type) {
+        $query = match ($parsed['type']) {
             'facility' => ParkingFacility::query(),
             'street' => StreetParking::query(),
         };
@@ -23,29 +36,6 @@ final class ResolveParkingIdentifier
             $query->lockForUpdate();
         }
 
-        return $query->findOrFail($id);
-    }
-
-    /**
-     * @return array{0: 'facility'|'street', 1: int}
-     */
-    private function parse(string $identifier): array
-    {
-        if (
-            ! preg_match(
-                '/^(facility|street):([1-9][0-9]*)$/',
-                $identifier,
-                $matches,
-            )
-        ) {
-            throw (new ModelNotFoundException)->setModel(
-                ParkingFacility::class,
-            );
-        }
-
-        return [
-            $matches[1],
-            (int) $matches[2],
-        ];
+        return $query->findOrFail($parsed['id']);
     }
 }
