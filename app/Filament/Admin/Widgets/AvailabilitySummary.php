@@ -21,6 +21,8 @@ class AvailabilitySummary extends StatsOverviewWidget
 
     protected function getStats(): array
     {
+        $stale = $this->staleCount();
+
         return [
             $this->stat(
                 AvailabilityStatus::AVAILABLE,
@@ -46,17 +48,10 @@ class AvailabilitySummary extends StatsOverviewWidget
                 'heroicon-m-question-mark-circle',
             ),
 
-            Stat::make(
-                __('Stale'),
-                $this->staleCount(),
-            )
+            Stat::make(__('Stale'), $stale)
                 ->description(__('No update within the last hour'))
                 ->descriptionIcon('heroicon-m-clock')
-                ->color(
-                    $this->staleCount() > 0
-                    ? 'warning'
-                    : 'success',
-                ),
+                ->color($stale > 0 ? 'warning' : 'success'),
         ];
     }
 

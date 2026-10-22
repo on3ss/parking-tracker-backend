@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Widgets;
 use App\Enums\AvailabilityStatus;
 use App\Enums\ParkingStatus;
 use App\Models\StreetParking;
+use App\Support\Parking\AvailabilityFreshness;
 use Filament\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -109,7 +110,7 @@ class StreetParkingAvailabilityTable extends TableWidget
     {
         return blank($record->availability_updated_at)
             || $record->availability_updated_at->isBefore(
-                now()->subHour(),
+                AvailabilityFreshness::cutoff(),
             );
     }
 }
