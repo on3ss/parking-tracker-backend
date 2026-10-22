@@ -13,6 +13,14 @@ final class ApplyOccupancyToParking
         ParkingFacility|StreetParking $parking,
         OccupancyReport $report,
     ): bool {
+        $currentUpdatedAt = $parking->availability_updated_at;
+
+        if (
+            $currentUpdatedAt !== null
+            && $report->reported_at->lt($currentUpdatedAt)
+        ) {
+            return false;
+        }
 
         $parking->update([
             'available_spaces' => $report->available_spaces,
