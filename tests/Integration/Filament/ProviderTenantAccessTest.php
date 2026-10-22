@@ -139,3 +139,23 @@ it('invalidates cached membership IDs when a membership is removed', function ()
     expect($lookup->exists($user, $provider->getKey()))
         ->toBeTrue();
 });
+
+it('does not expose inactive providers as selectable tenants', function () {
+    $user = User::factory()->create();
+
+    $provider = ParkingProvider::factory()->create([
+        'is_active' => false,
+    ]);
+
+    ProviderMembership::create([
+        'user_id' => $user->id,
+        'parking_provider_id' => $provider->id,
+    ]);
+
+    $tenants = $user->getTenants(
+        Mockery::mock(Panel::class),
+    );
+
+    expect($tenants)->toBeEmpty()
+        ->and($user->canAccessTenant($provider))->toBeFalse();
+});

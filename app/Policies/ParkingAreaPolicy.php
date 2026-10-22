@@ -4,6 +4,7 @@ namespace App\Policies;
 
 use App\Models\ParkingArea;
 use App\Models\User;
+use App\Services\Rbac\PlatformAuthorization;
 use App\Services\Rbac\ProviderAuthorization;
 use App\Support\Rbac\Permission;
 
@@ -11,58 +12,60 @@ final class ParkingAreaPolicy
 {
     public function __construct(
         private readonly ProviderAuthorization $authorization,
+        private readonly PlatformAuthorization $platformAuthorization,
     ) {}
 
     public function viewAny(User $user): bool
     {
-        return $this->authorization->allowsCurrent(
-            $user,
-            Permission::AreaView,
-        );
+        return $this->platformAuthorization->isAdmin($user)
+            || $this->authorization->allowsCurrent(
+                $user,
+                Permission::AreaView,
+            );
     }
 
     public function view(User $user, ParkingArea $area): bool
     {
-        return $this->authorization->allows(
-            $user,
-            $this->providerId($area),
-            Permission::AreaView,
-        );
+        return $this->platformAuthorization->isAdmin($user)
+            || $this->authorization->allows(
+                $user,
+                $this->providerId($area),
+                Permission::AreaView,
+            );
     }
 
     public function create(User $user): bool
     {
-        return $this->authorization->allowsCurrent(
-            $user,
-            Permission::AreaCreate,
-        );
+        return $this->platformAuthorization->isAdmin($user)
+            || $this->authorization->allowsCurrent(
+                $user,
+                Permission::AreaCreate,
+            );
     }
 
     public function update(User $user, ParkingArea $area): bool
     {
-        return $this->authorization->allows(
-            $user,
-            $this->providerId($area),
-            Permission::AreaUpdate,
-        );
+        return $this->platformAuthorization->isAdmin($user)
+            || $this->authorization->allows(
+                $user,
+                $this->providerId($area),
+                Permission::AreaUpdate,
+            );
     }
 
     public function delete(User $user, ParkingArea $area): bool
     {
-        return $this->authorization->allows(
-            $user,
-            $this->providerId($area),
-            Permission::AreaDelete,
-        );
+        return $this->platformAuthorization->isAdmin($user)
+            || $this->authorization->allows(
+                $user,
+                $this->providerId($area),
+                Permission::AreaDelete,
+            );
     }
 
     public function restore(User $user, ParkingArea $area): bool
     {
-        return $this->authorization->allows(
-            $user,
-            $this->providerId($area),
-            Permission::AreaDelete,
-        );
+        return $this->delete($user, $area);
     }
 
     public function forceDelete(User $user, ParkingArea $area): bool
