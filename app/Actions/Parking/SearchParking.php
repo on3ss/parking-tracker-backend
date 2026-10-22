@@ -10,8 +10,7 @@ final class SearchParking
     public function __construct(
         private ParkingSearchQueryBuilder $queryBuilder,
         private ParkingSearchResultHydrator $resultHydrator,
-    ) {
-    }
+    ) {}
 
     public function execute(
         SearchParkingData $data,

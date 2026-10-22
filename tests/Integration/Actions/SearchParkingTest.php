@@ -280,3 +280,119 @@ it('returns the requested second page', function () {
         ->and($page->currentPage())->toBe(2)
         ->and($page->count())->toBe(2);
 });
+
+it('hydrates facility and street records correctly when their IDs overlap', function () {
+    $sharedId = random_int(100_000, 900_000_000);
+
+    $facility = ParkingFacility::factory()->create([
+        'id' => $sharedId,
+        'name' => 'Shared ID Facility',
+    ]);
+
+    $street = StreetParking::factory()->create([
+        'id' => $sharedId,
+        'name' => 'Shared ID Street',
+    ]);
+
+    $results = searchParking(new SearchParkingData);
+
+    expect($results->total())->toBe(2);
+
+    $facilityResult = $results->getCollection()->first(
+        fn ($result) => $result->parking instanceof ParkingFacility,
+    );
+
+    $streetResult = $results->getCollection()->first(
+        fn ($result) => $result->parking instanceof StreetParking,
+    );
+
+    expect($facilityResult)->not->toBeNull()
+        ->and($streetResult)->not->toBeNull()
+        ->and($facilityResult->parking->id)->toBe($sharedId)
+        ->and($facilityResult->parking->name)->toBe('Shared ID Facility')
+        ->and($streetResult->parking->id)->toBe($sharedId)
+        ->and($streetResult->parking->name)->toBe('Shared ID Street');
+});
+
+it('calculates street parking distance and filters by radius', function () {
+    $near = StreetParking::factory()->create([
+        'name' => 'Nearby Street',
+        'geometry' => streetGeometryAt(25.5788, 91.8933),
+    ]);
+
+    $far = StreetParking::factory()->create([
+        'name' => 'Distant Street',
+        'geometry' => streetGeometryAt(25.5888, 91.9033),
+    ]);
+
+    $results = searchParking(new SearchParkingData(
+        type: 'street',
+        latitude: 25.5788,
+        longitude: 91.8933,
+        radiusMeters: 500,
+    ));
+
+    expect($results->total())->toBe(1)
+        ->and($results->first()->parking)->toBeInstanceOf(StreetParking::class)
+        ->and($results->first()->parking->is($near))->toBeTrue()
+        ->and($results->first()->distanceMeters)->toBeFloat()
+        ->and($results->first()->distanceMeters)->toBeLessThan(1.0)
+        ->and($results->first()->parking->is($far))->toBeFalse();
+});
+
+it('sorts equal names deterministically across parking types', function () {
+    $facility = ParkingFacility::factory()->create([
+        'name' => 'Same Name',
+    ]);
+
+    $street = StreetParking::factory()->create([
+        'name' => 'Same Name',
+    ]);
+
+    $results = searchParking(new SearchParkingData(
+        sort: 'name',
+    ));
+
+    expect($results->total())->toBe(2)
+        ->and($results->getCollection()->map(
+            fn ($result) => $result->parking::class,
+        )->all())->toBe([
+            ParkingFacility::class,
+            StreetParking::class,
+        ])
+        ->and($results->getCollection()->first()->parking->is($facility))->toBeTrue()
+        ->and($results->getCollection()->last()->parking->is($street))->toBeTrue();
+});
+
+it('paginates one globally sorted result set without duplicates or gaps', function () {
+    ParkingFacility::factory()->create(['name' => 'Alpha']);
+    StreetParking::factory()->create(['name' => 'Bravo']);
+    ParkingFacility::factory()->create(['name' => 'Charlie']);
+    StreetParking::factory()->create(['name' => 'Delta']);
+
+    $firstPage = searchParking(new SearchParkingData(
+        sort: 'name',
+        perPage: 2,
+        page: 1,
+    ));
+
+    $secondPage = searchParking(new SearchParkingData(
+        sort: 'name',
+        perPage: 2,
+        page: 2,
+    ));
+
+    $firstNames = $firstPage->getCollection()
+        ->map(fn ($result) => $result->parking->name)
+        ->all();
+
+    $secondNames = $secondPage->getCollection()
+        ->map(fn ($result) => $result->parking->name)
+        ->all();
+
+    expect($firstPage->total())->toBe(4)
+        ->and($secondPage->total())->toBe(4)
+        ->and($firstNames)->toBe(['Alpha', 'Bravo'])
+        ->and($secondNames)->toBe(['Charlie', 'Delta'])
+        ->and(array_intersect($firstNames, $secondNames))->toBeEmpty();
+});

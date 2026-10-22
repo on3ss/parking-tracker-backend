@@ -45,7 +45,7 @@ final class ParkingSearchResultHydrator
     }
 
     /**
-     * @param class-string<Model> $model
+     * @param  class-string<Model>  $model
      */
     private function loadModels(
         string $model,

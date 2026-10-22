@@ -27,11 +27,11 @@ it('hydrates overlapping facility and street IDs into the correct models', funct
     );
 
     $facilityResult = $results->getCollection()->first(
-        fn($result) => $result->parking instanceof ParkingFacility,
+        fn ($result) => $result->parking instanceof ParkingFacility,
     );
 
     $streetResult = $results->getCollection()->first(
-        fn($result) => $result->parking instanceof StreetParking,
+        fn ($result) => $result->parking instanceof StreetParking,
     );
 
     expect($results->total())->toBe(2)
