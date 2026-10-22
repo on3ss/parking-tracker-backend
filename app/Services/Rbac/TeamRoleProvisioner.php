@@ -34,7 +34,7 @@ class TeamRoleProvisioner
             $now = now();
 
             Permission::query()->insert(array_map(
-                static fn (string $name): array => [
+                static fn(string $name): array => [
                     'name' => $name,
                     'guard_name' => self::GUARD,
                     'created_at' => $now,
@@ -47,11 +47,6 @@ class TeamRoleProvisioner
         // Must also run when no permissions were inserted.
         app(PermissionRegistrar::class)->forgetCachedPermissions();
     }
-
-    /**
-     * Ensure every configured role exists for the given team and has
-     * exactly its declared permissions. Avoid pivot writes when unchanged.
-     */
 
     /**
      * Ensure every configured role exists for the given team and has
@@ -90,8 +85,8 @@ class TeamRoleProvisioner
                 if ($missing !== []) {
                     throw new \RuntimeException(
                         'Missing permissions while provisioning role '
-                        .$roleEnum->value.': '
-                        .implode(', ', $missing),
+                        . $roleEnum->value . ': '
+                        . implode(', ', $missing),
                     );
                 }
 
