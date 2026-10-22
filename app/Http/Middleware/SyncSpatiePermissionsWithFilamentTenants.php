@@ -12,25 +12,10 @@ final class SyncSpatiePermissionsWithFilamentTenants
     /**
      * @param  Closure(Request): Response  $next
      */
-    public function handle(
-        Request $request,
-        Closure $next,
-    ): Response {
-        $previousTeamId = getPermissionsTeamId();
+    public function handle(Request $request, Closure $next): Response
+    {
+        setPermissionsTeamId(Filament::getTenant()?->getKey());
 
-        try {
-            $user = $request->user();
-            $tenant = Filament::getTenant();
-
-            setPermissionsTeamId(
-                $user !== null && $tenant !== null
-                ? $tenant->getKey()
-                : null,
-            );
-
-            return $next($request);
-        } finally {
-            setPermissionsTeamId($previousTeamId);
-        }
+        return $next($request);
     }
 }
