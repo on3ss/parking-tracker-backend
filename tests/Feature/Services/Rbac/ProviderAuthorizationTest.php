@@ -4,6 +4,7 @@ use App\Models\User;
 use App\Services\Rbac\ProviderAuthorization;
 use App\Support\Rbac\Permission;
 use App\Support\Rbac\Role;
+use Spatie\Permission\PermissionRegistrar;
 use Tests\Support\ProviderTestContext;
 
 beforeEach(function () {
@@ -76,14 +77,14 @@ it('denies authorization when the member lacks the requested permission', functi
 
     $teamKey = config('permission.column_names.team_foreign_key');
 
-    $role = \Spatie\Permission\Models\Role::query()
+    $role = Spatie\Permission\Models\Role::query()
         ->where('name', Role::Viewer->value)
         ->where($teamKey, $context->provider->getKey())
         ->firstOrFail();
 
     $role->revokePermissionTo(Permission::FacilityView->value);
 
-    app(\Spatie\Permission\PermissionRegistrar::class)
+    app(PermissionRegistrar::class)
         ->forgetCachedPermissions();
 
     setPermissionsTeamId($context->provider->getKey());

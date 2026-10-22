@@ -6,8 +6,6 @@ use App\Enums\VehicleType;
 use App\Models\ParkingArea;
 use App\Models\ParkingFacility;
 use App\Models\User;
-use App\Services\Rbac\PlatformAuthorization;
-use App\Services\Rbac\ProviderAuthorization;
 use App\Support\Rbac\Permission;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
@@ -31,6 +29,7 @@ use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Gate;
 
 class AreasRelationManager extends RelationManager
 {
@@ -257,8 +256,7 @@ class AreasRelationManager extends RelationManager
             return false;
         }
 
-        // Ensure record actions cannot target an area belonging
-        // to a different facility.
+        // A record action must not escape the parent facility's scope.
         if (
             $area !== null
             && (string) $area->parking_facility_id
@@ -267,14 +265,30 @@ class AreasRelationManager extends RelationManager
             return false;
         }
 
-        if (app(PlatformAuthorization::class)->isAdmin($user)) {
-            return true;
+        $gate = Gate::forUser($user);
+
+        if ($area !== null) {
+            $ability = match ($permission) {
+                Permission::AreaView => 'view',
+                Permission::AreaUpdate => 'update',
+                Permission::AreaDelete => 'delete',
+                default => null,
+            };
+
+            return $ability !== null
+                && $gate->allows($ability, $area);
         }
 
-        return app(ProviderAuthorization::class)->allows(
-            $user,
-            $facility->parking_provider_id,
-            $permission,
-        );
+        $ability = match ($permission) {
+            Permission::AreaCreate => 'createForFacility',
+            Permission::AreaDelete => 'deleteForFacility',
+            default => null,
+        };
+
+        return $ability !== null
+            && $gate->allows(
+                $ability,
+                [ParkingArea::class, $facility],
+            );
     }
 }
