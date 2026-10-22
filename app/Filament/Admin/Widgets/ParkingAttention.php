@@ -40,7 +40,6 @@ class ParkingAttention extends StatsOverviewWidget
         ];
     }
 
-
     private function staleCount(): int
     {
         return ParkingFacility::query()
@@ -51,7 +50,6 @@ class ParkingAttention extends StatsOverviewWidget
                 ->staleAvailability()
                 ->count();
     }
-
 
     private function unknownCount(): int
     {

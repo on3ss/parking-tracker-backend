@@ -113,5 +113,4 @@ class AvailabilitySummary extends StatsOverviewWidget
                 ->staleOrNeverReportedAvailability()
                 ->count();
     }
-
 }

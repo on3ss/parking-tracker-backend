@@ -9,9 +9,6 @@ use App\Enums\StreetParkingSide;
 use App\Enums\StreetParkingType;
 use App\Models\Concerns\HasSlug;
 use App\Models\Concerns\HasStaleAvailability;
-use App\Models\Location;
-use App\Models\OccupancyReport;
-use App\Models\ParkingProvider;
 use Clickbar\Magellan\Data\Geometries\LineString;
 use Database\Factories\StreetParkingFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -45,8 +42,8 @@ class StreetParking extends Model
     use HasFactory;
 
     use HasSlug;
-    use SoftDeletes;
     use HasStaleAvailability;
+    use SoftDeletes;
 
     protected function casts(): array
     {

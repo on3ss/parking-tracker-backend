@@ -7,8 +7,8 @@ use App\Models\ParkingFacility;
 use App\Models\ParkingProvider;
 use App\Models\StreetParking;
 use Filament\Widgets\StatsOverviewWidget\Stat;
-use Livewire\Livewire;
 use Illuminate\Support\Carbon;
+use Livewire\Livewire;
 
 function getAvailabilitySummaryStats(
     AvailabilitySummary $widget,

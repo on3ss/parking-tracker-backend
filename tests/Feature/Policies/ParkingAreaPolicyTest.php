@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Policies\ParkingAreaPolicy;
 use App\Support\Rbac\Permission;
 use App\Support\Rbac\Role;
+use Spatie\Permission\PermissionRegistrar;
 use Tests\Support\PlatformAdminTestHelper;
 use Tests\Support\ProviderTestContext;
 
@@ -171,14 +172,14 @@ it('denies area access when the required permission has been revoked', function 
 
     $teamKey = config('permission.column_names.team_foreign_key');
 
-    $role = \Spatie\Permission\Models\Role::query()
+    $role = Spatie\Permission\Models\Role::query()
         ->where('name', Role::Owner->value)
         ->where($teamKey, $context->provider->getKey())
         ->firstOrFail();
 
     $role->revokePermissionTo(Permission::AreaView->value);
 
-    app(\Spatie\Permission\PermissionRegistrar::class)
+    app(PermissionRegistrar::class)
         ->forgetCachedPermissions();
 
     $context->user->unsetRelation('roles');

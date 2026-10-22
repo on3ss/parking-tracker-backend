@@ -27,7 +27,7 @@ beforeEach(function (): void {
  * }
  */
 function areasForRelationManagerBoundary(
-    Tests\Support\ProviderTestContext $context,
+    ProviderTestContext $context,
 ): array {
     $facility = ParkingFacility::factory()->create([
         'parking_provider_id' => $context->provider->getKey(),

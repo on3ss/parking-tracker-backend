@@ -12,8 +12,7 @@ final class ResolveParkingIdentifier
 {
     public function __construct(
         private ParkingIdentifierParser $identifierParser,
-    ) {
-    }
+    ) {}
 
     public function execute(
         string $identifier,

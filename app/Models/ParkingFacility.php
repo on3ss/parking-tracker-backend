@@ -39,8 +39,8 @@ class ParkingFacility extends Model
     use HasFactory;
 
     use HasSlug;
-    use SoftDeletes;
     use HasStaleAvailability;
+    use SoftDeletes;
 
     protected function casts(): array
     {
