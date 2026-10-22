@@ -103,32 +103,15 @@ class AvailabilitySummary extends StatsOverviewWidget
 
     private function staleCount(): int
     {
-        $cutoff = now()->subHour();
-
         return ParkingFacility::query()
             ->where('status', 'ACTIVE')
-            ->where(function ($query) use ($cutoff) {
-                $query
-                    ->whereNull('availability_updated_at')
-                    ->orWhere(
-                        'availability_updated_at',
-                        '<',
-                        $cutoff,
-                    );
-            })
+            ->staleOrNeverReportedAvailability()
             ->count()
             +
             StreetParking::query()
                 ->where('status', 'ACTIVE')
-                ->where(function ($query) use ($cutoff) {
-                    $query
-                        ->whereNull('availability_updated_at')
-                        ->orWhere(
-                            'availability_updated_at',
-                            '<',
-                            $cutoff,
-                        );
-                })
+                ->staleOrNeverReportedAvailability()
                 ->count();
     }
+
 }

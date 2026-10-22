@@ -40,20 +40,18 @@ class ParkingAttention extends StatsOverviewWidget
         ];
     }
 
+
     private function staleCount(): int
     {
-        $cutoff = now()->subHour();
-
         return ParkingFacility::query()
-            ->whereNotNull('availability_updated_at')
-            ->where('availability_updated_at', '<', $cutoff)
+            ->staleAvailability()
             ->count()
             +
             StreetParking::query()
-                ->whereNotNull('availability_updated_at')
-                ->where('availability_updated_at', '<', $cutoff)
+                ->staleAvailability()
                 ->count();
     }
+
 
     private function unknownCount(): int
     {

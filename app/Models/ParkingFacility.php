@@ -7,6 +7,7 @@ use App\Enums\ParkingFacilityType;
 use App\Enums\ParkingSource;
 use App\Enums\ParkingStatus;
 use App\Models\Concerns\HasSlug;
+use App\Models\Concerns\HasStaleAvailability;
 use Database\Factories\ParkingFacilitiesFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -39,6 +40,7 @@ class ParkingFacility extends Model
 
     use HasSlug;
     use SoftDeletes;
+    use HasStaleAvailability;
 
     protected function casts(): array
     {
