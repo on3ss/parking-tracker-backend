@@ -47,7 +47,7 @@ dataset('availability table widgets', [
     ],
 ]);
 
-it('marks never-reported availability as stale', function (string $widgetClass, string $modelClass, ) {
+it('marks never-reported availability as stale', function (string $widgetClass, string $modelClass) {
     $record = new $modelClass([
         'availability_updated_at' => null,
     ]);
@@ -60,7 +60,7 @@ it('marks never-reported availability as stale', function (string $widgetClass, 
     )->toBeTrue();
 })->with('availability table widgets');
 
-it('uses the configured threshold to determine stale availability', function (string $widgetClass, string $modelClass, ) {
+it('uses the configured threshold to determine stale availability', function (string $widgetClass, string $modelClass) {
     $widget = new $widgetClass;
 
     $staleRecord = new $modelClass([
@@ -79,7 +79,7 @@ it('uses the configured threshold to determine stale availability', function (st
         )->toBeFalse();
 })->with('availability table widgets');
 
-it('treats availability exactly at the cutoff as fresh', function (string $widgetClass, string $modelClass, ) {
+it('treats availability exactly at the cutoff as fresh', function (string $widgetClass, string $modelClass) {
     $record = new $modelClass([
         'availability_updated_at' => now()->subMinutes(30),
     ]);
